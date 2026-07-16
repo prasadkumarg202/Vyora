@@ -1,3 +1,5 @@
+import { Badge } from "@vyora/ui";
+
 import { NAV_MODULES } from "~/config/navigation";
 
 /**
@@ -21,10 +23,10 @@ export function ModulePlaceholder({ href }: { href: string }) {
         <p className="text-body-lg text-content-muted">{entry.summary}</p>
       </div>
 
-      <div className="rounded-card border border-border bg-surface p-5 shadow-card">
+      <div className="flex items-center gap-3 rounded-card border border-border bg-surface p-5 shadow-card">
+        <Badge tone="primary">{entry.phase}</Badge>
         <p className="text-body text-content-muted">
-          Route scaffolded in Phase 2. Screens arrive in{" "}
-          <span className="font-medium text-content">{entry.phase}</span>.
+          Route scaffolded — screens arrive in this phase.
         </p>
       </div>
     </section>

@@ -2,9 +2,123 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Design tokens from design/Vyora Design System.dc.html.
+ *
+ * Values are CSS variables so the same component markup themes light and dark.
+ * The light theme is the spec's high-fidelity source of truth (primary and
+ * neutral ramps transcribed 50–900). Dark is derived: the roadmap requires it
+ * but the spec does not fully colour it, so the neutral ramp is inverted and
+ * the primary lightened for contrast on dark surfaces. Marked DERIVED below.
+ */
+
 @layer base {
   :root {
+    /* Primary — indigo, hue 285 (spec ramp 50–900) */
+    --primary-50: oklch(0.97 0.02 285);
+    --primary-100: oklch(0.94 0.04 285);
+    --primary-200: oklch(0.88 0.07 285);
+    --primary-300: oklch(0.78 0.11 285);
+    --primary-400: oklch(0.66 0.16 285);
+    --primary-500: oklch(0.55 0.2 285);
+    --primary-600: oklch(0.48 0.2 285);
+    --primary-700: oklch(0.41 0.18 285);
+    --primary-800: oklch(0.34 0.14 285);
+    --primary-900: oklch(0.26 0.09 285);
+
+    /* Neutral — cool, hue 280 (spec ramp 50–900) */
+    --neutral-50: oklch(0.985 0.003 280);
+    --neutral-100: oklch(0.96 0.004 280);
+    --neutral-200: oklch(0.92 0.006 280);
+    --neutral-300: oklch(0.87 0.008 280);
+    --neutral-400: oklch(0.72 0.01 280);
+    --neutral-500: oklch(0.58 0.012 280);
+    --neutral-600: oklch(0.46 0.015 280);
+    --neutral-700: oklch(0.36 0.018 280);
+    --neutral-800: oklch(0.26 0.02 280);
+    --neutral-900: oklch(0.18 0.025 280);
+
+    /* Semantic roles → concrete tokens */
+    --color-canvas: oklch(0.975 0.004 280);
+    --color-surface: #ffffff;
+    --color-surface-raised: #ffffff;
+    --color-border: oklch(0.9 0.006 280);
+    --color-border-subtle: oklch(0.92 0.006 280);
+    --color-content: oklch(0.24 0.02 280);
+    --color-content-muted: oklch(0.55 0.015 280);
+    --color-band: oklch(0.22 0.03 280);
+    --color-band-content: oklch(0.98 0.005 280);
+
+    --color-primary: var(--primary-600);
+    --color-primary-hover: oklch(0.44 0.2 285);
+    --color-primary-content: #ffffff;
+    --color-primary-tonal: oklch(0.96 0.025 285);
+    --color-primary-tonal-border: oklch(0.9 0.035 285);
+    --color-ring: oklch(0.85 0.06 285);
+
+    /* Semantic: base + tonal bg/border for badges and states */
+    --color-success: oklch(0.6 0.14 155);
+    --color-success-tonal: oklch(0.95 0.05 155);
+    --color-success-border: oklch(0.86 0.07 155);
+
+    --color-warning: oklch(0.75 0.15 75);
+    --color-warning-tonal: oklch(0.96 0.06 85);
+    --color-warning-border: oklch(0.88 0.09 80);
+
+    --color-danger: oklch(0.58 0.2 25);
+    --color-danger-tonal: oklch(0.96 0.05 25);
+    --color-danger-border: oklch(0.88 0.08 25);
+
+    --color-info: oklch(0.6 0.14 235);
+    --color-info-tonal: oklch(0.95 0.04 235);
+    --color-info-border: oklch(0.87 0.06 235);
+
+    /* Elevation — three soft cool shadows */
+    --shadow-rest: 0 1px 2px rgba(40, 32, 90, 0.06);
+    --shadow-card: 0 6px 20px -14px rgba(40, 32, 90, 0.2);
+    --shadow-overlay: 0 20px 44px -20px rgba(40, 32, 90, 0.4);
+
     color-scheme: light;
+  }
+
+  /*
+   * DERIVED dark theme. Not in the spec — the neutral ramp is inverted so
+   * surfaces sit near neutral-900 and text near neutral-100, and the primary
+   * is lifted two steps for contrast on dark. Applied via a `dark` class on
+   * <html> (Tailwind darkMode: ["class"]).
+   */
+  .dark {
+    --color-canvas: oklch(0.17 0.02 280);
+    --color-surface: oklch(0.21 0.022 280);
+    --color-surface-raised: oklch(0.25 0.024 280);
+    --color-border: oklch(0.32 0.02 280);
+    --color-border-subtle: oklch(0.28 0.02 280);
+    --color-content: oklch(0.96 0.004 280);
+    --color-content-muted: oklch(0.72 0.01 280);
+    --color-band: oklch(0.15 0.02 280);
+    --color-band-content: oklch(0.98 0.005 280);
+
+    --color-primary: var(--primary-400);
+    --color-primary-hover: var(--primary-300);
+    --color-primary-content: oklch(0.18 0.03 285);
+    --color-primary-tonal: oklch(0.3 0.06 285);
+    --color-primary-tonal-border: oklch(0.4 0.08 285);
+    --color-ring: oklch(0.5 0.14 285);
+
+    --color-success-tonal: oklch(0.28 0.06 155);
+    --color-success-border: oklch(0.4 0.08 155);
+    --color-warning-tonal: oklch(0.3 0.07 80);
+    --color-warning-border: oklch(0.42 0.09 80);
+    --color-danger-tonal: oklch(0.3 0.08 25);
+    --color-danger-border: oklch(0.42 0.1 25);
+    --color-info-tonal: oklch(0.28 0.06 235);
+    --color-info-border: oklch(0.4 0.08 235);
+
+    --shadow-rest: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-card: 0 6px 20px -14px rgba(0, 0, 0, 0.5);
+    --shadow-overlay: 0 20px 44px -20px rgba(0, 0, 0, 0.7);
+
+    color-scheme: dark;
   }
 
   body {

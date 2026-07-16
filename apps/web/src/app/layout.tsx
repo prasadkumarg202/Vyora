@@ -45,6 +45,19 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${geist.variable} ${geistMono.variable}`}>
+      <head>
+        {/*
+          Set the theme class before first paint so there is no flash of the
+          wrong theme. Reads the saved choice, falling back to the OS setting.
+          Inline and synchronous by necessity — it must run before the body
+          renders.
+        */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{var t=localStorage.getItem("vyora.theme");if(t==="dark"||(!t&&matchMedia("(prefers-color-scheme:dark)").matches))document.documentElement.classList.add("dark")}catch(e){}`,
+          }}
+        />
+      </head>
       <body>{children}</body>
     </html>
   );

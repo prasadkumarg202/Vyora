@@ -1,5 +1,6 @@
 "use client";
 
+import { Button, Card, Input, Label } from "@vyora/ui";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 
@@ -102,14 +103,13 @@ export function LoginForm() {
   }
 
   return (
-    <div className="flex flex-col gap-4 rounded-card border border-border bg-surface p-6 shadow-card">
+    <Card className="flex flex-col gap-4 p-6">
       {step === "identify" ? (
         <form onSubmit={handleSend} className="flex flex-col gap-4">
-          <label className="flex flex-col gap-1.5">
-            <span className="text-caption uppercase tracking-wide text-content-muted">
-              Email address
-            </span>
-            <input
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="email">Email address</Label>
+            <Input
+              id="email"
               type="email"
               name="email"
               value={email}
@@ -118,19 +118,14 @@ export function LoginForm() {
               autoFocus
               autoComplete="email"
               placeholder="you@business.in"
-              className="min-h-touch rounded-input border border-border bg-surface px-3 text-body-lg outline-none focus:border-primary focus:shadow-focus"
             />
-          </label>
+          </div>
 
           {error ? <ErrorNote message={error} /> : null}
 
-          <button
-            type="submit"
-            disabled={pending}
-            className="min-h-touch rounded-control bg-primary px-4 text-body font-medium text-white transition-colors hover:bg-primary-hover disabled:opacity-60"
-          >
+          <Button type="submit" disabled={pending}>
             {pending ? "Sending…" : "Send code"}
-          </button>
+          </Button>
 
           <p className="text-caption normal-case text-content-muted">
             Production signs in by phone. Email is used in development because
@@ -146,11 +141,10 @@ export function LoginForm() {
             </span>
           </div>
 
-          <label className="flex flex-col gap-1.5">
-            <span className="text-caption uppercase tracking-wide text-content-muted">
-              Verification code
-            </span>
-            <input
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="code">Verification code</Label>
+            <Input
+              id="code"
               // inputMode numeric so phones show a number pad.
               inputMode="numeric"
               // Not fixed at 6: the spec's "6-digit code" describes SMS, while
@@ -165,35 +159,31 @@ export function LoginForm() {
               autoFocus
               autoComplete="one-time-code"
               placeholder="Code from your email"
-              className="min-h-touch rounded-input border border-border bg-surface px-3 font-mono text-h3 tracking-[0.3em] outline-none focus:border-primary focus:shadow-focus"
+              className="text-center font-mono text-h3 tracking-[0.3em]"
             />
-          </label>
+          </div>
 
           {error ? <ErrorNote message={error} /> : null}
 
-          <button
-            type="submit"
-            disabled={pending || code.length < 4}
-            className="min-h-touch rounded-control bg-primary px-4 text-body font-medium text-white transition-colors hover:bg-primary-hover disabled:opacity-60"
-          >
+          <Button type="submit" disabled={pending || code.length < 4}>
             {pending ? "Verifying…" : "Verify & sign in"}
-          </button>
+          </Button>
 
-          <button
+          <Button
             type="button"
+            variant="ghost"
             onClick={() => {
               setStep("identify");
               setCode("");
               setError(null);
               remember(null);
             }}
-            className="min-h-touch text-body text-content-muted underline-offset-4 hover:underline"
           >
             Use a different address
-          </button>
+          </Button>
         </form>
       )}
-    </div>
+    </Card>
   );
 }
 
@@ -201,7 +191,7 @@ function ErrorNote({ message }: { message: string }) {
   return (
     <p
       role="alert"
-      className="rounded-control border border-danger/30 bg-danger/10 px-3 py-2 text-body text-danger"
+      className="rounded-control border border-danger-border bg-danger-tonal px-3 py-2 text-body text-danger"
     >
       {message}
     </p>

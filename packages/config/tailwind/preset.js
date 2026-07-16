@@ -1,9 +1,12 @@
 /**
  * Vyora design tokens as a Tailwind preset.
  *
- * Values are transcribed from `design/README.md` and the Design System spec.
- * The full 50–900 primary ramp and the semantic tonal bg/border variants live
- * in `Vyora Design System.dc.html` and land in packages/ui in Phase 4.
+ * Colours resolve to CSS variables defined in packages/ui/src/styles.css, so a
+ * single set of utility classes themes both light and dark. The raw values
+ * (ramps, semantics) live there; this file only names the utilities.
+ *
+ * Non-colour scales (spacing, radius, type, shadow) are transcribed from
+ * design/README.md and the Design System spec.
  *
  * @type {import("tailwindcss").Config}
  */
@@ -13,26 +16,60 @@ const preset = {
     extend: {
       colors: {
         primary: {
-          DEFAULT: "oklch(0.52 0.2 285)",
-          hover: "oklch(0.44 0.2 285)",
-          tonal: "oklch(0.96 0.025 285)",
+          DEFAULT: "var(--color-primary)",
+          hover: "var(--color-primary-hover)",
+          content: "var(--color-primary-content)",
+          tonal: "var(--color-primary-tonal)",
+          "tonal-border": "var(--color-primary-tonal-border)",
+          50: "var(--primary-50)",
+          100: "var(--primary-100)",
+          200: "var(--primary-200)",
+          300: "var(--primary-300)",
+          400: "var(--primary-400)",
+          500: "var(--primary-500)",
+          600: "var(--primary-600)",
+          700: "var(--primary-700)",
+          800: "var(--primary-800)",
+          900: "var(--primary-900)",
         },
-        canvas: "oklch(0.975 0.004 280)",
-        surface: "#ffffff",
+        canvas: "var(--color-canvas)",
+        surface: {
+          DEFAULT: "var(--color-surface)",
+          raised: "var(--color-surface-raised)",
+        },
         border: {
-          DEFAULT: "oklch(0.9 0.006 280)",
-          subtle: "oklch(0.92 0.006 280)",
+          DEFAULT: "var(--color-border)",
+          subtle: "var(--color-border-subtle)",
         },
         content: {
-          DEFAULT: "oklch(0.24 0.02 280)",
-          muted: "oklch(0.55 0.015 280)",
+          DEFAULT: "var(--color-content)",
+          muted: "var(--color-content-muted)",
         },
-        // Dark band behind headers.
-        band: "oklch(0.22 0.03 280)",
-        success: "oklch(0.6 0.14 155)",
-        warning: "oklch(0.75 0.15 75)",
-        danger: "oklch(0.58 0.2 25)",
-        info: "oklch(0.6 0.14 235)",
+        band: {
+          DEFAULT: "var(--color-band)",
+          content: "var(--color-band-content)",
+        },
+        ring: "var(--color-ring)",
+        success: {
+          DEFAULT: "var(--color-success)",
+          tonal: "var(--color-success-tonal)",
+          border: "var(--color-success-border)",
+        },
+        warning: {
+          DEFAULT: "var(--color-warning)",
+          tonal: "var(--color-warning-tonal)",
+          border: "var(--color-warning-border)",
+        },
+        danger: {
+          DEFAULT: "var(--color-danger)",
+          tonal: "var(--color-danger-tonal)",
+          border: "var(--color-danger-border)",
+        },
+        info: {
+          DEFAULT: "var(--color-info)",
+          tonal: "var(--color-info-tonal)",
+          border: "var(--color-info-border)",
+        },
       },
       fontFamily: {
         sans: ["Geist", "system-ui", "sans-serif"],
@@ -67,12 +104,12 @@ const preset = {
         "card-lg": "16px",
         pill: "999px",
       },
-      // Three soft cool shadows.
+      // Three soft cool shadows + focus ring.
       boxShadow: {
-        rest: "0 1px 2px rgba(40,32,90,0.06)",
-        card: "0 6px 20px -14px rgba(40,32,90,0.2)",
-        overlay: "0 20px 44px -20px rgba(40,32,90,0.4)",
-        focus: "0 0 0 3px oklch(0.85 0.06 285)",
+        rest: "var(--shadow-rest)",
+        card: "var(--shadow-card)",
+        overlay: "var(--shadow-overlay)",
+        focus: "0 0 0 3px var(--color-ring)",
       },
       screens: {
         sm: "640px",
@@ -86,6 +123,24 @@ const preset = {
       },
       minWidth: {
         touch: "44px",
+      },
+      keyframes: {
+        "fade-in": {
+          from: { opacity: "0" },
+          to: { opacity: "1" },
+        },
+        "scale-in": {
+          from: { opacity: "0", transform: "translate(-50%, -48%) scale(0.97)" },
+          to: { opacity: "1", transform: "translate(-50%, -50%) scale(1)" },
+        },
+        shimmer: {
+          "100%": { transform: "translateX(100%)" },
+        },
+      },
+      animation: {
+        "fade-in": "fade-in 150ms ease-out",
+        "scale-in": "scale-in 150ms ease-out",
+        shimmer: "shimmer 1.5s infinite",
       },
     },
   },

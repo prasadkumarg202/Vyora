@@ -20,6 +20,11 @@ export const reactConfig = [
     plugins: { "react-hooks": reactHooks },
     rules: {
       ...reactHooks.configs.recommended.rules,
+      // TypeScript already checks prop types; the eslint rule only produces
+      // false positives on typed forwardRef/function components.
+      "react/prop-types": "off",
+      // The new JSX transform needs no React import.
+      "react/react-in-jsx-scope": "off",
     },
   },
 ];

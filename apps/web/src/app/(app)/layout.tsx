@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { BottomNav } from "~/components/bottom-nav";
 import { Sidebar } from "~/components/sidebar";
 import { SyncPill } from "~/components/sync-pill";
+import { ThemeToggle } from "~/components/theme-toggle";
 import { UserMenu } from "~/components/auth/user-menu";
 import { getTenantSession } from "~/lib/auth/session";
 
@@ -43,6 +44,7 @@ export default async function AppLayout({
         </div>
         <div className="flex items-center gap-3">
           <SyncPill />
+          <ThemeToggle />
           <UserMenu email={session.email} role={session.orgRole} />
         </div>
       </header>

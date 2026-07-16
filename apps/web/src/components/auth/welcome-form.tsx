@@ -1,5 +1,6 @@
 "use client";
 
+import { Button, Card, Input, Label } from "@vyora/ui";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
@@ -44,61 +45,53 @@ export function WelcomeForm({
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="flex flex-col gap-4 rounded-card border border-border bg-surface p-6 shadow-card"
-    >
-      <label className="flex flex-col gap-1.5">
-        <span className="text-caption uppercase tracking-wide text-content-muted">
-          Business name
-        </span>
-        <input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          required
-          autoFocus
-          placeholder="Sri Sai Medicals"
-          className="min-h-touch rounded-input border border-border bg-surface px-3 text-body-lg outline-none focus:border-primary focus:shadow-focus"
-        />
-      </label>
+    <Card className="p-0">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4 p-6">
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="business-name">Business name</Label>
+          <Input
+            id="business-name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+            autoFocus
+            placeholder="Sri Sai Medicals"
+          />
+        </div>
 
-      <label className="flex flex-col gap-1.5">
-        <span className="text-caption uppercase tracking-wide text-content-muted">
-          Business type
-        </span>
-        <select
-          value={type}
-          onChange={(e) => setType(e.target.value)}
-          className="min-h-touch rounded-input border border-border bg-surface px-3 text-body-lg outline-none focus:border-primary focus:shadow-focus"
-        >
-          <option value="">Choose later</option>
-          {businessTypes.map((bt) => (
-            <option key={bt.key} value={bt.key}>
-              {bt.label}
-            </option>
-          ))}
-        </select>
-        <span className="text-caption normal-case text-content-muted">
-          Drives your fields, GST rules and reports from Phase 5 onward.
-        </span>
-      </label>
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="business-type">Business type</Label>
+          <select
+            id="business-type"
+            value={type}
+            onChange={(e) => setType(e.target.value)}
+            className="min-h-touch rounded-input border border-border bg-surface px-3 text-body-lg text-content outline-none transition-colors focus-visible:border-primary focus-visible:shadow-focus"
+          >
+            <option value="">Choose later</option>
+            {businessTypes.map((bt) => (
+              <option key={bt.key} value={bt.key}>
+                {bt.label}
+              </option>
+            ))}
+          </select>
+          <span className="text-caption normal-case text-content-muted">
+            Drives your fields, GST rules and reports from Phase 5 onward.
+          </span>
+        </div>
 
-      {error ? (
-        <p
-          role="alert"
-          className="rounded-control border border-danger/30 bg-danger/10 px-3 py-2 text-body text-danger"
-        >
-          {error}
-        </p>
-      ) : null}
+        {error ? (
+          <p
+            role="alert"
+            className="rounded-control border border-danger-border bg-danger-tonal px-3 py-2 text-body text-danger"
+          >
+            {error}
+          </p>
+        ) : null}
 
-      <button
-        type="submit"
-        disabled={pending || name.trim().length < 2}
-        className="min-h-touch rounded-control bg-primary px-4 text-body font-medium text-white transition-colors hover:bg-primary-hover disabled:opacity-60"
-      >
-        {pending ? "Creating…" : "Create workspace"}
-      </button>
-    </form>
+        <Button type="submit" disabled={pending || name.trim().length < 2}>
+          {pending ? "Creating…" : "Create workspace"}
+        </Button>
+      </form>
+    </Card>
   );
 }

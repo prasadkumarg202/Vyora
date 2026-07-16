@@ -1,3 +1,5 @@
+import { Button } from "@vyora/ui";
+
 import { signOut } from "~/lib/auth/actions";
 
 /**
@@ -26,12 +28,14 @@ export function UserMenu({
           await signOut();
         }}
       >
-        <button
+        <Button
           type="submit"
-          className="min-h-touch rounded-control border border-white/20 px-3 text-caption normal-case text-white/90 transition-colors hover:bg-white/10"
+          variant="ghost"
+          size="sm"
+          className="border border-white/20 text-band-content/90 hover:bg-white/10"
         >
           Sign out
-        </button>
+        </Button>
       </form>
     </div>
   );

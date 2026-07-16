@@ -1,5 +1,6 @@
 "use client";
 
+import { Badge } from "@vyora/ui";
 import { useEffect, useState } from "react";
 
 /**
@@ -30,22 +31,11 @@ export function SyncPill() {
       type="button"
       data-sync-state={online ? "synced" : "offline"}
       aria-live="polite"
-      className={
-        "inline-flex min-h-touch items-center gap-2 rounded-pill border px-3 " +
-        "text-caption transition-colors " +
-        (online
-          ? "border-success/30 bg-success/10 text-success"
-          : "border-warning/40 bg-warning/15 text-warning")
-      }
+      className="rounded-pill outline-none focus-visible:shadow-focus"
     >
-      <span
-        aria-hidden
-        className={
-          "h-1.5 w-1.5 rounded-pill " +
-          (online ? "bg-success" : "bg-warning")
-        }
-      />
-      {online ? "Synced" : "Offline"}
+      <Badge tone={online ? "success" : "warning"} dot>
+        {online ? "Synced" : "Offline"}
+      </Badge>
     </button>
   );
 }
