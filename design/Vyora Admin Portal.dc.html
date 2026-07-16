@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;}
+html,body{margin:0;height:100%;background:oklch(0.975 0.004 280);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
+a{color:oklch(0.52 0.2 285);text-decoration:none;}
+::-webkit-scrollbar{width:10px;height:10px;}
+::-webkit-scrollbar-thumb{background:oklch(0.88 0.008 280);border-radius:6px;border:2px solid oklch(0.975 0.004 280);}
+@keyframes vfade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+</style>
+</helmet>
+
+<div style="font-family:Geist,system-ui,sans-serif;color:oklch(0.24 0.02 280);height:100vh;display:flex;overflow:hidden;">
+
+  <!-- SIDEBAR (dark = internal tool) -->
+  <div style="width:238px;flex-shrink:0;background:oklch(0.23 0.025 280);color:oklch(0.9 0.02 280);display:flex;flex-direction:column;">
+    <div style="height:56px;flex-shrink:0;display:flex;align-items:center;gap:10px;padding:0 18px;border-bottom:1px solid oklch(0.3 0.03 280);">
+      <span style="width:26px;height:26px;border-radius:7px;background:oklch(0.6 0.2 285);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;">V</span>
+      <div style="display:flex;flex-direction:column;line-height:1.1;"><span style="font-size:13.5px;font-weight:650;color:#fff;">Vyora</span><span style="font-size:10px;color:oklch(0.65 0.03 280);">Admin · internal</span></div>
+    </div>
+    <div style="flex:1;overflow-y:auto;padding:12px 10px;display:flex;flex-direction:column;gap:14px;">
+      <sc-for list="{{ nav }}" as="g" hint-placeholder-count="4">
+        <div style="display:flex;flex-direction:column;gap:2px;">
+          <span style="font-size:9.5px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:oklch(0.58 0.03 280);padding:2px 11px 5px;">{{ g.group }}</span>
+          <sc-for list="{{ g.items }}" as="it" hint-placeholder-count="3"><button onClick="{{ it.onClick }}" style="{{ it.style }}"><span style="{{ it.dot }}"></span>{{ it.label }}</button></sc-for>
+        </div>
+      </sc-for>
+    </div>
+    <div style="flex-shrink:0;border-top:1px solid oklch(0.3 0.03 280);padding:12px;display:flex;align-items:center;gap:10px;">
+      <span style="width:30px;height:30px;border-radius:50%;background:oklch(0.34 0.04 285);color:oklch(0.85 0.05 285);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;">TM</span>
+      <div style="flex:1;min-width:0;"><div style="font-size:12.5px;font-weight:600;color:#fff;">Team member</div><div style="font-size:10.5px;color:oklch(0.65 0.03 280);">Platform ops</div></div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div style="flex:1;display:flex;flex-direction:column;min-width:0;">
+    <div style="height:56px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:0 24px;border-bottom:1px solid oklch(0.93 0.006 280);background:#fff;">
+      <h1 style="margin:0;font-size:16px;font-weight:650;">{{ pageTitle }}</h1>
+      <span style="font-size:11.5px;font-weight:500;color:oklch(0.5 0.11 70);background:oklch(0.96 0.06 80);border:1px solid oklch(0.87 0.08 75);padding:5px 11px;border-radius:999px;">Customer data stays encrypted — not visible here</span>
+    </div>
+
+    <div style="flex:1;overflow-y:auto;padding:28px 32px;">
+
+      <!-- DASHBOARD -->
+      <sc-if value="{{ scr.dashboard }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;flex-direction:column;gap:18px;animation:vfade .25s ease;">
+          <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;">
+            <div style="border:1px solid oklch(0.91 0.006 280);border-radius:14px;background:#fff;padding:16px;"><span style="font-size:10.5px;font-weight:600;text-transform:uppercase;color:oklch(0.58 0.012 280);">Tenants</span><div style="font-family:'Geist Mono',monospace;font-size:22px;font-weight:500;margin-top:6px;">1,284</div></div>
+            <div style="border:1px solid oklch(0.91 0.006 280);border-radius:14px;background:#fff;padding:16px;"><span style="font-size:10.5px;font-weight:600;text-transform:uppercase;color:oklch(0.58 0.012 280);">MRR</span><div style="font-family:'Geist Mono',monospace;font-size:22px;font-weight:500;margin-top:6px;">₹9.4L</div></div>
+            <div style="border:1px solid oklch(0.91 0.006 280);border-radius:14px;background:#fff;padding:16px;"><span style="font-size:10.5px;font-weight:600;text-transform:uppercase;color:oklch(0.58 0.012 280);">Active seats</span><div style="font-family:'Geist Mono',monospace;font-size:22px;font-weight:500;margin-top:6px;">3,910</div></div>
+            <div style="border:1px solid oklch(0.91 0.006 280);border-radius:14px;background:#fff;padding:16px;"><span style="font-size:10.5px;font-weight:600;text-transform:uppercase;color:oklch(0.58 0.012 280);">AI calls / day</span><div style="font-family:'Geist Mono',monospace;font-size:22px;font-weight:500;margin-top:6px;">58k</div></div>
+            <div style="border:1px solid oklch(0.91 0.006 280);border-radius:14px;background:#fff;padding:16px;"><span style="font-size:10.5px;font-weight:600;text-transform:uppercase;color:oklch(0.58 0.012 280);">Open tickets</span><div style="font-family:'Geist Mono',monospace;font-size:22px;font-weight:500;margin-top:6px;color:oklch(0.5 0.14 75);">23</div></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:16px;">
+            <div style="border:1px solid oklch(0.91 0.006 280);border-radius:16px;background:#fff;padding:20px;">
+              <div style="font-size:13.5px;font-weight:650;margin-bottom:16px;">New signups · last 7 days</div>
+              <div style="display:flex;align-items:flex-end;gap:12px;height:140px;"><sc-for list="{{ chart }}" as="bar" hint-placeholder-count="7"><div style="flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:7px;"><div style="{{ bar.style }}"></div><span style="font-size:10px;color:oklch(0.58 0.012 280);">{{ bar.l }}</span></div></sc-for></div>
+            </div>
+            <div style="border:1px solid oklch(0.91 0.006 280);border-radius:16px;background:#fff;padding:20px;">
+              <div style="font-size:13.5px;font-weight:650;margin-bottom:16px;">Plan distribution</div>
+              <div style="display:flex;flex-direction:column;gap:11px;"><sc-for list="{{ planDist }}" as="p" hint-placeholder-count="5"><div style="display:flex;flex-direction:column;gap:5px;"><div style="display:flex;justify-content:space-between;font-size:12px;"><span style="color:oklch(0.42 0.02 280);">{{ p.name }}</span><span style="font-family:'Geist Mono',monospace;color:oklch(0.55 0.012 280);">{{ p.pct }}</span></div><span style="height:6px;border-radius:999px;background:oklch(0.94 0.006 280);overflow:hidden;"><span style="{{ p.barStyle }}"></span></span></div></sc-for></div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- CUSTOMERS -->
+      <sc-if value="{{ scr.customers }}" hint-placeholder-val="{{ false }}">
+        <sc-if value="{{ noTenant }}" hint-placeholder-val="{{ true }}">
+          <div style="animation:vfade .25s ease;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;"><span style="font-size:14px;font-weight:650;">Tenants · 1,284 — click one to open the support workspace</span><span style="font-size:12px;color:oklch(0.55 0.012 280);background:oklch(0.97 0.004 280);border:1px solid oklch(0.92 0.006 280);padding:7px 12px;border-radius:8px;">Search tenants</span></div>
+            <div style="border:1px solid oklch(0.91 0.006 280);border-radius:14px;background:#fff;overflow:hidden;">
+              <div style="display:grid;grid-template-columns:1.5fr 1fr 0.8fr 0.8fr 0.9fr;gap:14px;padding:11px 18px;background:oklch(0.98 0.004 280);border-bottom:1px solid oklch(0.93 0.006 280);"><span style="font-size:10.5px;font-weight:600;text-transform:uppercase;color:oklch(0.55 0.012 280);">Organisation</span><span style="font-size:10.5px;font-weight:600;text-transform:uppercase;color:oklch(0.55 0.012 280);">Business</span><span style="font-size:10.5px;font-weight:600;text-transform:uppercase;color:oklch(0.55 0.012 280);">Plan</span><span style="font-size:10.5px;font-weight:600;text-transform:uppercase;color:oklch(0.55 0.012 280);text-align:right;">MRR</span><span style="font-size:10.5px;font-weight:600;text-transform:uppercase;color:oklch(0.55 0.012 280);text-align:right;">Status</span></div>
+              <sc-for list="{{ tenants }}" as="t" hint-placeholder-count="6"><button onClick="{{ t.open }}" style="display:grid;grid-template-columns:1.5fr 1fr 0.8fr 0.8fr 0.9fr;gap:14px;padding:12px 18px;border:none;border-bottom:1px solid oklch(0.96 0.004 280);align-items:center;width:100%;background:#fff;cursor:pointer;font-family:inherit;text-align:left;" style-hover="{ background:'oklch(0.985 0.008 285)' }"><span style="font-size:13px;font-weight:500;color:oklch(0.35 0.1 285);">{{ t.org }} →</span><span style="font-size:12px;color:oklch(0.55 0.015 280);">{{ t.biz }}</span><span style="font-family:'Geist Mono',monospace;font-size:11.5px;color:oklch(0.5 0.015 280);">{{ t.plan }}</span><span style="font-family:'Geist Mono',monospace;font-size:12px;text-align:right;">{{ t.mrr }}</span><span style="text-align:right;"><span style="{{ t.badge.style }}">{{ t.badge.label }}</span></span></button></sc-for>
+            </div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ hasTenant }}" hint-placeholder-val="{{ false }}">
+          <div style="animation:vfade .25s ease;max-width:820px;">
+            <button onClick="{{ closeTenant }}" style="cursor:pointer;background:transparent;border:none;font-family:inherit;font-size:12.5px;font-weight:600;color:oklch(0.5 0.13 285);padding:0;margin-bottom:14px;">← All tenants</button>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:16px;">
+              <div><h2 style="margin:0;font-size:19px;font-weight:650;">{{ tenantName }}</h2><span style="font-size:12px;color:oklch(0.55 0.015 280);">Support workspace · every action is audit-logged</span></div>
+              <sc-if value="{{ noConsent }}" hint-placeholder-val="{{ true }}"><button onClick="{{ requestConsent }}" style="cursor:pointer;border:none;background:oklch(0.52 0.2 285);color:#fff;font-size:12.5px;font-weight:600;padding:10px 16px;border-radius:10px;">Request owner access (OTP)</button></sc-if>
+              <sc-if value="{{ consent }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:oklch(0.44 0.11 155);background:oklch(0.95 0.05 155);border:1px solid oklch(0.86 0.07 155);padding:7px 13px;border-radius:999px;"><span style="width:7px;height:7px;border-radius:50%;background:oklch(0.6 0.14 155);"></span>Owner granted access · expires in 60 min</span></sc-if>
+            </div>
+            <sc-if value="{{ noConsent }}" hint-placeholder-val="{{ true }}">
+              <div style="border:1.5px dashed oklch(0.85 0.05 285);border-radius:14px;background:oklch(0.99 0.005 285);padding:34px;text-align:center;">
+                <div style="width:42px;height:42px;border-radius:12px;background:oklch(0.96 0.025 285);margin:0 auto 12px;display:flex;align-items:center;justify-content:center;">🔒</div>
+                <div style="font-size:14px;font-weight:650;">Data is encrypted — owner consent required</div>
+                <p style="margin:6px auto 0;font-size:12.5px;line-height:1.55;color:oklch(0.55 0.015 280);max-width:420px;">Support can only see this tenant's records after the owner approves a time-boxed access grant via OTP. Until then you can see plan, seats, and sync health only.</p>
+              </div>
+            </sc-if>
+            <sc-if value="{{ consent }}" hint-placeholder-val="{{ false }}">
+              <div style="animation:vfade .3s ease;">
+                <div style="font-size:11px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.55 0.012 280);margin-bottom:10px;">Invoices needing adjustment · 3</div>
+                <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;">
+                  <sc-for list="{{ adjInv }}" as="a" hint-placeholder-count="3">
+                    <div style="display:flex;align-items:center;gap:16px;border:1px solid oklch(0.91 0.006 280);border-radius:12px;background:#fff;padding:15px 17px;">
+                      <div style="flex:1;min-width:0;">
+                        <div style="display:flex;align-items:center;gap:9px;"><span style="font-family:'Geist Mono',monospace;font-size:12px;font-weight:600;color:oklch(0.42 0.13 285);">{{ a.inv }}</span><span style="font-size:11px;font-weight:600;color:oklch(0.48 0.14 25);background:oklch(0.96 0.05 25);padding:2px 8px;border-radius:6px;">{{ a.impact }}</span></div>
+                        <div style="font-size:12.5px;color:oklch(0.45 0.02 280);margin-top:4px;">{{ a.issue }}</div>
+                      </div>
+                      <sc-if value="{{ a.done }}" hint-placeholder-val="{{ false }}"><span style="font-size:11.5px;font-weight:600;color:oklch(0.44 0.11 155);background:oklch(0.95 0.05 155);border:1px solid oklch(0.86 0.07 155);padding:8px 13px;border-radius:9px;white-space:nowrap;">✓ Done · logged</span></sc-if>
+                      <sc-if value="{{ a.notDone }}" hint-placeholder-val="{{ true }}"><button onClick="{{ a.fix }}" style="cursor:pointer;border:none;background:oklch(0.52 0.2 285);color:#fff;font-size:11.5px;font-weight:600;padding:9px 14px;border-radius:9px;white-space:nowrap;">{{ a.action }}</button></sc-if>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="font-size:11px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.55 0.012 280);margin-bottom:10px;">Quick actions</div>
+                <div style="display:flex;gap:9px;flex-wrap:wrap;">
+                  <span style="font-size:12px;font-weight:600;color:oklch(0.4 0.02 280);background:#fff;border:1px solid oklch(0.88 0.008 280);padding:9px 14px;border-radius:9px;cursor:pointer;">Regenerate GSTR-1 draft</span>
+                  <span style="font-size:12px;font-weight:600;color:oklch(0.4 0.02 280);background:#fff;border:1px solid oklch(0.88 0.008 280);padding:9px 14px;border-radius:9px;cursor:pointer;">Rebuild stock report</span>
+                  <span style="font-size:12px;font-weight:600;color:oklch(0.4 0.02 280);background:#fff;border:1px solid oklch(0.88 0.008 280);padding:9px 14px;border-radius:9px;cursor:pointer;">Force device resync</span>
+                  <span style="font-size:12px;font-weight:600;color:oklch(0.4 0.02 280);background:#fff;border:1px solid oklch(0.88 0.008 280);padding:9px 14px;border-radius:9px;cursor:pointer;">Extend trial 7 days</span>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
+      </sc-if>
+
+      <!-- SYSTEM HEALTH -->
+      <sc-if value="{{ scr.health }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:vfade .25s ease;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+            <div style="border:1px solid oklch(0.91 0.006 280);border-radius:14px;background:#fff;padding:20px;"><div style="font-size:13px;font-weight:650;margin-bottom:14px;">Frontend health</div><div style="display:flex;flex-direction:column;gap:9px;"><sc-for list="{{ healthFront }}" as="h" hint-placeholder-count="5"><div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 12px;background:oklch(0.985 0.004 280);border-radius:8px;"><span style="display:flex;align-items:center;gap:9px;font-size:12.5px;color:oklch(0.4 0.02 280);"><span style="{{ h.dot }}"></span>{{ h.l }}</span><span style="font-family:'Geist Mono',monospace;font-size:12px;">{{ h.v }}</span></div></sc-for></div></div>
+            <div style="border:1px solid oklch(0.91 0.006 280);border-radius:14px;background:#fff;padding:20px;"><div style="font-size:13px;font-weight:650;margin-bottom:14px;">Backend health</div><div style="display:flex;flex-direction:column;gap:9px;"><sc-for list="{{ healthBack }}" as="h" hint-placeholder-count="5"><div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 12px;background:oklch(0.985 0.004 280);border-radius:8px;"><span style="display:flex;align-items:center;gap:9px;font-size:12.5px;color:oklch(0.4 0.02 280);"><span style="{{ h.dot }}"></span>{{ h.l }}</span><span style="font-family:'Geist Mono',monospace;font-size:12px;">{{ h.v }}</span></div></sc-for></div></div>
+          </div>
+          <div style="border:1px solid oklch(0.91 0.006 280);border-radius:14px;background:#fff;padding:20px;"><div style="font-size:13px;font-weight:650;margin-bottom:14px;">Third-party APIs</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;"><sc-for list="{{ apis }}" as="a" hint-placeholder-count="6"><div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 13px;border:1px solid oklch(0.94 0.005 280);border-radius:9px;"><span style="display:flex;align-items:center;gap:9px;font-size:12.5px;font-weight:600;"><span style="{{ a.dot }}"></span>{{ a.name }}</span><span style="font-size:11.5px;color:oklch(0.55 0.015 280);">{{ a.v }}</span></div></sc-for></div></div>
+        </div>
+      </sc-if>
+
+      <!-- MONETIZATION -->
+      <sc-if value="{{ scr.monetization }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:vfade .25s ease;">
+          <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:16px;">
+            <sc-for list="{{ monKpis }}" as="k" hint-placeholder-count="6"><div style="border:1px solid oklch(0.91 0.006 280);border-radius:14px;background:#fff;padding:16px;"><span style="font-size:10.5px;font-weight:600;text-transform:uppercase;color:oklch(0.58 0.012 280);">{{ k.l }}</span><div style="font-family:'Geist Mono',monospace;font-size:19px;font-weight:500;margin-top:6px;">{{ k.v }}</div></div></sc-for>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+            <div style="border:1px solid oklch(0.91 0.006 280);border-radius:14px;background:#fff;padding:20px;"><div style="font-size:13px;font-weight:650;margin-bottom:14px;">Revenue streams</div><div style="display:flex;flex-direction:column;gap:11px;"><sc-for list="{{ monStreams }}" as="p" hint-placeholder-count="3"><div style="display:flex;flex-direction:column;gap:5px;"><div style="display:flex;justify-content:space-between;font-size:12px;"><span style="color:oklch(0.42 0.02 280);">{{ p.name }}</span><span style="font-family:'Geist Mono',monospace;color:oklch(0.55 0.012 280);">{{ p.pct }}</span></div><span style="height:6px;border-radius:999px;background:oklch(0.94 0.006 280);overflow:hidden;"><span style="{{ p.barStyle }}"></span></span></div></sc-for></div></div>
+            <div style="border:1px solid oklch(0.9 0.035 285);border-radius:14px;background:oklch(0.98 0.015 285);padding:20px;"><div style="font-size:13px;font-weight:650;color:oklch(0.34 0.08 285);margin-bottom:10px;">Unit economics</div><p style="margin:0;font-size:12.5px;line-height:1.6;color:oklch(0.42 0.05 285);">LTV : CAC of <strong>64 : 1</strong> at current churn (2.1%). AI cost per tenant ₹38/mo against ₹94/mo of AI-attributed revenue — the copilot is margin-positive. Multi-year plans (2y/3y) now 41% of new revenue, pulling cash forward.</p></div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- COMPETITION -->
+      <sc-if value="{{ scr.competition }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:vfade .25s ease;">
+          <div style="border:1px solid oklch(0.91 0.006 280);border-radius:14px;background:#fff;overflow:hidden;margin-bottom:16px;">
+            <div style="display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr 1fr;gap:12px;padding:12px 20px;background:oklch(0.98 0.004 280);border-bottom:1px solid oklch(0.92 0.006 280);"><span style="font-size:10.5px;font-weight:600;text-transform:uppercase;color:oklch(0.55 0.012 280);">Capability</span><span style="font-size:10.5px;font-weight:600;text-transform:uppercase;color:oklch(0.55 0.012 280);text-align:center;">Vyapar</span><span style="font-size:10.5px;font-weight:600;text-transform:uppercase;color:oklch(0.55 0.012 280);text-align:center;">MyBillBook</span><span style="font-size:10.5px;font-weight:600;text-transform:uppercase;color:oklch(0.55 0.012 280);text-align:center;">Zoho Books</span><span style="font-size:10.5px;font-weight:600;text-transform:uppercase;color:oklch(0.42 0.13 285);text-align:center;">Vyora</span></div>
+            <sc-for list="{{ compRows }}" as="r" hint-placeholder-count="7"><div style="display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr 1fr;gap:12px;padding:12px 20px;border-bottom:1px solid oklch(0.96 0.004 280);align-items:center;"><span style="font-size:12.5px;">{{ r.f }}</span><span style="font-size:12px;text-align:center;color:oklch(0.5 0.015 280);">{{ r.vy }}</span><span style="font-size:12px;text-align:center;color:oklch(0.5 0.015 280);">{{ r.mb }}</span><span style="font-size:12px;text-align:center;color:oklch(0.5 0.015 280);">{{ r.zo }}</span><span style="font-size:12px;font-weight:600;text-align:center;color:oklch(0.45 0.16 285);">{{ r.us }}</span></div></sc-for>
+          </div>
+          <div style="font-size:11px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.55 0.012 280);margin-bottom:10px;">Switchers this month · 731</div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">
+            <sc-for list="{{ switchers }}" as="s" hint-placeholder-count="4"><div style="border:1px solid oklch(0.91 0.006 280);border-radius:12px;background:#fff;padding:15px 17px;"><span style="font-size:11.5px;color:oklch(0.55 0.015 280);">from {{ s.from }}</span><div style="font-family:'Geist Mono',monospace;font-size:20px;font-weight:500;margin-top:4px;color:oklch(0.42 0.13 285);">{{ s.n }}</div></div></sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- TEAM & ROLES -->
+      <sc-if value="{{ scr.adminroles }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:vfade .25s ease;max-width:860px;">
+          <p style="margin:0 0 16px;font-size:13px;color:oklch(0.55 0.015 280);">Internal team roles. Tenant data access always requires owner consent, regardless of role. ● full · ○ read-only · &nbsp;·&nbsp; none.</p>
+          <div style="border:1px solid oklch(0.91 0.006 280);border-radius:14px;background:#fff;overflow:hidden;">
+            <div style="display:grid;grid-template-columns:1.6fr repeat(5,1fr);gap:10px;padding:12px 20px;background:oklch(0.98 0.004 280);border-bottom:1px solid oklch(0.92 0.006 280);"><span style="font-size:10.5px;font-weight:600;text-transform:uppercase;color:oklch(0.55 0.012 280);">Capability</span><span style="font-size:10.5px;font-weight:600;text-align:center;color:oklch(0.42 0.02 280);">Superadmin</span><span style="font-size:10.5px;font-weight:600;text-align:center;color:oklch(0.42 0.02 280);">Ops</span><span style="font-size:10.5px;font-weight:600;text-align:center;color:oklch(0.42 0.02 280);">Support</span><span style="font-size:10.5px;font-weight:600;text-align:center;color:oklch(0.42 0.02 280);">Billing</span><span style="font-size:10.5px;font-weight:600;text-align:center;color:oklch(0.42 0.02 280);">Analyst</span></div>
+            <sc-for list="{{ adminRoles }}" as="r" hint-placeholder-count="6"><div style="display:grid;grid-template-columns:1.6fr repeat(5,1fr);gap:10px;padding:12px 20px;border-bottom:1px solid oklch(0.96 0.004 280);align-items:center;"><span style="font-size:12.5px;">{{ r.cap }}</span><span style="text-align:center;color:oklch(0.55 0.18 285);">{{ r.c0 }}</span><span style="text-align:center;color:oklch(0.55 0.18 285);">{{ r.c1 }}</span><span style="text-align:center;color:oklch(0.55 0.18 285);">{{ r.c2 }}</span><span style="text-align:center;color:oklch(0.55 0.18 285);">{{ r.c3 }}</span><span style="text-align:center;color:oklch(0.55 0.18 285);">{{ r.c4 }}</span></div></sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- SUBSCRIPTIONS -->
+      <sc-if value="{{ scr.subscriptions }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:vfade .25s ease;">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px;">
+            <div style="border:1px solid oklch(0.9 0.035 285);border-radius:14px;background:oklch(0.98 0.015 285);padding:18px;"><span style="font-size:10.5px;font-weight:600;text-transform:uppercase;color:oklch(0.5 0.13 285);">Licenses sold · active / all-time</span><div style="font-family:'Geist Mono',monospace;font-size:22px;font-weight:500;margin-top:6px;color:oklch(0.36 0.12 285);">1,102 / 1,486</div></div>
+            <div style="border:1px solid oklch(0.91 0.006 280);border-radius:14px;background:#fff;padding:18px;"><span style="font-size:10.5px;font-weight:600;text-transform:uppercase;color:oklch(0.58 0.012 280);">Trials</span><div style="font-family:'Geist Mono',monospace;font-size:22px;font-weight:500;margin-top:6px;color:oklch(0.5 0.14 75);">182</div></div>
+            <div style="border:1px solid oklch(0.91 0.006 280);border-radius:14px;background:#fff;padding:18px;"><span style="font-size:10.5px;font-weight:600;text-transform:uppercase;color:oklch(0.58 0.012 280);">Churn · 30d</span><div style="font-family:'Geist Mono',monospace;font-size:22px;font-weight:500;margin-top:6px;color:oklch(0.5 0.14 25);">2.1%</div></div>
+          </div>
+          <div style="border:1px solid oklch(0.91 0.006 280);border-radius:14px;background:#fff;overflow:hidden;">
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;padding:11px 18px;background:oklch(0.98 0.004 280);border-bottom:1px solid oklch(0.93 0.006 280);"><span style="font-size:10.5px;font-weight:600;text-transform:uppercase;color:oklch(0.55 0.012 280);">Plan</span><span style="font-size:10.5px;font-weight:600;text-transform:uppercase;color:oklch(0.55 0.012 280);text-align:right;">Subscribers</span><span style="font-size:10.5px;font-weight:600;text-transform:uppercase;color:oklch(0.55 0.012 280);text-align:right;">Price</span></div>
+            <sc-for list="{{ plans }}" as="p" hint-placeholder-count="5"><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;padding:12px 18px;border-bottom:1px solid oklch(0.96 0.004 280);align-items:center;"><span style="font-size:13px;font-weight:500;">{{ p.name }}</span><span style="font-family:'Geist Mono',monospace;font-size:12px;text-align:right;">{{ p.subs }}</span><span style="font-family:'Geist Mono',monospace;font-size:12px;text-align:right;color:oklch(0.5 0.015 280);">{{ p.price }}</span></div></sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- BILLING -->
+      <sc-if value="{{ scr.billing }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:vfade .25s ease;">
+          <div style="font-size:14px;font-weight:650;margin-bottom:14px;">Billing &amp; invoices</div>
+          <div style="border:1px solid oklch(0.91 0.006 280);border-radius:14px;background:#fff;overflow:hidden;">
+            <div style="display:grid;grid-template-columns:0.9fr 1.4fr 0.9fr 1fr 0.9fr;gap:14px;padding:11px 18px;background:oklch(0.98 0.004 280);border-bottom:1px solid oklch(0.93 0.006 280);"><span style="font-size:10.5px;font-weight:600;text-transform:uppercase;color:oklch(0.55 0.012 280);">Invoice</span><span style="font-size:10.5px;font-weight:600;text-transform:uppercase;color:oklch(0.55 0.012 280);">Tenant</span><span style="font-size:10.5px;font-weight:600;text-transform:uppercase;color:oklch(0.55 0.012 280);text-align:right;">Amount</span><span style="font-size:10.5px;font-weight:600;text-transform:uppercase;color:oklch(0.55 0.012 280);">Date</span><span style="font-size:10.5px;font-weight:600;text-transform:uppercase;color:oklch(0.55 0.012 280);text-align:right;">Status</span></div>
+            <sc-for list="{{ billing }}" as="b" hint-placeholder-count="5"><div style="display:grid;grid-template-columns:0.9fr 1.4fr 0.9fr 1fr 0.9fr;gap:14px;padding:12px 18px;border-bottom:1px solid oklch(0.96 0.004 280);align-items:center;"><span style="font-family:'Geist Mono',monospace;font-size:11.5px;color:oklch(0.42 0.02 280);">{{ b.inv }}</span><span style="font-size:12.5px;">{{ b.org }}</span><span style="font-family:'Geist Mono',monospace;font-size:12px;text-align:right;">{{ b.amt }}</span><span style="font-size:12px;color:oklch(0.55 0.015 280);">{{ b.date }}</span><span style="text-align:right;"><span style="{{ b.badge.style }}">{{ b.badge.label }}</span></span></div></sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- BUSINESS TEMPLATES -->
+      <sc-if value="{{ scr.templates }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:vfade .25s ease;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;"><span style="font-size:14px;font-weight:650;">Business templates · metadata</span><button onClick="{{ noop }}" style="cursor:pointer;border:none;background:oklch(0.52 0.2 285);color:#fff;font-size:12.5px;font-weight:600;padding:9px 15px;border-radius:9px;">+ New template</button></div>
+          <div style="border:1px solid oklch(0.91 0.006 280);border-radius:14px;background:#fff;overflow:hidden;">
+            <div style="display:grid;grid-template-columns:1.4fr 0.8fr 0.7fr 0.9fr;gap:14px;padding:11px 18px;background:oklch(0.98 0.004 280);border-bottom:1px solid oklch(0.93 0.006 280);"><span style="font-size:10.5px;font-weight:600;text-transform:uppercase;color:oklch(0.55 0.012 280);">Template</span><span style="font-size:10.5px;font-weight:600;text-transform:uppercase;color:oklch(0.55 0.012 280);text-align:right;">Fields</span><span style="font-size:10.5px;font-weight:600;text-transform:uppercase;color:oklch(0.55 0.012 280);text-align:right;">GST</span><span style="font-size:10.5px;font-weight:600;text-transform:uppercase;color:oklch(0.55 0.012 280);text-align:right;">Status</span></div>
+            <sc-for list="{{ templates }}" as="t" hint-placeholder-count="6"><div style="display:grid;grid-template-columns:1.4fr 0.8fr 0.7fr 0.9fr;gap:14px;padding:12px 18px;border-bottom:1px solid oklch(0.96 0.004 280);align-items:center;"><span style="font-size:13px;font-weight:500;">{{ t.name }}</span><span style="font-family:'Geist Mono',monospace;font-size:12px;text-align:right;">{{ t.fields }}</span><span style="font-family:'Geist Mono',monospace;font-size:11.5px;text-align:right;color:oklch(0.5 0.015 280);">{{ t.gst }}</span><span style="text-align:right;"><span style="{{ t.badge.style }}">{{ t.badge.label }}</span></span></div></sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- FEATURE FLAGS -->
+      <sc-if value="{{ scr.flags }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:vfade .25s ease;max-width:760px;">
+          <div style="font-size:14px;font-weight:650;margin-bottom:14px;">Feature flags</div>
+          <div style="border:1px solid oklch(0.91 0.006 280);border-radius:14px;background:#fff;overflow:hidden;">
+            <sc-for list="{{ flags }}" as="f" hint-placeholder-count="5"><div style="display:flex;align-items:center;justify-content:space-between;gap:14px;padding:15px 18px;border-bottom:1px solid oklch(0.96 0.004 280);"><div style="min-width:0;"><div style="font-size:13px;font-weight:600;">{{ f.name }}</div><div style="font-size:11.5px;color:oklch(0.55 0.015 280);margin-top:2px;">{{ f.desc }}</div></div><button onClick="{{ f.toggle }}" style="{{ f.trackStyle }}"><span style="{{ f.knobStyle }}"></span></button></div></sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- FORM BUILDER -->
+      <sc-if value="{{ scr.formbuilder }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:vfade .25s ease;display:grid;grid-template-columns:200px 1fr 220px;gap:16px;">
+          <div style="border:1px solid oklch(0.91 0.006 280);border-radius:14px;background:#fff;padding:16px;">
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:oklch(0.55 0.012 280);margin-bottom:12px;">Field palette</div>
+            <div style="display:flex;flex-direction:column;gap:7px;">
+              <sc-for list="{{ palette }}" as="p" hint-placeholder-count="7"><div style="font-size:12.5px;color:oklch(0.36 0.02 280);background:oklch(0.985 0.004 280);border:1px solid oklch(0.92 0.006 280);border-radius:8px;padding:9px 11px;cursor:grab;">⠿ {{ p }}</div></sc-for>
+            </div>
+          </div>
+          <div style="border:1px solid oklch(0.91 0.006 280);border-radius:14px;background:#fff;padding:20px;">
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:oklch(0.55 0.012 280);margin-bottom:14px;">Form · Pharmacy item</div>
+            <div style="display:flex;flex-direction:column;gap:12px;">
+              <label style="display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:oklch(0.42 0.02 280);">Item name<span style="padding:10px 12px;border:1px solid oklch(0.88 0.008 280);border-radius:9px;font-size:12.5px;color:oklch(0.6 0.012 280);">Text field</span></label>
+              <div style="display:flex;gap:12px;"><label style="flex:1;display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:oklch(0.42 0.02 280);">Batch No<span style="padding:10px 12px;border:1px solid oklch(0.88 0.008 280);border-radius:9px;font-size:12.5px;color:oklch(0.6 0.012 280);">Text</span></label><label style="flex:1;display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:oklch(0.42 0.02 280);">Expiry<span style="padding:10px 12px;border:1px solid oklch(0.88 0.008 280);border-radius:9px;font-size:12.5px;color:oklch(0.6 0.012 280);">Date</span></label></div>
+              <label style="display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:oklch(0.5 0.13 285);border:1.5px dashed oklch(0.75 0.1 285);border-radius:9px;padding:14px;text-align:center;">Drop a field here</label>
+            </div>
+          </div>
+          <div style="border:1px solid oklch(0.91 0.006 280);border-radius:14px;background:#fff;padding:16px;">
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:oklch(0.55 0.012 280);margin-bottom:12px;">Field properties</div>
+            <div style="display:flex;flex-direction:column;gap:12px;">
+              <div><div style="font-size:11.5px;color:oklch(0.55 0.012 280);margin-bottom:4px;">Label</div><div style="font-size:12.5px;padding:8px 10px;border:1px solid oklch(0.9 0.008 280);border-radius:8px;">Batch No</div></div>
+              <div style="display:flex;align-items:center;justify-content:space-between;"><span style="font-size:12.5px;color:oklch(0.4 0.02 280);">Required</span><span style="width:34px;height:19px;background:oklch(0.52 0.2 285);border-radius:999px;position:relative;"><span style="position:absolute;top:2px;right:2px;width:15px;height:15px;background:#fff;border-radius:50%;"></span></span></div>
+              <div style="display:flex;align-items:center;justify-content:space-between;"><span style="font-size:12.5px;color:oklch(0.4 0.02 280);">Show on invoice</span><span style="width:34px;height:19px;background:oklch(0.52 0.2 285);border-radius:999px;position:relative;"><span style="position:absolute;top:2px;right:2px;width:15px;height:15px;background:#fff;border-radius:50%;"></span></span></div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- THEME MANAGER -->
+      <sc-if value="{{ scr.themes }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:vfade .25s ease;">
+          <div style="font-size:14px;font-weight:650;margin-bottom:14px;">Theme presets</div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;">
+            <sc-for list="{{ themes }}" as="t" hint-placeholder-count="4"><button onClick="{{ t.pick }}" style="{{ t.cardStyle }}"><span style="display:flex;gap:6px;margin-bottom:12px;"><span style="{{ t.s1 }}"></span><span style="{{ t.s2 }}"></span><span style="{{ t.s3 }}"></span></span><span style="font-size:13px;font-weight:600;color:oklch(0.3 0.02 280);">{{ t.name }}</span></button></sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- AI USAGE -->
+      <sc-if value="{{ scr.aiusage }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:vfade .25s ease;">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px;">
+            <div style="border:1px solid oklch(0.91 0.006 280);border-radius:14px;background:#fff;padding:18px;"><span style="font-size:10.5px;font-weight:600;text-transform:uppercase;color:oklch(0.58 0.012 280);">Tokens · 30d</span><div style="font-family:'Geist Mono',monospace;font-size:22px;font-weight:500;margin-top:6px;">412M</div></div>
+            <div style="border:1px solid oklch(0.91 0.006 280);border-radius:14px;background:#fff;padding:18px;"><span style="font-size:10.5px;font-weight:600;text-transform:uppercase;color:oklch(0.58 0.012 280);">Est. cost</span><div style="font-family:'Geist Mono',monospace;font-size:22px;font-weight:500;margin-top:6px;">₹1.8L</div></div>
+            <div style="border:1px solid oklch(0.91 0.006 280);border-radius:14px;background:#fff;padding:18px;"><span style="font-size:10.5px;font-weight:600;text-transform:uppercase;color:oklch(0.58 0.012 280);">Avg latency</span><div style="font-family:'Geist Mono',monospace;font-size:22px;font-weight:500;margin-top:6px;">1.2s</div></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+            <div style="border:1px solid oklch(0.91 0.006 280);border-radius:14px;background:#fff;padding:20px;"><div style="font-size:13px;font-weight:650;margin-bottom:14px;">By provider</div><div style="display:flex;flex-direction:column;gap:11px;"><sc-for list="{{ providers }}" as="p" hint-placeholder-count="3"><div style="display:flex;flex-direction:column;gap:5px;"><div style="display:flex;justify-content:space-between;font-size:12px;"><span style="color:oklch(0.42 0.02 280);">{{ p.name }}</span><span style="font-family:'Geist Mono',monospace;color:oklch(0.55 0.012 280);">{{ p.pct }}</span></div><span style="height:6px;border-radius:999px;background:oklch(0.94 0.006 280);overflow:hidden;"><span style="{{ p.barStyle }}"></span></span></div></sc-for></div></div>
+            <div style="border:1px solid oklch(0.91 0.006 280);border-radius:14px;background:#fff;padding:20px;"><div style="font-size:13px;font-weight:650;margin-bottom:14px;">Top intents</div><div style="display:flex;flex-direction:column;gap:9px;"><sc-for list="{{ intents }}" as="i" hint-placeholder-count="4"><div style="display:flex;justify-content:space-between;font-size:12.5px;padding:8px 11px;background:oklch(0.985 0.004 280);border-radius:8px;"><span style="color:oklch(0.36 0.02 280);">{{ i.name }}</span><span style="font-family:'Geist Mono',monospace;color:oklch(0.55 0.012 280);">{{ i.pct }}</span></div></sc-for></div></div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- SUPPORT -->
+      <sc-if value="{{ scr.support }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:vfade .25s ease;">
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;">
+            <div style="border:1px solid oklch(0.91 0.006 280);border-radius:14px;background:#fff;padding:16px;"><span style="font-size:10.5px;font-weight:600;text-transform:uppercase;color:oklch(0.58 0.012 280);">Open tickets</span><div style="font-family:'Geist Mono',monospace;font-size:20px;font-weight:500;margin-top:6px;">23</div></div>
+            <div style="border:1px solid oklch(0.91 0.006 280);border-radius:14px;background:#fff;padding:16px;"><span style="font-size:10.5px;font-weight:600;text-transform:uppercase;color:oklch(0.58 0.012 280);">Resolved by AI bot</span><div style="font-family:'Geist Mono',monospace;font-size:20px;font-weight:500;margin-top:6px;color:oklch(0.42 0.13 285);">68%</div></div>
+            <div style="border:1px solid oklch(0.91 0.006 280);border-radius:14px;background:#fff;padding:16px;"><span style="font-size:10.5px;font-weight:600;text-transform:uppercase;color:oklch(0.58 0.012 280);">First response</span><div style="font-family:'Geist Mono',monospace;font-size:20px;font-weight:500;margin-top:6px;">40s</div></div>
+            <div style="border:1px solid oklch(0.91 0.006 280);border-radius:14px;background:#fff;padding:16px;"><span style="font-size:10.5px;font-weight:600;text-transform:uppercase;color:oklch(0.58 0.012 280);">On-site pending</span><div style="font-family:'Geist Mono',monospace;font-size:20px;font-weight:500;margin-top:6px;color:oklch(0.5 0.14 75);">4</div></div>
+          </div>
+          <div style="border:1px solid oklch(0.9 0.035 285);border-radius:14px;background:oklch(0.98 0.015 285);padding:18px 20px;margin-bottom:16px;">
+            <div style="font-size:11px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.5 0.13 285);margin-bottom:12px;">Escalation ladder — automatic when the previous step can't resolve</div>
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+              <div style="border:1px solid oklch(0.9 0.04 285);background:#fff;border-radius:10px;padding:11px 14px;"><span style="font-size:12.5px;font-weight:600;color:oklch(0.42 0.12 285);">1 · AI chatbot</span><div style="font-size:10.5px;color:oklch(0.55 0.04 285);">in-app + WhatsApp · resolves 68%</div></div>
+              <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+              <div style="border:1px solid oklch(0.87 0.07 75);background:#fff;border-radius:10px;padding:11px 14px;"><span style="font-size:12.5px;font-weight:600;color:oklch(0.48 0.1 70);">2 · Virtual assistant</span><div style="font-size:10.5px;color:oklch(0.55 0.05 70);">human · call / screen-share · 29%</div></div>
+              <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+              <div style="border:1px solid oklch(0.87 0.07 25);background:#fff;border-radius:10px;padding:11px 14px;"><span style="font-size:12.5px;font-weight:600;color:oklch(0.48 0.13 25);">3 · Physical assistant</span><div style="font-size:10.5px;color:oklch(0.52 0.08 25);">on-site visit · hardware & setup · 3%</div></div>
+              <span style="margin-left:auto;display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:oklch(0.42 0.1 155);background:oklch(0.95 0.05 155);border:1px solid oklch(0.86 0.07 155);padding:7px 13px;border-radius:999px;">WhatsApp support · +91 80471 0xxxx</span>
+            </div>
+          </div>
+          <div style="border:1px solid oklch(0.91 0.006 280);border-radius:14px;background:#fff;overflow:hidden;">
+            <div style="display:grid;grid-template-columns:0.6fr 1.1fr 1.5fr 0.8fr 1fr 0.8fr;gap:12px;padding:11px 18px;background:oklch(0.98 0.004 280);border-bottom:1px solid oklch(0.93 0.006 280);"><span style="font-size:10.5px;font-weight:600;text-transform:uppercase;color:oklch(0.55 0.012 280);">ID</span><span style="font-size:10.5px;font-weight:600;text-transform:uppercase;color:oklch(0.55 0.012 280);">Tenant</span><span style="font-size:10.5px;font-weight:600;text-transform:uppercase;color:oklch(0.55 0.012 280);">Subject</span><span style="font-size:10.5px;font-weight:600;text-transform:uppercase;color:oklch(0.55 0.012 280);">Channel</span><span style="font-size:10.5px;font-weight:600;text-transform:uppercase;color:oklch(0.55 0.012 280);">Stage</span><span style="font-size:10.5px;font-weight:600;text-transform:uppercase;color:oklch(0.55 0.012 280);text-align:right;">Status</span></div>
+            <sc-for list="{{ tickets }}" as="t" hint-placeholder-count="5"><div style="display:grid;grid-template-columns:0.6fr 1.1fr 1.5fr 0.8fr 1fr 0.8fr;gap:12px;padding:12px 18px;border-bottom:1px solid oklch(0.96 0.004 280);align-items:center;"><span style="font-family:'Geist Mono',monospace;font-size:11.5px;color:oklch(0.42 0.02 280);">{{ t.id }}</span><span style="font-size:12.5px;">{{ t.org }}</span><span style="font-size:12px;color:oklch(0.5 0.015 280);">{{ t.subject }}</span><span style="font-size:11.5px;color:oklch(0.45 0.02 280);">{{ t.ch }}</span><span><span style="{{ t.stageStyle }}">{{ t.stageLabel }}</span></span><span style="text-align:right;"><span style="{{ t.badge.style }}">{{ t.badge.label }}</span></span></div></sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- BROADCASTS -->
+      <sc-if value="{{ scr.broadcasts }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:vfade .25s ease;max-width:860px;">
+          <div style="border:1px solid oklch(0.91 0.006 280);border-radius:16px;background:#fff;padding:22px;margin-bottom:20px;">
+            <div style="font-size:14px;font-weight:650;margin-bottom:16px;">New broadcast</div>
+            <div style="display:flex;flex-direction:column;gap:14px;">
+              <div style="display:flex;gap:9px;flex-wrap:wrap;">
+                <span style="font-size:12px;font-weight:600;color:#fff;background:oklch(0.52 0.2 285);padding:8px 14px;border-radius:999px;">🛠 Maintenance</span>
+                <span style="font-size:12px;font-weight:600;color:oklch(0.42 0.02 280);background:#fff;border:1px solid oklch(0.88 0.008 280);padding:8px 14px;border-radius:999px;">Promotion</span>
+                <span style="font-size:12px;font-weight:600;color:oklch(0.42 0.02 280);background:#fff;border:1px solid oklch(0.88 0.008 280);padding:8px 14px;border-radius:999px;">New feature</span>
+                <span style="font-size:12px;font-weight:600;color:oklch(0.42 0.02 280);background:#fff;border:1px solid oklch(0.88 0.008 280);padding:8px 14px;border-radius:999px;">Billing notice</span>
+              </div>
+              <label style="display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:600;color:oklch(0.42 0.02 280);">Message<span style="font-size:13px;font-weight:400;color:oklch(0.3 0.02 280);padding:12px 14px;border:1px solid oklch(0.87 0.008 280);border-radius:10px;line-height:1.5;">Vyora will be under maintenance on Sun 20 Jul, 2–3 AM IST. Billing keeps working offline; sync resumes automatically.</span></label>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+                <div><div style="font-size:12px;font-weight:600;color:oklch(0.42 0.02 280);margin-bottom:8px;">Channels</div><div style="display:flex;gap:7px;flex-wrap:wrap;">
+                  <span style="font-size:11.5px;font-weight:600;color:oklch(0.42 0.13 285);background:oklch(0.96 0.03 285);border:1px solid oklch(0.9 0.04 285);padding:6px 12px;border-radius:999px;">✓ Push</span>
+                  <span style="font-size:11.5px;font-weight:600;color:oklch(0.42 0.13 285);background:oklch(0.96 0.03 285);border:1px solid oklch(0.9 0.04 285);padding:6px 12px;border-radius:999px;">✓ In-app banner</span>
+                  <span style="font-size:11.5px;font-weight:600;color:oklch(0.42 0.11 155);background:oklch(0.95 0.05 155);border:1px solid oklch(0.86 0.07 155);padding:6px 12px;border-radius:999px;">✓ WhatsApp</span>
+                  <span style="font-size:11.5px;font-weight:600;color:oklch(0.5 0.015 280);background:#fff;border:1px solid oklch(0.9 0.008 280);padding:6px 12px;border-radius:999px;">Email</span>
+                </div></div>
+                <div><div style="font-size:12px;font-weight:600;color:oklch(0.42 0.02 280);margin-bottom:8px;">Audience</div><div style="display:flex;gap:7px;flex-wrap:wrap;">
+                  <span style="font-size:11.5px;font-weight:600;color:#fff;background:oklch(0.52 0.2 285);padding:6px 12px;border-radius:999px;">All customers · 1,284</span>
+                  <span style="font-size:11.5px;font-weight:600;color:oklch(0.5 0.015 280);background:#fff;border:1px solid oklch(0.9 0.008 280);padding:6px 12px;border-radius:999px;">By plan</span>
+                  <span style="font-size:11.5px;font-weight:600;color:oklch(0.5 0.015 280);background:#fff;border:1px solid oklch(0.9 0.008 280);padding:6px 12px;border-radius:999px;">By business type</span>
+                </div></div>
+              </div>
+              <div style="display:flex;gap:10px;"><button onClick="{{ noop }}" style="cursor:pointer;border:none;background:oklch(0.52 0.2 285);color:#fff;font-size:13px;font-weight:600;padding:11px 20px;border-radius:10px;">Send now</button><button onClick="{{ noop }}" style="cursor:pointer;background:#fff;border:1px solid oklch(0.88 0.008 280);color:oklch(0.4 0.02 280);font-size:13px;font-weight:600;padding:11px 20px;border-radius:10px;">Schedule</button></div>
+            </div>
+          </div>
+          <div style="font-size:11px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.55 0.012 280);margin-bottom:10px;">Recent broadcasts</div>
+          <div style="border:1px solid oklch(0.91 0.006 280);border-radius:14px;background:#fff;overflow:hidden;">
+            <sc-for list="{{ broadcastsList }}" as="b" hint-placeholder-count="3"><div style="display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 18px;border-bottom:1px solid oklch(0.96 0.004 280);"><span style="display:flex;flex-direction:column;gap:2px;"><span style="font-size:13px;font-weight:600;">{{ b.title }}</span><span style="font-size:11.5px;color:oklch(0.58 0.012 280);">{{ b.ch }} · {{ b.aud }}</span></span><span style="{{ b.badge.style }}">{{ b.badge.label }}</span></div></sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- AUDIT -->
+      <sc-if value="{{ scr.audit }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:vfade .25s ease;">
+          <div style="font-size:14px;font-weight:650;margin-bottom:14px;">Audit logs · hash-chained</div>
+          <div style="border:1px solid oklch(0.91 0.006 280);border-radius:14px;background:#fff;overflow:hidden;">
+            <div style="display:grid;grid-template-columns:1fr 1.2fr 1.3fr 0.8fr;gap:14px;padding:11px 18px;background:oklch(0.98 0.004 280);border-bottom:1px solid oklch(0.93 0.006 280);"><span style="font-size:10.5px;font-weight:600;text-transform:uppercase;color:oklch(0.55 0.012 280);">Actor</span><span style="font-size:10.5px;font-weight:600;text-transform:uppercase;color:oklch(0.55 0.012 280);">Action</span><span style="font-size:10.5px;font-weight:600;text-transform:uppercase;color:oklch(0.55 0.012 280);">Target</span><span style="font-size:10.5px;font-weight:600;text-transform:uppercase;color:oklch(0.55 0.012 280);text-align:right;">Time</span></div>
+            <sc-for list="{{ audit }}" as="a" hint-placeholder-count="6"><div style="display:grid;grid-template-columns:1fr 1.2fr 1.3fr 0.8fr;gap:14px;padding:12px 18px;border-bottom:1px solid oklch(0.96 0.004 280);align-items:center;"><span style="font-size:12.5px;">{{ a.actor }}</span><span style="font-family:'Geist Mono',monospace;font-size:11.5px;color:oklch(0.5 0.13 285);">{{ a.action }}</span><span style="font-size:12px;color:oklch(0.5 0.015 280);">{{ a.target }}</span><span style="font-size:11.5px;color:oklch(0.6 0.012 280);text-align:right;">{{ a.time }}</span></div></sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  constructor(props){
+    super(props);
+    this.navDef=[
+      ['Overview',[['dashboard','Dashboard'],['health','System health']]],
+      ['Growth',[['customers','Customers'],['subscriptions','Subscriptions & licenses'],['billing','Billing'],['monetization','Monetization'],['competition','Competition']]],
+      ['Product',[['templates','Business templates'],['flags','Feature flags'],['formbuilder','Form builder'],['themes','Theme manager']]],
+      ['Operations',[['aiusage','AI usage analytics'],['support','Support & tickets'],['broadcasts','Broadcasts & push'],['audit','Audit logs'],['adminroles','Team & roles']]]
+    ];
+    this.titles={dashboard:'Dashboard',health:'System health',customers:'Customer management',subscriptions:'Subscriptions & licenses',billing:'Billing',monetization:'Monetization',competition:'Competition',templates:'Business templates',flags:'Feature flags',formbuilder:'Form builder',themes:'Theme manager',aiusage:'AI usage analytics',support:'Support dashboard',audit:'Audit logs',adminroles:'Team & roles',broadcasts:'Broadcasts & push',support:'Support & tickets'};
+    this.broadcastsList=[
+      {title:'Scheduled maintenance · 20 Jul, 2–3 AM IST',ch:'Push · In-app',aud:'All customers',s:'scheduled'},
+      {title:'Diwali offer — 20% off annual plans',ch:'Push · WhatsApp',aud:'Trials + monthly plans',s:'sent'},
+      {title:'New: self-serve GST filing is live',ch:'Push · Email',aud:'All customers',s:'sent'}
+    ];
+    this.healthFront=[{l:'Web uptime · 30d',v:'99.98%',s:'ok'},{l:'Crash-free sessions',v:'99.7%',s:'ok'},{l:'LCP · p75',v:'1.8s',s:'ok'},{l:'JS error rate',v:'0.4%',s:'warn'},{l:'PWA installs · 7d',v:'2,140',s:'ok'}];
+    this.healthBack=[{l:'Supabase API · p95',v:'118ms',s:'ok'},{l:'Postgres CPU',v:'42%',s:'ok'},{l:'Edge fn error rate',v:'0.2%',s:'ok'},{l:'Sync queue backlog',v:'1,240',s:'warn'},{l:'Storage used',v:'61%',s:'ok'}];
+    this.apis=[{name:'GSP / GSTN filing',v:'Operational · 320ms',s:'ok'},{name:'WhatsApp Cloud API',v:'Operational · 99.9%',s:'ok'},{name:'Twilio SMS',v:'Degraded · retries elevated',s:'warn'},{name:'Claude',v:'Operational',s:'ok'},{name:'Gemini',v:'Operational',s:'ok'},{name:'Meta Graph (Instagram/FB)',v:'Incident · posting paused',s:'down'}];
+    this.monKpis=[{l:'MRR',v:'₹9.4L'},{l:'ARR',v:'₹1.13Cr'},{l:'ARPU / yr',v:'₹8,780'},{l:'LTV',v:'₹26,400'},{l:'CAC',v:'₹410'},{l:'Trial → paid',v:'34%'}];
+    this.monStreams=[{name:'Subscriptions',pct:'82%',w:'82%'},{name:'AI add-on credits',pct:'11%',w:'11%'},{name:'WhatsApp message credits',pct:'7%',w:'7%'}];
+    this.compRows=[
+      {f:'Price (entry, per year)',vy:'₹3,599',mb:'₹2,899',zo:'₹9,000+',us:'₹999'},
+      {f:'Adapts per business type',vy:'·',mb:'·',zo:'○',us:'●'},
+      {f:'Full offline-first',vy:'○',mb:'·',zo:'·',us:'●'},
+      {f:'Zero-knowledge encryption',vy:'·',mb:'·',zo:'·',us:'●'},
+      {f:'Self-serve GST filing (no CA)',vy:'·',mb:'○',zo:'○',us:'●'},
+      {f:'AI copilot on own data',vy:'·',mb:'·',zo:'○',us:'●'},
+      {f:'WhatsApp-native marketing',vy:'○',mb:'○',zo:'·',us:'●'}
+    ];
+    this.switchers=[{from:'Vyapar',n:'214'},{from:'MyBillBook',n:'96'},{from:'Zoho Books',n:'41'},{from:'Paper / Excel',n:'380'}];
+    this.adminRoles=[
+      {cap:'View tenant data (with owner consent)',r:['●','●','●','·','·']},
+      {cap:'Adjust invoices / issue credit notes',r:['●','·','●','·','·']},
+      {cap:'Refunds & billing changes',r:['●','·','·','●','·']},
+      {cap:'Feature flags & templates',r:['●','●','·','·','·']},
+      {cap:'Health & analytics dashboards',r:['●','●','○','○','●']},
+      {cap:'Audit log (read-only)',r:['●','●','●','●','●']}
+    ];
+    this.adjInv=[
+      {id:'a1',inv:'INV-1042',issue:'Wrong GST rate — 18% applied, product slab is 12%',impact:'₹412 excess tax collected',action:'Fix rate & reissue'},
+      {id:'a2',inv:'INV-1039',issue:'Duplicate of INV-1038 — customer billed twice',impact:'₹28,900 duplicate',action:'Merge & void'},
+      {id:'a3',inv:'INV-1027',issue:'Owner requested credit note for cancelled order',impact:'₹19,500',action:'Issue credit note'}
+    ];
+    this.tenants=[{org:'Sharma Medical',biz:'Pharmacy',plan:'3-user',mrr:'₹208',s:'active'},{org:'Anand Restaurant',biz:'Restaurant',plan:'5-user',mrr:'₹333',s:'active'},{org:'Kiran Mobiles',biz:'Mobile',plan:'1-user',mrr:'₹83',s:'trial'},{org:'Gupta Jewellers',biz:'Jewellery',plan:'10-user',mrr:'₹583',s:'active'},{org:'Metro Supermarket',biz:'Grocery',plan:'Unlimited',mrr:'₹999',s:'active'},{org:'Style Garments',biz:'Garments',plan:'3-user',mrr:'₹0',s:'overdue'}];
+    this.plans=[{name:'1 user',subs:'386',price:'₹999/yr'},{name:'3 users',subs:'402',price:'₹2,499/yr'},{name:'5 users',subs:'188',price:'₹3,999/yr'},{name:'10 users',subs:'96',price:'₹6,999/yr'},{name:'Unlimited',subs:'30',price:'₹11,999/yr'}];
+    this.billing=[{inv:'B-9042',org:'Metro Supermarket',amt:'₹11,999',date:'12 Jul',s:'paid'},{inv:'B-9041',org:'Gupta Jewellers',amt:'₹6,999',date:'11 Jul',s:'paid'},{inv:'B-9040',org:'Style Garments',amt:'₹2,499',date:'10 Jul',s:'overdue'},{inv:'B-9039',org:'Anand Restaurant',amt:'₹3,999',date:'09 Jul',s:'paid'},{inv:'B-9038',org:'Kiran Mobiles',amt:'₹999',date:'08 Jul',s:'pending'}];
+    this.templates=[{name:'Pharmacy',fields:'10',gst:'12%',s:'active'},{name:'Restaurant',fields:'9',gst:'5%',s:'active'},{name:'Jewellery',fields:'10',gst:'3%',s:'active'},{name:'Mobile Shop',fields:'10',gst:'18%',s:'active'},{name:'Catering',fields:'9',gst:'5%',s:'draft'},{name:'Manufacturing',fields:'9',gst:'18%',s:'draft'}];
+    this.flagDefs=[{id:'ai_forecast',name:'AI sales forecasting',desc:'Predictive forecasts in Copilot',on:true},{id:'ocr_v2',name:'OCR engine v2',desc:'Improved table extraction',on:true},{id:'insta_dm',name:'Instagram DM campaigns',desc:'Marketing via Instagram inbox',on:false},{id:'multi_currency',name:'Multi-currency',desc:'Non-INR billing for exports',on:false},{id:'einvoice',name:'E-invoicing (IRN)',desc:'Auto IRN for B2B above threshold',on:true}];
+    this.palette=['Text','Number','Date','Select','Currency','Barcode / scan','Toggle'];
+    this.themeList=[{id:'indigo',name:'Indigo (default)',h:285},{id:'teal',name:'Teal',h:175},{id:'blue',name:'Deep blue',h:250},{id:'saffron',name:'Saffron',h:60}];
+    this.providers=[{name:'Claude',pct:'58%',w:'58%'},{name:'Gemini',pct:'27%',w:'27%'},{name:'OpenRouter',pct:'15%',w:'15%'}];
+    this.intents=[{name:'Create invoice',pct:'31%'},{name:'Business insights',pct:'24%'},{name:'GST assistant',pct:'19%'},{name:'OCR capture',pct:'14%'}];
+    this.tickets=[
+      {id:'#4821',org:'Sharma Medical',subject:'Sync stuck offline for 2 days',priority:'High',ch:'WhatsApp',stage:'virtual',s:'open'},
+      {id:'#4820',org:'Metro Supermarket',subject:'Barcode scanner pairing',priority:'Medium',ch:'In-app chat',stage:'ai',s:'pending'},
+      {id:'#4818',org:'Gupta Jewellers',subject:'HUID not printing on invoice',priority:'Low',ch:'In-app chat',stage:'ai',s:'resolved'},
+      {id:'#4815',org:'Anand Restaurant',subject:'KOT printer setup at store',priority:'High',ch:'WhatsApp',stage:'onsite',s:'open'},
+      {id:'#4812',org:'Kiran Mobiles',subject:'Trial extension request',priority:'Low',ch:'Email',stage:'ai',s:'resolved'}
+    ];
+    this.audit=[{actor:'ops@vyora',action:'flag.enable',target:'einvoice',time:'2m'},{actor:'ops@vyora',action:'template.edit',target:'Pharmacy',time:'1h'},{actor:'billing@vyora',action:'refund.issue',target:'B-9012',time:'3h'},{actor:'ops@vyora',action:'tenant.suspend',target:'Style Garments',time:'5h'},{actor:'admin@vyora',action:'role.grant',target:'new-hire',time:'1d'},{actor:'ops@vyora',action:'flag.disable',target:'insta_dm',time:'2d'}];
+    this.state={ screen:'dashboard', flags:Object.fromEntries(this.flagDefs.map(f=>[f.id,f.on])), theme:'indigo', tenant:null, consent:false, adjDone:{} };
+  }
+  setScreen=(id)=>this.setState({screen:id,tenant:null});
+  openTenant=(org)=>this.setState({tenant:org,consent:false,adjDone:{}});
+  closeTenant=()=>this.setState({tenant:null});
+  requestConsent=()=>this.setState({consent:true});
+  fixAdj=(id)=>this.setState(s=>({adjDone:{...s.adjDone,[id]:true}}));
+  toggleFlag=(id)=>this.setState(s=>({flags:{...s.flags,[id]:!s.flags[id]}}));
+  pickTheme=(id)=>this.setState({theme:id});
+  noop=()=>{};
+
+  hdot(s){
+    const c={ok:'oklch(0.6 0.14 155)',warn:'oklch(0.72 0.14 70)',down:'oklch(0.6 0.18 25)'}[s]||'oklch(0.7 0.01 280)';
+    return {width:'9px',height:'9px',flexShrink:0,borderRadius:'50%',background:c};
+  }
+  badge(kind,label){
+    const M={active:['oklch(0.44 0.1 155)','oklch(0.95 0.05 155)','oklch(0.86 0.07 155)'],paid:['oklch(0.44 0.1 155)','oklch(0.95 0.05 155)','oklch(0.86 0.07 155)'],resolved:['oklch(0.44 0.1 155)','oklch(0.95 0.05 155)','oklch(0.86 0.07 155)'],
+      trial:['oklch(0.45 0.13 285)','oklch(0.96 0.03 285)','oklch(0.9 0.04 285)'],pending:['oklch(0.5 0.1 75)','oklch(0.96 0.05 80)','oklch(0.87 0.07 75)'],draft:['oklch(0.5 0.1 75)','oklch(0.96 0.05 80)','oklch(0.87 0.07 75)'],open:['oklch(0.5 0.1 75)','oklch(0.96 0.05 80)','oklch(0.87 0.07 75)'],
+      overdue:['oklch(0.5 0.15 25)','oklch(0.96 0.05 25)','oklch(0.87 0.07 25)']};
+    const c=M[kind]||['oklch(0.5 0.012 280)','oklch(0.965 0.004 280)','oklch(0.92 0.006 280)'];
+    return {label:label||(kind.charAt(0).toUpperCase()+kind.slice(1)),style:{fontSize:'11px',fontWeight:600,color:c[0],background:c[1],border:'1px solid '+c[2],padding:'4px 10px',borderRadius:'999px',whiteSpace:'nowrap'}};
+  }
+
+  renderVals(){
+    const st=this.state;
+    const scr={}; Object.keys(this.titles).forEach(id=>scr[id]=st.screen===id);
+    const nav=this.navDef.map(([group,items])=>({group,items:items.map(([id,label])=>{
+      const on=st.screen===id;
+      return {id,label,onClick:()=>this.setScreen(id),
+        dot:{width:'14px',height:'14px',flexShrink:0,borderRadius:'4px',background:on?'oklch(0.62 0.2 285)':'oklch(0.4 0.03 280)'},
+        style:{display:'flex',alignItems:'center',gap:'11px',width:'100%',cursor:'pointer',border:'none',fontFamily:'inherit',fontSize:'13px',textAlign:'left',padding:'9px 11px',borderRadius:'9px',
+          fontWeight:on?600:400, background:on?'oklch(0.32 0.05 285)':'transparent', color:on?'#fff':'oklch(0.82 0.02 280)'}};
+    })}));
+    const chart=[{l:'Mon',h:'60%'},{l:'Tue',h:'72%'},{l:'Wed',h:'55%'},{l:'Thu',h:'84%'},{l:'Fri',h:'100%'},{l:'Sat',h:'70%'},{l:'Sun',h:'48%'}].map(b=>({l:b.l,style:{width:'100%',height:b.h,borderRadius:'5px 5px 0 0',background:b.h==='100%'?'oklch(0.55 0.2 285)':'oklch(0.8 0.09 285)'}}));
+    const bar=(w,hue)=>({display:'block',height:'100%',width:w,borderRadius:'999px',background:`oklch(0.6 0.16 ${hue||285})`});
+    const planDist=[{name:'1 user',pct:'35%',w:'35%'},{name:'3 users',pct:'36%',w:'36%'},{name:'5 users',pct:'17%',w:'17%'},{name:'10 users',pct:'9%',w:'9%'},{name:'Unlimited',pct:'3%',w:'3%'}].map(p=>({...p,barStyle:bar(p.w)}));
+    const flags=this.flagDefs.map(f=>{
+      const on=st.flags[f.id];
+      return {...f,toggle:()=>this.toggleFlag(f.id),
+        trackStyle:{cursor:'pointer',border:'none',flexShrink:0,width:'40px',height:'23px',borderRadius:'999px',position:'relative',padding:0,background:on?'oklch(0.52 0.2 285)':'oklch(0.86 0.01 280)'},
+        knobStyle:{position:'absolute',top:'2px',left:on?'19px':'2px',width:'19px',height:'19px',background:'#fff',borderRadius:'50%',transition:'left .15s',boxShadow:'0 1px 2px rgba(0,0,0,0.2)'}};
+    });
+    const themes=this.themeList.map(t=>{
+      const sel=st.theme===t.id;
+      const sw=(l,c)=>({width:'22px',height:'22px',borderRadius:'6px',background:`oklch(${l} ${c} ${t.h})`});
+      return {...t,pick:()=>this.pickTheme(t.id),s1:sw('0.55','0.2'),s2:sw('0.72','0.13'),s3:sw('0.9','0.05'),
+        cardStyle:{cursor:'pointer',textAlign:'left',display:'flex',flexDirection:'column',fontFamily:'inherit',padding:'18px',borderRadius:'14px',
+          background:sel?'oklch(0.985 0.012 285)':'#fff', border:sel?'1.5px solid oklch(0.6 0.16 285)':'1px solid oklch(0.91 0.006 280)'}};
+    });
+    const providers=this.providers.map(p=>({...p,barStyle:bar(p.w)}));
+    return {
+      scr, nav, chart, planDist, flags, themes, providers,
+      pageTitle:this.titles[st.screen]||'Admin', noop:this.noop,
+      palette:this.palette, intents:this.intents,
+      tenants:this.tenants.map(t=>({...t,badge:this.badge(t.s),open:()=>this.openTenant(t.org)})),
+      hasTenant:!!st.tenant, noTenant:!st.tenant, tenantName:st.tenant||'',
+      closeTenant:this.closeTenant, requestConsent:this.requestConsent,
+      consent:st.consent, noConsent:!st.consent,
+      adjInv:this.adjInv.map(a=>({...a,done:!!st.adjDone[a.id],notDone:!st.adjDone[a.id],fix:()=>this.fixAdj(a.id)})),
+      healthFront:this.healthFront.map(h=>({...h,dot:this.hdot(h.s)})),
+      healthBack:this.healthBack.map(h=>({...h,dot:this.hdot(h.s)})),
+      apis:this.apis.map(a=>({...a,dot:this.hdot(a.s)})),
+      monKpis:this.monKpis, monStreams:this.monStreams.map(p=>({...p,barStyle:bar(p.w,165)})),
+      compRows:this.compRows, switchers:this.switchers,
+      adminRoles:this.adminRoles.map(r=>({cap:r.cap,c0:r.r[0],c1:r.r[1],c2:r.r[2],c3:r.r[3],c4:r.r[4]})),
+      plans:this.plans,
+      billing:this.billing.map(b=>({...b,badge:this.badge(b.s)})),
+      templates:this.templates.map(t=>({...t,badge:this.badge(t.s)})),
+      tickets:this.tickets.map(t=>{
+        const stg={ai:['AI bot','oklch(0.45 0.13 285)','oklch(0.96 0.03 285)','oklch(0.9 0.04 285)'],virtual:['Virtual assistant','oklch(0.5 0.1 70)','oklch(0.96 0.05 80)','oklch(0.87 0.07 75)'],onsite:['On-site visit','oklch(0.5 0.15 25)','oklch(0.96 0.05 25)','oklch(0.87 0.07 25)']}[t.stage];
+        return {...t,badge:this.badge(t.s),stageLabel:stg[0],stageStyle:{fontSize:'10.5px',fontWeight:600,color:stg[1],background:stg[2],border:'1px solid '+stg[3],padding:'3px 9px',borderRadius:'999px',whiteSpace:'nowrap'}};
+      }),
+      broadcastsList:this.broadcastsList.map(b=>({...b,badge:this.badge(b.s)})),
+      audit:this.audit
+    };
+  }
+}
+</script>
+</body>
+</html>

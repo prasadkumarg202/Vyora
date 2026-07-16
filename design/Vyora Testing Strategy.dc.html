@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;}
+body{margin:0;background:oklch(0.975 0.004 280);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
+a{color:oklch(0.52 0.2 285);text-decoration:none;}
+a:hover{color:oklch(0.44 0.2 285);}
+</style>
+</helmet>
+
+<div style="font-family:Geist,system-ui,sans-serif;color:oklch(0.24 0.02 280);padding:0 0 70px;">
+
+  <div style="background:oklch(0.22 0.03 280);color:oklch(0.98 0.005 280);padding:52px 48px 44px;">
+    <div style="max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:16px;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span style="width:30px;height:30px;border-radius:8px;background:oklch(0.6 0.2 285);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;">V</span>
+        <span style="font-size:14px;font-weight:600;">Vyora</span>
+        <span style="font-size:13px;color:oklch(0.72 0.02 280);">Testing Strategy · Doc 18</span>
+      </div>
+      <h1 style="margin:0;font-size:32px;font-weight:650;letter-spacing:-0.02em;line-height:1.14;">Trust is the product — so tests are the definition of done</h1>
+      <p style="margin:0;font-size:14.5px;line-height:1.6;color:oklch(0.78 0.02 280);max-width:760px;">A billing, GST, and encryption platform cannot ship a regression. Every module lands with tests; three areas — money math, offline sync, and the encryption boundary — get adversarial coverage no PR can bypass.</p>
+    </div>
+  </div>
+
+  <div style="max-width:1120px;margin:0 auto;padding:0 48px;display:flex;flex-direction:column;gap:52px;">
+
+    <!-- PYRAMID -->
+    <section style="margin-top:48px;">
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:18px;"><span style="font-family:'Geist Mono',monospace;font-size:13px;color:oklch(0.55 0.14 285);">01</span><h2 style="margin:0;font-size:23px;font-weight:650;letter-spacing:-0.015em;">The testing pyramid</h2></div>
+      <div style="display:grid;grid-template-columns:1.15fr 1fr;gap:34px;align-items:center;">
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <sc-for list="{{ layers }}" as="l" hint-placeholder-count="4">
+            <div style="{{ l.barStyle }}">
+              <div style="display:flex;align-items:center;justify-content:space-between;"><span style="font-size:13.5px;font-weight:650;color:#fff;">{{ l.name }}</span><span style="font-family:'Geist Mono',monospace;font-size:12px;color:oklch(0.96 0.02 285);">{{ l.share }}</span></div>
+              <div style="font-size:11.5px;color:oklch(0.96 0.03 285);margin-top:3px;">{{ l.tools }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div style="border:1px solid oklch(0.91 0.006 280);border-radius:13px;background:#fff;padding:18px;"><span style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:oklch(0.55 0.012 280);">Coverage gate</span><div style="font-family:'Geist Mono',monospace;font-size:24px;font-weight:500;margin-top:6px;color:oklch(0.42 0.15 285);">≥ 80%</div><span style="font-size:12px;color:oklch(0.55 0.015 280);">lines overall · 100% on money &amp; crypto modules</span></div>
+          <div style="border:1px solid oklch(0.91 0.006 280);border-radius:13px;background:#fff;padding:18px;"><span style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:oklch(0.55 0.012 280);">Rule</span><p style="margin:6px 0 0;font-size:12.5px;line-height:1.5;color:oklch(0.42 0.02 280);">No PR merges with a failing or skipped test. A module isn\u2019t \u201cdone\u201d until its tests are green in CI.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CRITICAL PATHS -->
+    <section>
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:18px;"><span style="font-family:'Geist Mono',monospace;font-size:13px;color:oklch(0.55 0.14 285);">02</span><h2 style="margin:0;font-size:23px;font-weight:650;letter-spacing:-0.015em;">Three paths we test adversarially</h2></div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;">
+        <sc-for list="{{ critical }}" as="c" hint-placeholder-count="3">
+          <div style="border:1px solid oklch(0.91 0.006 280);border-radius:15px;background:#fff;padding:22px;box-shadow:0 5px 16px -14px rgba(40,32,90,0.2);">
+            <div style="{{ c.tag }}">{{ c.label }}</div>
+            <h3 style="margin:12px 0 8px;font-size:15px;font-weight:650;">{{ c.title }}</h3>
+            <div style="display:flex;flex-direction:column;gap:7px;margin-top:10px;">
+              <sc-for list="{{ c.cases }}" as="t" hint-placeholder-count="4">
+                <div style="display:flex;gap:9px;align-items:flex-start;"><span style="width:15px;height:15px;border-radius:5px;background:oklch(0.95 0.05 155);color:oklch(0.44 0.11 155);display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0;margin-top:2px;">✓</span><span style="font-size:12px;line-height:1.45;color:oklch(0.44 0.02 280);">{{ t }}</span></div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <!-- TYPES TABLE -->
+    <section>
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:18px;"><span style="font-family:'Geist Mono',monospace;font-size:13px;color:oklch(0.55 0.14 285);">03</span><h2 style="margin:0;font-size:23px;font-weight:650;letter-spacing:-0.015em;">What each test type owns</h2></div>
+      <div style="border:1px solid oklch(0.91 0.006 280);border-radius:14px;background:#fff;overflow:hidden;">
+        <div style="display:grid;grid-template-columns:1fr 1.4fr 1fr;gap:16px;padding:12px 20px;background:oklch(0.98 0.004 280);border-bottom:1px solid oklch(0.92 0.006 280);"><span style="font-size:10.5px;font-weight:600;text-transform:uppercase;color:oklch(0.55 0.012 280);">Type</span><span style="font-size:10.5px;font-weight:600;text-transform:uppercase;color:oklch(0.55 0.012 280);">Scope</span><span style="font-size:10.5px;font-weight:600;text-transform:uppercase;color:oklch(0.55 0.012 280);">Tooling</span></div>
+        <sc-for list="{{ types }}" as="t" hint-placeholder-count="6">
+          <div style="display:grid;grid-template-columns:1fr 1.4fr 1fr;gap:16px;padding:13px 20px;border-bottom:1px solid oklch(0.96 0.004 280);align-items:center;"><span style="font-size:12.5px;font-weight:600;">{{ t.name }}</span><span style="font-size:12px;color:oklch(0.5 0.015 280);line-height:1.45;">{{ t.scope }}</span><span style="font-family:'Geist Mono',monospace;font-size:11.5px;color:oklch(0.45 0.1 285);">{{ t.tool }}</span></div>
+        </sc-for>
+      </div>
+    </section>
+
+    <!-- CI GATES -->
+    <section>
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:18px;"><span style="font-family:'Geist Mono',monospace;font-size:13px;color:oklch(0.55 0.14 285);">04</span><h2 style="margin:0;font-size:23px;font-weight:650;letter-spacing:-0.015em;">CI pipeline gates</h2></div>
+      <div style="display:flex;align-items:stretch;gap:12px;flex-wrap:wrap;">
+        <sc-for list="{{ gates }}" as="g" hint-placeholder-count="6">
+          <div style="flex:1;min-width:150px;border:1px solid oklch(0.91 0.006 280);border-radius:13px;background:#fff;padding:16px;display:flex;flex-direction:column;gap:6px;">
+            <span style="font-family:'Geist Mono',monospace;font-size:11px;color:oklch(0.55 0.14 285);">{{ g.n }}</span>
+            <span style="font-size:12.5px;font-weight:650;">{{ g.name }}</span>
+            <span style="font-size:11px;color:oklch(0.55 0.015 280);line-height:1.4;">{{ g.desc }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="margin-top:16px;border:1px solid oklch(0.9 0.035 285);border-radius:13px;background:oklch(0.985 0.012 285);padding:16px 20px;display:flex;gap:14px;align-items:flex-start;">
+        <span style="width:5px;align-self:stretch;border-radius:3px;background:oklch(0.55 0.18 285);flex-shrink:0;"></span>
+        <p style="margin:0;font-size:13px;line-height:1.55;color:oklch(0.36 0.04 285);">A green pipeline is required to merge. Nightly runs add the full Playwright matrix (Chrome/Safari/Android WebView) and a soak test that kills the network mid-sync 500 times to prove zero data loss.</p>
+      </div>
+      <p style="margin:22px 2px 0;font-size:12px;color:oklch(0.6 0.012 280);">Related: <a href="Vyora Build Roadmap.dc.html">Build Roadmap</a> · <a href="Vyora Sync Engine.dc.html">Sync Engine</a> · <a href="Vyora Security Architecture.dc.html">Security</a> · <a href="Vyora Index.dc.html">Project index</a></p>
+    </section>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals(){
+    const shade=(L)=>({background:`oklch(${L} 0.16 285)`,borderRadius:'11px',padding:'15px 18px'});
+    const layers=[
+      {name:'Unit',share:'~70%',tools:'Vitest — pure functions: GST math, validators, conflict rules, crypto',barStyle:{...shade(0.58),width:'100%'}},
+      {name:'Integration',share:'~20%',tools:'Vitest + test Postgres — RLS policies, sync push/pull, edge functions',barStyle:{...shade(0.5),width:'82%'}},
+      {name:'Component / E2E',share:'~8%',tools:'Playwright — onboarding, invoice, GST filing flows',barStyle:{...shade(0.42),width:'62%'}},
+      {name:'Manual / exploratory',share:'~2%',tools:'Release checklist — real devices, real GSP sandbox',barStyle:{...shade(0.34),width:'42%'}}
+    ];
+    const tagFor=(hue)=>({display:'inline-block',fontSize:'10.5px',fontWeight:600,letterSpacing:'0.04em',textTransform:'uppercase',color:`oklch(0.45 0.13 ${hue})`,background:`oklch(0.96 0.04 ${hue})`,border:`1px solid oklch(0.89 0.05 ${hue})`,padding:'4px 10px',borderRadius:'6px'});
+    const critical=[
+      {label:'Money math',tag:tagFor(285),title:'GST & totals',cases:['Every slab: 0/5/12/18/28% + cess','Inter- vs intra-state (IGST vs CGST+SGST)','Rounding to paise, then to rupee','ITC reversal (Rule 42), RCM, credit notes','Golden-file check vs CA-verified returns']},
+      {label:'Offline sync',tag:tagFor(235),title:'No data loss, ever',cases:['Create 1000 records offline → reconnect → all synced','Concurrent edits on two devices → deterministic merge','Kill app mid-flush → outbox resumes intact','Clock skew between devices','Tombstone delete never resurrects']},
+      {label:'Encryption',tag:tagFor(25),title:'The zero-knowledge boundary',cases:['Server never receives plaintext body','Wrong key → decrypt fails, no partial data','Key rotation re-wraps without data loss','Ciphertext tamper is detected (GCM tag)','RLS blocks cross-tenant reads']}
+    ];
+    const types=[
+      {name:'Unit',scope:'Pure business logic — GST engine, validators, conflict resolver, crypto helpers',tool:'Vitest'},
+      {name:'Integration',scope:'DB + RLS, sync endpoints, edge functions against a real test Postgres',tool:'Vitest + Testcontainers'},
+      {name:'Contract',scope:'API request/response schemas stay backward-compatible',tool:'Zod + snapshot'},
+      {name:'E2E',scope:'Critical user journeys across onboarding, billing, GST',tool:'Playwright'},
+      {name:'Accessibility',scope:'WCAG AA, keyboard nav, contrast on every screen',tool:'axe-core'},
+      {name:'Performance',scope:'Local write <10ms, LCP budget, bundle-size ceiling',tool:'Lighthouse CI'}
+    ];
+    const gates=[
+      {n:'1',name:'Lint & types',desc:'ESLint + tsc, zero errors'},
+      {n:'2',name:'Unit + integration',desc:'All green, coverage gate met'},
+      {n:'3',name:'Contract',desc:'No breaking API schema change'},
+      {n:'4',name:'E2E smoke',desc:'Core flows on Chromium'},
+      {n:'5',name:'a11y + perf',desc:'axe + Lighthouse budgets'},
+      {n:'6',name:'Build',desc:'PWA build + size check'}
+    ];
+    return { layers, critical, types, gates };
+  }
+}
+</script>
+</body>
+</html>

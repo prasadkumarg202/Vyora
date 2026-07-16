@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;}
+body{margin:0;background:oklch(0.975 0.004 280);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
+a{color:oklch(0.52 0.2 280);text-decoration:none;}
+a:hover{color:oklch(0.44 0.2 280);}
+</style>
+</helmet>
+
+<div style="font-family:Geist,system-ui,sans-serif;color:oklch(0.24 0.02 280);padding:0 0 80px;">
+
+  <!-- HEADER -->
+  <div style="background:oklch(0.22 0.03 280);color:oklch(0.98 0.005 280);padding:56px 48px 48px;">
+    <div style="max-width:1080px;margin:0 auto;display:flex;flex-direction:column;gap:20px;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span style="width:30px;height:30px;border-radius:8px;background:oklch(0.6 0.2 285);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;">V</span>
+        <span style="font-size:14px;font-weight:600;letter-spacing:-0.01em;">Vyora</span>
+        <span style="font-size:13px;color:oklch(0.72 0.02 280);">Business Operating System for Indian MSMEs</span>
+      </div>
+      <h1 style="margin:0;font-size:34px;font-weight:650;letter-spacing:-0.02em;line-height:1.12;">System Architecture</h1>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:oklch(0.78 0.02 280);max-width:680px;">AI-first, offline-first, multi-tenant. Installs as a PWA on Windows, macOS, Linux, Android &amp; iOS; works with zero internet; syncs securely with per-company encryption.</p>
+      <div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:2px;">
+        <span style="font-size:12px;font-weight:500;color:oklch(0.9 0.02 280);background:oklch(0.3 0.04 280);border:1px solid oklch(0.4 0.05 280);padding:6px 12px;border-radius:999px;">PWA · installable</span>
+        <span style="font-size:12px;font-weight:500;color:oklch(0.9 0.02 280);background:oklch(0.3 0.04 280);border:1px solid oklch(0.4 0.05 280);padding:6px 12px;border-radius:999px;">Offline-first</span>
+        <span style="font-size:12px;font-weight:500;color:oklch(0.9 0.02 280);background:oklch(0.3 0.04 280);border:1px solid oklch(0.4 0.05 280);padding:6px 12px;border-radius:999px;">Multi-tenant</span>
+        <span style="font-size:12px;font-weight:500;color:oklch(0.9 0.02 280);background:oklch(0.3 0.04 280);border:1px solid oklch(0.4 0.05 280);padding:6px 12px;border-radius:999px;">Zero-knowledge encryption</span>
+        <span style="font-size:12px;font-weight:500;color:oklch(0.9 0.02 280);background:oklch(0.3 0.04 280);border:1px solid oklch(0.4 0.05 280);padding:6px 12px;border-radius:999px;">AI-native</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="max-width:1080px;margin:0 auto;padding:0 48px;display:flex;flex-direction:column;gap:64px;">
+
+    <!-- 01 SYSTEM OVERVIEW -->
+    <section style="margin-top:56px;">
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:8px;">
+        <span style="font-family:'Geist Mono',monospace;font-size:13px;font-weight:500;color:oklch(0.55 0.14 285);">01</span>
+        <h2 style="margin:0;font-size:23px;font-weight:650;letter-spacing:-0.015em;">System overview</h2>
+      </div>
+      <p style="margin:0 0 28px;font-size:14px;line-height:1.55;color:oklch(0.5 0.015 280);max-width:640px;">Seven layers, top to bottom. The client owns a full local database; the sync engine keeps it eventually consistent with an encrypted, multi-tenant cloud that feeds the AI and messaging layers.</p>
+
+      <div style="border:1px solid oklch(0.9 0.006 280);border-radius:18px;background:#fff;padding:28px 26px;box-shadow:0 12px 40px -22px rgba(40,32,90,0.25);display:flex;flex-direction:column;gap:6px;">
+
+        <div style="display:flex;gap:18px;align-items:stretch;">
+          <div style="width:158px;flex-shrink:0;display:flex;flex-direction:column;gap:3px;justify-content:center;padding:14px 16px;border-radius:12px;background:oklch(0.965 0.03 285);border:1px solid oklch(0.9 0.04 285);">
+            <span style="font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.5 0.15 285);">Client</span>
+            <span style="font-size:11px;color:oklch(0.52 0.06 285);">Runs on every device</span>
+          </div>
+          <div style="flex:1;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+            <div style="background:#fff;border:1px solid oklch(0.89 0.008 280);border-radius:10px;padding:12px 14px;"><span style="font-size:13px;font-weight:600;">PWA shell</span><div style="font-size:11.5px;color:oklch(0.58 0.012 280);margin-top:2px;">Next.js · React · TS</div></div>
+            <div style="background:#fff;border:1px solid oklch(0.89 0.008 280);border-radius:10px;padding:12px 14px;"><span style="font-size:13px;font-weight:600;">Service worker</span><div style="font-size:11.5px;color:oklch(0.58 0.012 280);margin-top:2px;">Workbox · app-shell cache</div></div>
+            <div style="background:#fff;border:1px solid oklch(0.89 0.008 280);border-radius:10px;padding:12px 14px;"><span style="font-size:13px;font-weight:600;">UI system</span><div style="font-size:11.5px;color:oklch(0.58 0.012 280);margin-top:2px;">shadcn/ui · Tailwind</div></div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:center;padding:2px 0;"><span style="color:oklch(0.62 0.05 280);font-size:16px;">↓</span></div>
+
+        <div style="display:flex;gap:18px;align-items:stretch;">
+          <div style="width:158px;flex-shrink:0;display:flex;flex-direction:column;gap:3px;justify-content:center;padding:14px 16px;border-radius:12px;background:oklch(0.965 0.03 250);border:1px solid oklch(0.9 0.04 250);">
+            <span style="font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.5 0.15 250);">Local data</span>
+            <span style="font-size:11px;color:oklch(0.52 0.06 250);">On-device, offline</span>
+          </div>
+          <div style="flex:1;display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">
+            <div style="background:#fff;border:1px solid oklch(0.89 0.008 280);border-radius:10px;padding:12px 14px;"><span style="font-size:13px;font-weight:600;">SQLite WASM</span><div style="font-size:11.5px;color:oklch(0.58 0.012 280);margin-top:2px;">relational core</div></div>
+            <div style="background:#fff;border:1px solid oklch(0.89 0.008 280);border-radius:10px;padding:12px 14px;"><span style="font-size:13px;font-weight:600;">IndexedDB</span><div style="font-size:11.5px;color:oklch(0.58 0.012 280);margin-top:2px;">key-value / cache</div></div>
+            <div style="background:#fff;border:1px solid oklch(0.89 0.008 280);border-radius:10px;padding:12px 14px;"><span style="font-size:13px;font-weight:600;">OPFS</span><div style="font-size:11.5px;color:oklch(0.58 0.012 280);margin-top:2px;">files · DB persistence</div></div>
+            <div style="background:#fff;border:1px solid oklch(0.89 0.008 280);border-radius:10px;padding:12px 14px;"><span style="font-size:13px;font-weight:600;">Outbox</span><div style="font-size:11.5px;color:oklch(0.58 0.012 280);margin-top:2px;">pending changes</div></div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:center;padding:2px 0;"><span style="color:oklch(0.62 0.05 280);font-size:16px;">↕</span></div>
+
+        <div style="display:flex;gap:18px;align-items:stretch;">
+          <div style="width:158px;flex-shrink:0;display:flex;flex-direction:column;gap:3px;justify-content:center;padding:14px 16px;border-radius:12px;background:oklch(0.965 0.03 210);border:1px solid oklch(0.9 0.04 210);">
+            <span style="font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.48 0.13 210);">Sync engine</span>
+            <span style="font-size:11px;color:oklch(0.5 0.06 210);">Background, resilient</span>
+          </div>
+          <div style="flex:1;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+            <div style="background:#fff;border:1px solid oklch(0.89 0.008 280);border-radius:10px;padding:12px 14px;"><span style="font-size:13px;font-weight:600;">Change queue</span><div style="font-size:11.5px;color:oklch(0.58 0.012 280);margin-top:2px;">batched deltas</div></div>
+            <div style="background:#fff;border:1px solid oklch(0.89 0.008 280);border-radius:10px;padding:12px 14px;"><span style="font-size:13px;font-weight:600;">Conflict resolver</span><div style="font-size:11.5px;color:oklch(0.58 0.012 280);margin-top:2px;">LWW · versioned</div></div>
+            <div style="background:#fff;border:1px solid oklch(0.89 0.008 280);border-radius:10px;padding:12px 14px;"><span style="font-size:13px;font-weight:600;">Push / pull</span><div style="font-size:11.5px;color:oklch(0.58 0.012 280);margin-top:2px;">retry · backoff</div></div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:center;padding:2px 0;"><span style="color:oklch(0.62 0.05 280);font-size:16px;">↕</span></div>
+
+        <div style="display:flex;gap:18px;align-items:stretch;">
+          <div style="width:158px;flex-shrink:0;display:flex;flex-direction:column;gap:3px;justify-content:center;padding:14px 16px;border-radius:12px;background:oklch(0.965 0.035 165);border:1px solid oklch(0.9 0.05 165);">
+            <span style="font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.46 0.12 165);">Cloud</span>
+            <span style="font-size:11px;color:oklch(0.48 0.06 165);">Supabase</span>
+          </div>
+          <div style="flex:1;display:grid;grid-template-columns:repeat(5,1fr);gap:10px;">
+            <div style="background:#fff;border:1px solid oklch(0.89 0.008 280);border-radius:10px;padding:11px 12px;"><span style="font-size:12.5px;font-weight:600;">Auth</span></div>
+            <div style="background:#fff;border:1px solid oklch(0.89 0.008 280);border-radius:10px;padding:11px 12px;"><span style="font-size:12.5px;font-weight:600;">Postgres</span></div>
+            <div style="background:#fff;border:1px solid oklch(0.89 0.008 280);border-radius:10px;padding:11px 12px;"><span style="font-size:12.5px;font-weight:600;">Realtime</span></div>
+            <div style="background:#fff;border:1px solid oklch(0.89 0.008 280);border-radius:10px;padding:11px 12px;"><span style="font-size:12.5px;font-weight:600;">Storage</span></div>
+            <div style="background:#fff;border:1px solid oklch(0.89 0.008 280);border-radius:10px;padding:11px 12px;"><span style="font-size:12.5px;font-weight:600;">Edge Fn</span></div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:center;padding:2px 0;"><span style="color:oklch(0.62 0.05 280);font-size:16px;">↓</span></div>
+
+        <div style="display:flex;gap:18px;align-items:stretch;">
+          <div style="width:158px;flex-shrink:0;display:flex;flex-direction:column;gap:3px;justify-content:center;padding:14px 16px;border-radius:12px;background:oklch(0.965 0.03 325);border:1px solid oklch(0.9 0.04 325);">
+            <span style="font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.5 0.14 325);">Tenant data</span>
+            <span style="font-size:11px;color:oklch(0.52 0.06 325);">Per company</span>
+          </div>
+          <div style="flex:1;display:grid;grid-template-columns:repeat(2,1fr);gap:12px;">
+            <div style="background:#fff;border:1px solid oklch(0.89 0.008 280);border-radius:10px;padding:12px 14px;"><span style="font-size:13px;font-weight:600;">AES-256 encrypted rows</span><div style="font-size:11.5px;color:oklch(0.58 0.012 280);margin-top:2px;">RLS-isolated by tenant</div></div>
+            <div style="background:#fff;border:1px solid oklch(0.89 0.008 280);border-radius:10px;padding:12px 14px;"><span style="font-size:13px;font-weight:600;">Metadata schema</span><div style="font-size:11.5px;color:oklch(0.58 0.012 280);margin-top:2px;">business → fields → forms</div></div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:center;padding:2px 0;"><span style="color:oklch(0.62 0.05 280);font-size:16px;">↓</span></div>
+
+        <div style="display:flex;gap:18px;align-items:stretch;">
+          <div style="width:158px;flex-shrink:0;display:flex;flex-direction:column;gap:3px;justify-content:center;padding:14px 16px;border-radius:12px;background:oklch(0.965 0.03 300);border:1px solid oklch(0.9 0.04 300);">
+            <span style="font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.5 0.15 300);">AI layer</span>
+            <span style="font-size:11px;color:oklch(0.52 0.06 300);">Provider-routed</span>
+          </div>
+          <div style="flex:1;display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">
+            <div style="background:#fff;border:1px solid oklch(0.89 0.008 280);border-radius:10px;padding:12px 14px;"><span style="font-size:13px;font-weight:600;">Router</span><div style="font-size:11.5px;color:oklch(0.58 0.012 280);margin-top:2px;">Claude · Gemini · OpenRouter</div></div>
+            <div style="background:#fff;border:1px solid oklch(0.89 0.008 280);border-radius:10px;padding:12px 14px;"><span style="font-size:13px;font-weight:600;">OCR</span><div style="font-size:11.5px;color:oklch(0.58 0.012 280);margin-top:2px;">PO / bill capture</div></div>
+            <div style="background:#fff;border:1px solid oklch(0.89 0.008 280);border-radius:10px;padding:12px 14px;"><span style="font-size:13px;font-weight:600;">Copilot</span><div style="font-size:11.5px;color:oklch(0.58 0.012 280);margin-top:2px;">NL commands</div></div>
+            <div style="background:#fff;border:1px solid oklch(0.89 0.008 280);border-radius:10px;padding:12px 14px;"><span style="font-size:13px;font-weight:600;">Insights</span><div style="font-size:11.5px;color:oklch(0.58 0.012 280);margin-top:2px;">forecasts · alerts</div></div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:center;padding:2px 0;"><span style="color:oklch(0.62 0.05 280);font-size:16px;">↓</span></div>
+
+        <div style="display:flex;gap:18px;align-items:stretch;">
+          <div style="width:158px;flex-shrink:0;display:flex;flex-direction:column;gap:3px;justify-content:center;padding:14px 16px;border-radius:12px;background:oklch(0.965 0.035 55);border:1px solid oklch(0.9 0.05 55);">
+            <span style="font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.48 0.11 55);">Channels</span>
+            <span style="font-size:11px;color:oklch(0.5 0.06 55);">Reach customers</span>
+          </div>
+          <div style="flex:1;display:grid;grid-template-columns:repeat(5,1fr);gap:10px;">
+            <div style="background:#fff;border:1px solid oklch(0.89 0.008 280);border-radius:10px;padding:11px 12px;"><span style="font-size:12.5px;font-weight:600;">WhatsApp</span></div>
+            <div style="background:#fff;border:1px solid oklch(0.89 0.008 280);border-radius:10px;padding:11px 12px;"><span style="font-size:12.5px;font-weight:600;">Instagram</span></div>
+            <div style="background:#fff;border:1px solid oklch(0.89 0.008 280);border-radius:10px;padding:11px 12px;"><span style="font-size:12.5px;font-weight:600;">SMS</span></div>
+            <div style="background:#fff;border:1px solid oklch(0.89 0.008 280);border-radius:10px;padding:11px 12px;"><span style="font-size:12.5px;font-weight:600;">Email</span></div>
+            <div style="background:#fff;border:1px solid oklch(0.89 0.008 280);border-radius:10px;padding:11px 12px;"><span style="font-size:12.5px;font-weight:600;">Reports</span></div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 02 OFFLINE -->
+    <section>
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:8px;">
+        <span style="font-family:'Geist Mono',monospace;font-size:13px;font-weight:500;color:oklch(0.55 0.14 285);">02</span>
+        <h2 style="margin:0;font-size:23px;font-weight:650;letter-spacing:-0.015em;">Offline architecture</h2>
+      </div>
+      <p style="margin:0 0 28px;font-size:14px;line-height:1.55;color:oklch(0.5 0.015 280);max-width:640px;">Every write lands in the local database first and the UI updates instantly — internet is optional. The service worker caches the app shell so it opens even on a cold, offline start.</p>
+      <div style="border:1px solid oklch(0.9 0.006 280);border-radius:18px;background:#fff;padding:30px 26px;box-shadow:0 12px 40px -22px rgba(40,32,90,0.25);">
+        <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:26px;">
+          <div style="background:oklch(0.965 0.03 285);border:1px solid oklch(0.9 0.04 285);border-radius:10px;padding:12px 16px;"><span style="font-size:13px;font-weight:600;">User action</span><div style="font-size:11.5px;color:oklch(0.5 0.05 285);">create invoice</div></div>
+          <span style="color:oklch(0.6 0.05 280);font-size:16px;">→</span>
+          <div style="background:#fff;border:1px solid oklch(0.89 0.008 280);border-radius:10px;padding:12px 16px;"><span style="font-size:13px;font-weight:600;">App logic</span><div style="font-size:11.5px;color:oklch(0.58 0.012 280);">validate · write</div></div>
+          <span style="color:oklch(0.6 0.05 280);font-size:16px;">→</span>
+          <div style="background:oklch(0.965 0.03 250);border:1px solid oklch(0.9 0.04 250);border-radius:10px;padding:12px 16px;"><span style="font-size:13px;font-weight:600;">Local DB write</span><div style="font-size:11.5px;color:oklch(0.5 0.05 250);">&lt; 10 ms</div></div>
+          <span style="color:oklch(0.6 0.05 280);font-size:16px;">→</span>
+          <div style="background:oklch(0.95 0.05 155);border:1px solid oklch(0.86 0.07 155);border-radius:10px;padding:12px 16px;"><span style="font-size:13px;font-weight:600;color:oklch(0.42 0.1 155);">UI updated</span><div style="font-size:11.5px;color:oklch(0.46 0.07 155);">no network needed</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;">
+          <div style="border:1px solid oklch(0.92 0.006 280);border-radius:12px;padding:16px;background:oklch(0.99 0.003 280);"><span style="font-size:13.5px;font-weight:650;">SQLite WASM</span><p style="margin:6px 0 0;font-size:12.5px;line-height:1.5;color:oklch(0.55 0.015 280);">Full relational engine in the browser — invoices, items, ledgers queried with SQL.</p></div>
+          <div style="border:1px solid oklch(0.92 0.006 280);border-radius:12px;padding:16px;background:oklch(0.99 0.003 280);"><span style="font-size:13.5px;font-weight:650;">OPFS</span><p style="margin:6px 0 0;font-size:12.5px;line-height:1.5;color:oklch(0.55 0.015 280);">Origin-private file system persists the SQLite file and attachments across sessions.</p></div>
+          <div style="border:1px solid oklch(0.92 0.006 280);border-radius:12px;padding:16px;background:oklch(0.99 0.003 280);"><span style="font-size:13.5px;font-weight:650;">IndexedDB</span><p style="margin:6px 0 0;font-size:12.5px;line-height:1.5;color:oklch(0.55 0.015 280);">Cache, settings, and the sync outbox of pending changes.</p></div>
+        </div>
+        <div style="margin-top:20px;display:flex;gap:11px;padding:14px 16px;background:oklch(0.965 0.025 285);border:1px solid oklch(0.9 0.035 285);border-radius:11px;">
+          <span style="width:5px;flex-shrink:0;border-radius:3px;background:oklch(0.55 0.18 285);"></span>
+          <p style="margin:0;font-size:12.5px;line-height:1.5;color:oklch(0.38 0.03 285);"><strong>Local-first, like Vyapar desktop.</strong> The cloud is a sync target, never a dependency for day-to-day billing.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 03 SYNC -->
+    <section>
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:8px;">
+        <span style="font-family:'Geist Mono',monospace;font-size:13px;font-weight:500;color:oklch(0.55 0.14 285);">03</span>
+        <h2 style="margin:0;font-size:23px;font-weight:650;letter-spacing:-0.015em;">Sync architecture</h2>
+      </div>
+      <p style="margin:0 0 28px;font-size:14px;line-height:1.55;color:oklch(0.5 0.015 280);max-width:640px;">Changes queue locally while offline and flush in the background when a connection returns. Supabase Realtime fans out committed deltas to the company's other devices — like Google Keep.</p>
+      <div style="border:1px solid oklch(0.9 0.006 280);border-radius:18px;background:#fff;padding:30px 26px;box-shadow:0 12px 40px -22px rgba(40,32,90,0.25);">
+        <div style="display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:16px;align-items:center;">
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.55 0.06 250);">Device A</span>
+            <div style="border:1px solid oklch(0.9 0.04 250);background:oklch(0.965 0.03 250);border-radius:10px;padding:12px 14px;"><span style="font-size:13px;font-weight:600;">Local DB + Outbox</span><div style="font-size:11.5px;color:oklch(0.5 0.05 250);margin-top:2px;">queued deltas</div></div>
+          </div>
+          <span style="color:oklch(0.6 0.05 280);font-size:18px;">→</span>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.5 0.1 210);">Sync engine</span>
+            <div style="border:1px solid oklch(0.9 0.04 210);background:oklch(0.965 0.03 210);border-radius:10px;padding:12px 14px;"><span style="font-size:13px;font-weight:600;">Batch · resolve · retry</span><div style="font-size:11.5px;color:oklch(0.48 0.06 210);margin-top:2px;">LWW + version vector</div></div>
+          </div>
+          <span style="color:oklch(0.6 0.05 280);font-size:18px;">→</span>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.46 0.1 165);">Cloud</span>
+            <div style="border:1px solid oklch(0.9 0.05 165);background:oklch(0.965 0.035 165);border-radius:10px;padding:12px 14px;"><span style="font-size:13px;font-weight:600;">Postgres commit</span><div style="font-size:11.5px;color:oklch(0.46 0.06 165);margin-top:2px;">source of truth</div></div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;margin:16px 0;"><span style="color:oklch(0.6 0.05 280);font-size:16px;">↓ Realtime broadcast</span></div>
+        <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:center;">
+          <div style="border:1px solid oklch(0.9 0.05 165);background:oklch(0.965 0.035 165);border-radius:10px;padding:12px 14px;"><span style="font-size:13px;font-weight:600;">Supabase Realtime</span><div style="font-size:11.5px;color:oklch(0.46 0.06 165);margin-top:2px;">per-tenant channel</div></div>
+          <span style="color:oklch(0.6 0.05 280);font-size:18px;">→</span>
+          <div style="border:1px solid oklch(0.9 0.04 250);background:oklch(0.965 0.03 250);border-radius:10px;padding:12px 14px;"><span style="font-size:13px;font-weight:600;">Device B · Local DB</span><div style="font-size:11.5px;color:oklch(0.5 0.05 250);margin-top:2px;">applies delta · UI updates</div></div>
+        </div>
+        <div style="margin-top:20px;display:flex;gap:14px;flex-wrap:wrap;">
+          <span style="font-size:12px;color:oklch(0.46 0.02 280);background:oklch(0.965 0.004 280);border:1px solid oklch(0.92 0.006 280);padding:7px 12px;border-radius:8px;">Idempotent, ID-keyed writes</span>
+          <span style="font-size:12px;color:oklch(0.46 0.02 280);background:oklch(0.965 0.004 280);border:1px solid oklch(0.92 0.006 280);padding:7px 12px;border-radius:8px;">Exponential backoff on failure</span>
+          <span style="font-size:12px;color:oklch(0.46 0.02 280);background:oklch(0.965 0.004 280);border:1px solid oklch(0.92 0.006 280);padding:7px 12px;border-radius:8px;">Deltas stay encrypted in transit &amp; at rest</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 04 CLOUD -->
+    <section>
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:8px;">
+        <span style="font-family:'Geist Mono',monospace;font-size:13px;font-weight:500;color:oklch(0.55 0.14 285);">04</span>
+        <h2 style="margin:0;font-size:23px;font-weight:650;letter-spacing:-0.015em;">Cloud architecture</h2>
+      </div>
+      <p style="margin:0 0 28px;font-size:14px;line-height:1.55;color:oklch(0.5 0.015 280);max-width:640px;">Supabase provides the managed backend. Postgres is the core; Edge Functions broker every external call (AI providers, messaging APIs) so secrets never touch the client.</p>
+      <div style="border:1px solid oklch(0.9 0.006 280);border-radius:18px;background:#fff;padding:30px 26px;box-shadow:0 12px 40px -22px rgba(40,32,90,0.25);display:flex;flex-direction:column;gap:18px;">
+        <div style="display:flex;justify-content:center;">
+          <div style="border:1.5px solid oklch(0.85 0.06 165);background:oklch(0.965 0.035 165);border-radius:12px;padding:14px 28px;text-align:center;"><span style="font-size:15px;font-weight:650;color:oklch(0.4 0.09 165);">PostgreSQL</span><div style="font-size:12px;color:oklch(0.46 0.06 165);margin-top:2px;">core store · row-level security</div></div>
+        </div>
+        <div style="display:flex;justify-content:center;"><span style="color:oklch(0.6 0.05 280);font-size:16px;">↑ ↓</span></div>
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;">
+          <div style="border:1px solid oklch(0.89 0.008 280);border-radius:10px;padding:13px 12px;text-align:center;"><span style="font-size:13px;font-weight:600;">Auth</span><div style="font-size:11px;color:oklch(0.58 0.012 280);margin-top:3px;">users · roles · JWT</div></div>
+          <div style="border:1px solid oklch(0.89 0.008 280);border-radius:10px;padding:13px 12px;text-align:center;"><span style="font-size:13px;font-weight:600;">RLS policies</span><div style="font-size:11px;color:oklch(0.58 0.012 280);margin-top:3px;">tenant isolation</div></div>
+          <div style="border:1px solid oklch(0.89 0.008 280);border-radius:10px;padding:13px 12px;text-align:center;"><span style="font-size:13px;font-weight:600;">Realtime</span><div style="font-size:11px;color:oklch(0.58 0.012 280);margin-top:3px;">change fan-out</div></div>
+          <div style="border:1px solid oklch(0.89 0.008 280);border-radius:10px;padding:13px 12px;text-align:center;"><span style="font-size:13px;font-weight:600;">Storage</span><div style="font-size:11px;color:oklch(0.58 0.012 280);margin-top:3px;">bills · images</div></div>
+          <div style="border:1px solid oklch(0.89 0.008 280);border-radius:10px;padding:13px 12px;text-align:center;"><span style="font-size:13px;font-weight:600;">Edge Functions</span><div style="font-size:11px;color:oklch(0.58 0.012 280);margin-top:3px;">API broker</div></div>
+        </div>
+        <div style="display:flex;justify-content:center;"><span style="color:oklch(0.6 0.05 280);font-size:15px;">Edge Functions →</span></div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+          <div style="border:1px dashed oklch(0.85 0.03 300);border-radius:10px;padding:12px;text-align:center;background:oklch(0.98 0.015 300);"><span style="font-size:12.5px;font-weight:600;color:oklch(0.48 0.1 300);">AI providers</span><div style="font-size:11px;color:oklch(0.52 0.06 300);margin-top:2px;">Claude · Gemini · OpenRouter</div></div>
+          <div style="border:1px dashed oklch(0.85 0.04 55);border-radius:10px;padding:12px;text-align:center;background:oklch(0.98 0.02 55);"><span style="font-size:12.5px;font-weight:600;color:oklch(0.46 0.09 55);">Messaging APIs</span><div style="font-size:11px;color:oklch(0.5 0.06 55);margin-top:2px;">WhatsApp · Meta · Twilio</div></div>
+          <div style="border:1px dashed oklch(0.85 0.03 210);border-radius:10px;padding:12px;text-align:center;background:oklch(0.98 0.015 210);"><span style="font-size:12.5px;font-weight:600;color:oklch(0.46 0.09 210);">OCR / Docs</span><div style="font-size:11px;color:oklch(0.5 0.06 210);margin-top:2px;">Tesseract · Document AI</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 05 DATABASE / METADATA -->
+    <section>
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:8px;">
+        <span style="font-family:'Geist Mono',monospace;font-size:13px;font-weight:500;color:oklch(0.55 0.14 285);">05</span>
+        <h2 style="margin:0;font-size:23px;font-weight:650;letter-spacing:-0.015em;">Multi-tenant database &amp; metadata engine</h2>
+      </div>
+      <p style="margin:0 0 28px;font-size:14px;line-height:1.55;color:oklch(0.5 0.015 280);max-width:640px;">One Postgres, many companies — isolated by <span style="font-family:'Geist Mono',monospace;font-size:12.5px;">tenant_id</span> and RLS. Business behaviour is data, not code: a business type defines field metadata, which generates forms, invoices, and reports. New verticals ship without a deploy.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+        <div style="border:1px solid oklch(0.9 0.006 280);border-radius:18px;background:#fff;padding:24px;box-shadow:0 12px 40px -22px rgba(40,32,90,0.25);">
+          <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.5 0.14 325);">Tenant isolation</span>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-top:14px;">
+            <div style="display:flex;align-items:center;gap:10px;border:1px solid oklch(0.9 0.04 325);background:oklch(0.97 0.02 325);border-radius:9px;padding:11px 13px;"><span style="font-family:'Geist Mono',monospace;font-size:11px;color:oklch(0.5 0.12 325);">tenant_id: A</span><span style="font-size:12.5px;color:oklch(0.4 0.03 325);">Sharma Medical</span></div>
+            <div style="display:flex;align-items:center;gap:10px;border:1px solid oklch(0.9 0.04 325);background:oklch(0.97 0.02 325);border-radius:9px;padding:11px 13px;"><span style="font-family:'Geist Mono',monospace;font-size:11px;color:oklch(0.5 0.12 325);">tenant_id: B</span><span style="font-size:12.5px;color:oklch(0.4 0.03 325);">Anand Restaurant</span></div>
+            <div style="display:flex;align-items:center;gap:10px;border:1px solid oklch(0.9 0.04 325);background:oklch(0.97 0.02 325);border-radius:9px;padding:11px 13px;"><span style="font-family:'Geist Mono',monospace;font-size:11px;color:oklch(0.5 0.12 325);">tenant_id: C</span><span style="font-size:12.5px;color:oklch(0.4 0.03 325);">Kiran Mobiles</span></div>
+          </div>
+          <p style="margin:14px 0 0;font-size:12px;line-height:1.5;color:oklch(0.55 0.015 280);">RLS ensures every query is scoped to the caller's tenant — no cross-company reads, enforced in the database.</p>
+        </div>
+        <div style="border:1px solid oklch(0.9 0.006 280);border-radius:18px;background:#fff;padding:24px;box-shadow:0 12px 40px -22px rgba(40,32,90,0.25);">
+          <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.5 0.13 245);">Metadata pipeline</span>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-top:14px;">
+            <div style="border:1px solid oklch(0.9 0.04 245);background:oklch(0.97 0.02 245);border-radius:9px;padding:11px 13px;"><span style="font-size:12.5px;font-weight:600;color:oklch(0.42 0.08 245);">Business type</span></div>
+            <div style="display:flex;justify-content:center;"><span style="color:oklch(0.6 0.05 280);font-size:14px;">↓</span></div>
+            <div style="border:1px solid oklch(0.9 0.04 245);background:oklch(0.97 0.02 245);border-radius:9px;padding:11px 13px;"><span style="font-size:12.5px;font-weight:600;color:oklch(0.42 0.08 245);">Field definitions (metadata)</span></div>
+            <div style="display:flex;justify-content:center;"><span style="color:oklch(0.6 0.05 280);font-size:14px;">↓</span></div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+              <div style="border:1px solid oklch(0.89 0.008 280);border-radius:8px;padding:9px;text-align:center;font-size:12px;font-weight:600;">Form</div>
+              <div style="border:1px solid oklch(0.89 0.008 280);border-radius:8px;padding:9px;text-align:center;font-size:12px;font-weight:600;">Invoice</div>
+              <div style="border:1px solid oklch(0.89 0.008 280);border-radius:8px;padding:9px;text-align:center;font-size:12px;font-weight:600;">Reports</div>
+            </div>
+          </div>
+          <p style="margin:14px 0 0;font-size:12px;line-height:1.5;color:oklch(0.55 0.015 280);">Add Jewellery or Catering by inserting metadata — the app adapts, no code change.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 06 SECURITY -->
+    <section>
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:8px;">
+        <span style="font-family:'Geist Mono',monospace;font-size:13px;font-weight:500;color:oklch(0.55 0.14 285);">06</span>
+        <h2 style="margin:0;font-size:23px;font-weight:650;letter-spacing:-0.015em;">Security &amp; encryption</h2>
+      </div>
+      <p style="margin:0 0 28px;font-size:14px;line-height:1.55;color:oklch(0.5 0.015 280);max-width:640px;">Zero-knowledge by design. Each company holds its own key; invoices are encrypted on-device before they ever leave. The cloud stores ciphertext it cannot read — and neither can Vyora's staff.</p>
+      <div style="border:1px solid oklch(0.9 0.006 280);border-radius:18px;background:#fff;padding:30px 26px;box-shadow:0 12px 40px -22px rgba(40,32,90,0.25);">
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:24px;">
+          <div style="border:1px solid oklch(0.9 0.04 325);background:oklch(0.97 0.02 325);border-radius:10px;padding:12px 15px;"><span style="font-size:13px;font-weight:600;color:oklch(0.42 0.08 325);">Company key</span><div style="font-size:11px;color:oklch(0.5 0.06 325);">derived · never leaves device</div></div>
+          <span style="color:oklch(0.6 0.05 280);font-size:16px;">→</span>
+          <div style="border:1px solid oklch(0.89 0.008 280);border-radius:10px;padding:12px 15px;"><span style="font-size:13px;font-weight:600;">AES-256 encrypt</span><div style="font-size:11px;color:oklch(0.58 0.012 280);">on-device</div></div>
+          <span style="color:oklch(0.6 0.05 280);font-size:16px;">→</span>
+          <div style="border:1px solid oklch(0.89 0.008 280);border-radius:10px;padding:12px 15px;"><span style="font-size:13px;font-weight:600;">Ciphertext blob</span><div style="font-size:11px;color:oklch(0.58 0.012 280);">opaque payload</div></div>
+          <span style="color:oklch(0.6 0.05 280);font-size:16px;">→</span>
+          <div style="border:1px solid oklch(0.9 0.05 165);background:oklch(0.965 0.035 165);border-radius:10px;padding:12px 15px;"><span style="font-size:13px;font-weight:600;color:oklch(0.4 0.08 165);">Supabase</span><div style="font-size:11px;color:oklch(0.46 0.06 165);">stores blob only</div></div>
+          <span style="color:oklch(0.6 0.05 280);font-size:16px;">→</span>
+          <div style="border:1px solid oklch(0.9 0.04 325);background:oklch(0.97 0.02 325);border-radius:10px;padding:12px 15px;"><span style="font-size:13px;font-weight:600;color:oklch(0.42 0.08 325);">Only company decrypts</span></div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px;">
+          <div style="display:flex;gap:11px;padding:14px 16px;background:oklch(0.95 0.05 155);border:1px solid oklch(0.86 0.07 155);border-radius:11px;">
+            <span style="width:5px;flex-shrink:0;border-radius:3px;background:oklch(0.55 0.14 155);"></span>
+            <p style="margin:0;font-size:12.5px;line-height:1.5;color:oklch(0.36 0.08 155);"><strong>App owner cannot view customer invoices.</strong> Even Vyora's own staff see only encrypted blobs — a core differentiator.</p>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <span style="font-size:12px;color:oklch(0.46 0.02 280);background:oklch(0.965 0.004 280);border:1px solid oklch(0.92 0.006 280);padding:8px 12px;border-radius:8px;">RLS + JWT scope every request to one tenant</span>
+            <span style="font-size:12px;color:oklch(0.46 0.02 280);background:oklch(0.965 0.004 280);border:1px solid oklch(0.92 0.006 280);padding:8px 12px;border-radius:8px;">TLS in transit · encryption at rest</span>
+            <span style="font-size:12px;color:oklch(0.46 0.02 280);background:oklch(0.965 0.004 280);border:1px solid oklch(0.92 0.006 280);padding:8px 12px;border-radius:8px;">Role-based access: Owner, Manager, Cashier, Accountant…</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 07 AI -->
+    <section>
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:8px;">
+        <span style="font-family:'Geist Mono',monospace;font-size:13px;font-weight:500;color:oklch(0.55 0.14 285);">07</span>
+        <h2 style="margin:0;font-size:23px;font-weight:650;letter-spacing:-0.015em;">AI architecture</h2>
+      </div>
+      <p style="margin:0 0 28px;font-size:14px;line-height:1.55;color:oklch(0.5 0.015 280);max-width:640px;">A provider-agnostic router serves the Copilot, OCR, and insight features. Tenant data is decrypted on-device and only the minimum context is sent to the model — privacy is preserved end to end.</p>
+      <div style="border:1px solid oklch(0.9 0.006 280);border-radius:18px;background:#fff;padding:30px 26px;box-shadow:0 12px 40px -22px rgba(40,32,90,0.25);">
+        <div style="display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:14px;align-items:center;">
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.55 0.06 280);">Inputs</span>
+            <div style="border:1px solid oklch(0.89 0.008 280);border-radius:9px;padding:10px 12px;font-size:12.5px;font-weight:600;">NL command</div>
+            <div style="border:1px solid oklch(0.89 0.008 280);border-radius:9px;padding:10px 12px;font-size:12.5px;font-weight:600;">Uploaded PO / bill</div>
+            <div style="border:1px solid oklch(0.89 0.008 280);border-radius:9px;padding:10px 12px;font-size:12.5px;font-weight:600;">Decrypted tenant context</div>
+          </div>
+          <span style="color:oklch(0.6 0.05 280);font-size:18px;">→</span>
+          <div style="display:flex;flex-direction:column;gap:8px;align-items:center;">
+            <div style="border:1.5px solid oklch(0.85 0.05 300);background:oklch(0.965 0.03 300);border-radius:11px;padding:14px 16px;text-align:center;width:100%;"><span style="font-size:14px;font-weight:650;color:oklch(0.45 0.1 300);">AI Router</span><div style="font-size:11px;color:oklch(0.5 0.06 300);margin-top:3px;">cost · latency · fallback</div></div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;">
+              <span style="font-size:10.5px;font-weight:600;color:oklch(0.48 0.08 300);background:oklch(0.97 0.02 300);border:1px solid oklch(0.9 0.03 300);padding:4px 9px;border-radius:6px;">Claude</span>
+              <span style="font-size:10.5px;font-weight:600;color:oklch(0.48 0.08 300);background:oklch(0.97 0.02 300);border:1px solid oklch(0.9 0.03 300);padding:4px 9px;border-radius:6px;">Gemini</span>
+              <span style="font-size:10.5px;font-weight:600;color:oklch(0.48 0.08 300);background:oklch(0.97 0.02 300);border:1px solid oklch(0.9 0.03 300);padding:4px 9px;border-radius:6px;">OpenRouter</span>
+            </div>
+          </div>
+          <span style="color:oklch(0.6 0.05 280);font-size:18px;">→</span>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.55 0.06 280);">Outputs</span>
+            <div style="border:1px solid oklch(0.86 0.07 155);background:oklch(0.96 0.04 155);border-radius:9px;padding:10px 12px;font-size:12.5px;font-weight:600;color:oklch(0.4 0.09 155);">Draft invoice / PO</div>
+            <div style="border:1px solid oklch(0.86 0.07 155);background:oklch(0.96 0.04 155);border-radius:9px;padding:10px 12px;font-size:12.5px;font-weight:600;color:oklch(0.4 0.09 155);">GST report</div>
+            <div style="border:1px solid oklch(0.86 0.07 155);background:oklch(0.96 0.04 155);border-radius:9px;padding:10px 12px;font-size:12.5px;font-weight:600;color:oklch(0.4 0.09 155);">Suggestions · forecasts</div>
+          </div>
+        </div>
+        <div style="margin-top:22px;display:flex;gap:11px;padding:14px 16px;background:oklch(0.965 0.025 285);border:1px solid oklch(0.9 0.035 285);border-radius:11px;">
+          <span style="width:5px;flex-shrink:0;border-radius:3px;background:oklch(0.55 0.18 285);"></span>
+          <p style="margin:0;font-size:12.5px;line-height:1.5;color:oklch(0.38 0.03 285);"><strong>MCP tool layer</strong> connects the Copilot to Supabase, Postgres analytics, filesystem, and messaging tools for grounded, action-taking responses.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 08 CHANNELS -->
+    <section>
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:8px;">
+        <span style="font-family:'Geist Mono',monospace;font-size:13px;font-weight:500;color:oklch(0.55 0.14 285);">08</span>
+        <h2 style="margin:0;font-size:23px;font-weight:650;letter-spacing:-0.015em;">Channels &amp; integrations</h2>
+      </div>
+      <p style="margin:0 0 28px;font-size:14px;line-height:1.55;color:oklch(0.5 0.015 280);max-width:640px;">One-click invoice delivery and bulk marketing flow through Edge Functions to each provider — with reminders, offers, and coupons driven by the same tenant data.</p>
+      <div style="border:1px solid oklch(0.9 0.006 280);border-radius:18px;background:#fff;padding:30px 26px;box-shadow:0 12px 40px -22px rgba(40,32,90,0.25);">
+        <div style="display:flex;justify-content:center;margin-bottom:16px;">
+          <div style="border:1.5px solid oklch(0.85 0.05 55);background:oklch(0.965 0.035 55);border-radius:11px;padding:12px 24px;"><span style="font-size:14px;font-weight:650;color:oklch(0.42 0.08 55);">Messaging orchestrator</span></div>
+        </div>
+        <div style="display:flex;justify-content:center;margin-bottom:16px;"><span style="color:oklch(0.6 0.05 280);font-size:16px;">↓</span></div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;">
+          <div style="border:1px solid oklch(0.89 0.008 280);border-radius:10px;padding:14px 12px;text-align:center;"><span style="font-size:13px;font-weight:600;">WhatsApp</span><div style="font-size:11px;color:oklch(0.58 0.012 280);margin-top:3px;">Cloud API</div></div>
+          <div style="border:1px solid oklch(0.89 0.008 280);border-radius:10px;padding:14px 12px;text-align:center;"><span style="font-size:13px;font-weight:600;">Instagram</span><div style="font-size:11px;color:oklch(0.58 0.012 280);margin-top:3px;">Meta Graph</div></div>
+          <div style="border:1px solid oklch(0.89 0.008 280);border-radius:10px;padding:14px 12px;text-align:center;"><span style="font-size:13px;font-weight:600;">SMS</span><div style="font-size:11px;color:oklch(0.58 0.012 280);margin-top:3px;">Twilio</div></div>
+          <div style="border:1px solid oklch(0.89 0.008 280);border-radius:10px;padding:14px 12px;text-align:center;"><span style="font-size:13px;font-weight:600;">Email</span><div style="font-size:11px;color:oklch(0.58 0.012 280);margin-top:3px;">Gmail API</div></div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <span style="font-size:12px;color:oklch(0.46 0.02 280);background:oklch(0.965 0.004 280);border:1px solid oklch(0.92 0.006 280);padding:7px 12px;border-radius:8px;">Send invoice</span>
+          <span style="font-size:12px;color:oklch(0.46 0.02 280);background:oklch(0.965 0.004 280);border:1px solid oklch(0.92 0.006 280);padding:7px 12px;border-radius:8px;">Payment reminders</span>
+          <span style="font-size:12px;color:oklch(0.46 0.02 280);background:oklch(0.965 0.004 280);border:1px solid oklch(0.92 0.006 280);padding:7px 12px;border-radius:8px;">Festival &amp; birthday offers</span>
+          <span style="font-size:12px;color:oklch(0.46 0.02 280);background:oklch(0.965 0.004 280);border:1px solid oklch(0.92 0.006 280);padding:7px 12px;border-radius:8px;">Discount coupons</span>
+          <span style="font-size:12px;color:oklch(0.46 0.02 280);background:oklch(0.965 0.004 280);border:1px solid oklch(0.92 0.006 280);padding:7px 12px;border-radius:8px;">New-arrival broadcasts</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 09 DEPLOYMENT -->
+    <section>
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:8px;">
+        <span style="font-family:'Geist Mono',monospace;font-size:13px;font-weight:500;color:oklch(0.55 0.14 285);">09</span>
+        <h2 style="margin:0;font-size:23px;font-weight:650;letter-spacing:-0.015em;">Deployment &amp; PWA</h2>
+      </div>
+      <p style="margin:0 0 28px;font-size:14px;line-height:1.55;color:oklch(0.5 0.015 280);max-width:640px;">A single PWA build, served from the edge and installable everywhere. No app stores required — updates ship instantly through the service worker.</p>
+      <div style="border:1px solid oklch(0.9 0.006 280);border-radius:18px;background:#fff;padding:30px 26px;box-shadow:0 12px 40px -22px rgba(40,32,90,0.25);">
+        <div style="display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:14px;align-items:center;margin-bottom:22px;">
+          <div style="border:1px solid oklch(0.89 0.008 280);border-radius:10px;padding:12px 14px;text-align:center;"><span style="font-size:13px;font-weight:600;">CI/CD</span><div style="font-size:11px;color:oklch(0.58 0.012 280);margin-top:3px;">GitHub Actions</div></div>
+          <span style="color:oklch(0.6 0.05 280);font-size:16px;">→</span>
+          <div style="border:1px solid oklch(0.9 0.04 285);background:oklch(0.965 0.03 285);border-radius:10px;padding:12px 14px;text-align:center;"><span style="font-size:13px;font-weight:600;color:oklch(0.44 0.1 285);">Edge CDN</span><div style="font-size:11px;color:oklch(0.5 0.06 285);margin-top:3px;">PWA build · SW</div></div>
+          <span style="color:oklch(0.6 0.05 280);font-size:16px;">→</span>
+          <div style="border:1px solid oklch(0.9 0.05 165);background:oklch(0.965 0.035 165);border-radius:10px;padding:12px 14px;text-align:center;"><span style="font-size:13px;font-weight:600;color:oklch(0.4 0.08 165);">Supabase region</span><div style="font-size:11px;color:oklch(0.46 0.06 165);margin-top:3px;">Mumbai · ap-south</div></div>
+        </div>
+        <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.55 0.06 280);">Install targets</span>
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:12px;">
+          <div style="border:1px solid oklch(0.89 0.008 280);border-radius:9px;padding:11px;text-align:center;font-size:12.5px;font-weight:600;">Windows</div>
+          <div style="border:1px solid oklch(0.89 0.008 280);border-radius:9px;padding:11px;text-align:center;font-size:12.5px;font-weight:600;">macOS</div>
+          <div style="border:1px solid oklch(0.89 0.008 280);border-radius:9px;padding:11px;text-align:center;font-size:12.5px;font-weight:600;">Linux</div>
+          <div style="border:1px solid oklch(0.89 0.008 280);border-radius:9px;padding:11px;text-align:center;font-size:12.5px;font-weight:600;">Android</div>
+          <div style="border:1px solid oklch(0.89 0.008 280);border-radius:9px;padding:11px;text-align:center;font-size:12.5px;font-weight:600;">iOS</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STACK + MCP FOOTER -->
+    <section>
+      <div style="border:1px solid oklch(0.9 0.006 280);border-radius:18px;background:oklch(0.99 0.003 280);padding:30px 26px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:28px;">
+          <div>
+            <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.5 0.14 285);">Technology stack</span>
+            <div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:14px;">
+              <span style="font-family:'Geist Mono',monospace;font-size:11.5px;color:oklch(0.4 0.02 280);background:#fff;border:1px solid oklch(0.9 0.006 280);padding:5px 10px;border-radius:7px;">Next.js</span>
+              <span style="font-family:'Geist Mono',monospace;font-size:11.5px;color:oklch(0.4 0.02 280);background:#fff;border:1px solid oklch(0.9 0.006 280);padding:5px 10px;border-radius:7px;">React · TypeScript</span>
+              <span style="font-family:'Geist Mono',monospace;font-size:11.5px;color:oklch(0.4 0.02 280);background:#fff;border:1px solid oklch(0.9 0.006 280);padding:5px 10px;border-radius:7px;">Tailwind · shadcn/ui</span>
+              <span style="font-family:'Geist Mono',monospace;font-size:11.5px;color:oklch(0.4 0.02 280);background:#fff;border:1px solid oklch(0.9 0.006 280);padding:5px 10px;border-radius:7px;">Workbox PWA</span>
+              <span style="font-family:'Geist Mono',monospace;font-size:11.5px;color:oklch(0.4 0.02 280);background:#fff;border:1px solid oklch(0.9 0.006 280);padding:5px 10px;border-radius:7px;">SQLite WASM · OPFS</span>
+              <span style="font-family:'Geist Mono',monospace;font-size:11.5px;color:oklch(0.4 0.02 280);background:#fff;border:1px solid oklch(0.9 0.006 280);padding:5px 10px;border-radius:7px;">Supabase (Postgres · RLS)</span>
+              <span style="font-family:'Geist Mono',monospace;font-size:11.5px;color:oklch(0.4 0.02 280);background:#fff;border:1px solid oklch(0.9 0.006 280);padding:5px 10px;border-radius:7px;">AES-256</span>
+            </div>
+          </div>
+          <div>
+            <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.5 0.14 285);">MCP dev toolchain</span>
+            <div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:14px;">
+              <span style="font-family:'Geist Mono',monospace;font-size:11.5px;color:oklch(0.4 0.02 280);background:#fff;border:1px solid oklch(0.9 0.006 280);padding:5px 10px;border-radius:7px;">Context7</span>
+              <span style="font-family:'Geist Mono',monospace;font-size:11.5px;color:oklch(0.4 0.02 280);background:#fff;border:1px solid oklch(0.9 0.006 280);padding:5px 10px;border-radius:7px;">Filesystem</span>
+              <span style="font-family:'Geist Mono',monospace;font-size:11.5px;color:oklch(0.4 0.02 280);background:#fff;border:1px solid oklch(0.9 0.006 280);padding:5px 10px;border-radius:7px;">GitHub</span>
+              <span style="font-family:'Geist Mono',monospace;font-size:11.5px;color:oklch(0.4 0.02 280);background:#fff;border:1px solid oklch(0.9 0.006 280);padding:5px 10px;border-radius:7px;">Playwright</span>
+              <span style="font-family:'Geist Mono',monospace;font-size:11.5px;color:oklch(0.4 0.02 280);background:#fff;border:1px solid oklch(0.9 0.006 280);padding:5px 10px;border-radius:7px;">Supabase</span>
+              <span style="font-family:'Geist Mono',monospace;font-size:11.5px;color:oklch(0.4 0.02 280);background:#fff;border:1px solid oklch(0.9 0.006 280);padding:5px 10px;border-radius:7px;">Postgres</span>
+            </div>
+          </div>
+        </div>
+        <p style="margin:24px 0 0;font-size:12px;color:oklch(0.6 0.012 280);border-top:1px solid oklch(0.92 0.006 280);padding-top:16px;">Architecture only — no application code. Next: design system, then module-by-module build.</p>
+      </div>
+    </section>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals(){ return {}; }
+}
+</script>
+</body>
+</html>

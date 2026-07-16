@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;}
+body{margin:0;background:oklch(0.975 0.004 280);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
+a{color:oklch(0.52 0.2 285);text-decoration:none;}
+a:hover{color:oklch(0.44 0.2 285);}
+</style>
+</helmet>
+
+<div style="font-family:Geist,system-ui,sans-serif;color:oklch(0.24 0.02 280);padding:0 0 80px;">
+
+  <div style="background:oklch(0.22 0.03 280);color:oklch(0.98 0.005 280);padding:56px 48px 48px;">
+    <div style="max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:18px;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span style="width:30px;height:30px;border-radius:8px;background:oklch(0.6 0.2 285);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;">V</span>
+        <span style="font-size:14px;font-weight:600;">Vyora</span>
+        <span style="font-size:13px;color:oklch(0.72 0.02 280);">User Flows</span>
+      </div>
+      <h1 style="margin:0;font-size:34px;font-weight:650;letter-spacing:-0.02em;line-height:1.12;">Fourteen core journeys</h1>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:oklch(0.78 0.02 280);max-width:720px;">Every flow is local-first: steps complete on-device and sync in the background. Diamonds are decisions; green is a start, dark is an end.</p>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:4px;">
+        <span style="display:inline-flex;align-items:center;gap:7px;font-size:12px;color:oklch(0.85 0.02 280);"><span style="width:16px;height:16px;border-radius:999px;background:oklch(0.6 0.14 155);"></span>Start</span>
+        <span style="display:inline-flex;align-items:center;gap:7px;font-size:12px;color:oklch(0.85 0.02 280);"><span style="width:16px;height:16px;border-radius:4px;background:#fff;border:1px solid oklch(0.7 0.02 280);"></span>Step</span>
+        <span style="display:inline-flex;align-items:center;gap:7px;font-size:12px;color:oklch(0.85 0.02 280);"><span style="width:16px;height:16px;border-radius:4px;background:oklch(0.75 0.13 75);"></span>Decision</span>
+        <span style="display:inline-flex;align-items:center;gap:7px;font-size:12px;color:oklch(0.85 0.02 280);"><span style="width:16px;height:16px;border-radius:999px;background:oklch(0.4 0.03 280);"></span>End</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="max-width:1120px;margin:0 auto;padding:0 48px;display:flex;flex-direction:column;gap:52px;">
+
+    <!-- ONBOARDING -->
+    <section style="margin-top:52px;">
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:20px;"><span style="font-family:'Geist Mono',monospace;font-size:13px;color:oklch(0.55 0.14 285);">01</span><h2 style="margin:0;font-size:23px;font-weight:650;letter-spacing:-0.015em;">Onboarding</h2></div>
+      <div style="display:flex;flex-direction:column;gap:16px;">
+
+        <div style="border:1px solid oklch(0.9 0.006 280);border-radius:16px;background:#fff;padding:20px 22px;box-shadow:0 6px 20px -16px rgba(40,32,90,0.2);">
+          <h3 style="margin:0 0 14px;font-size:15px;font-weight:650;">Registration</h3>
+          <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;">
+            <span style="font-size:12.5px;font-weight:600;color:oklch(0.4 0.1 155);background:oklch(0.95 0.05 155);padding:9px 14px;border-radius:999px;">Start</span>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <span style="font-size:12.5px;background:#fff;border:1px solid oklch(0.89 0.008 280);padding:9px 13px;border-radius:10px;">Enter mobile / email</span>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <span style="font-size:12.5px;background:#fff;border:1px solid oklch(0.89 0.008 280);padding:9px 13px;border-radius:10px;">Verify OTP</span>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <span style="font-size:12.5px;background:#fff;border:1px solid oklch(0.89 0.008 280);padding:9px 13px;border-radius:10px;">Set password</span>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <span style="font-size:12.5px;font-weight:600;color:#fff;background:oklch(0.28 0.03 280);padding:9px 14px;border-radius:999px;">Account created</span>
+          </div>
+        </div>
+
+        <div style="border:1px solid oklch(0.9 0.006 280);border-radius:16px;background:#fff;padding:20px 22px;box-shadow:0 6px 20px -16px rgba(40,32,90,0.2);">
+          <h3 style="margin:0 0 14px;font-size:15px;font-weight:650;">Login</h3>
+          <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;">
+            <span style="font-size:12.5px;font-weight:600;color:oklch(0.4 0.1 155);background:oklch(0.95 0.05 155);padding:9px 14px;border-radius:999px;">Start</span>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <span style="font-size:12.5px;background:#fff;border:1px solid oklch(0.89 0.008 280);padding:9px 13px;border-radius:10px;">Enter credentials</span>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <span style="font-size:12.5px;font-weight:600;color:oklch(0.46 0.1 75);background:oklch(0.97 0.04 75);border:1px solid oklch(0.88 0.06 75);padding:9px 13px;border-radius:10px;">◇ Valid?</span>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <div style="display:flex;flex-direction:column;gap:7px;">
+              <div style="display:flex;align-items:center;gap:7px;"><span style="font-size:10.5px;font-weight:600;color:oklch(0.42 0.1 155);background:oklch(0.95 0.05 155);padding:3px 8px;border-radius:6px;">Yes</span><span style="font-size:12.5px;background:#fff;border:1px solid oklch(0.89 0.008 280);padding:8px 12px;border-radius:10px;">Load local data</span><span style="color:oklch(0.6 0.05 280);font-size:14px;">→</span><span style="font-size:12.5px;font-weight:600;color:#fff;background:oklch(0.28 0.03 280);padding:8px 13px;border-radius:999px;">Dashboard</span></div>
+              <div style="display:flex;align-items:center;gap:7px;"><span style="font-size:10.5px;font-weight:600;color:oklch(0.48 0.14 25);background:oklch(0.96 0.05 25);padding:3px 8px;border-radius:6px;">No</span><span style="font-size:12.5px;background:#fff;border:1px solid oklch(0.89 0.008 280);padding:8px 12px;border-radius:10px;">Error → retry / reset</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div style="border:1px solid oklch(0.9 0.006 280);border-radius:16px;background:#fff;padding:20px 22px;box-shadow:0 6px 20px -16px rgba(40,32,90,0.2);">
+          <h3 style="margin:0 0 14px;font-size:15px;font-weight:650;">Company setup</h3>
+          <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;">
+            <span style="font-size:12.5px;font-weight:600;color:oklch(0.4 0.1 155);background:oklch(0.95 0.05 155);padding:9px 14px;border-radius:999px;">Start</span>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <span style="font-size:12.5px;background:#fff;border:1px solid oklch(0.89 0.008 280);padding:9px 13px;border-radius:10px;">Name &amp; GSTIN</span>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <span style="font-size:12.5px;background:#fff;border:1px solid oklch(0.89 0.008 280);padding:9px 13px;border-radius:10px;">Address &amp; contact</span>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <span style="font-size:12.5px;background:#fff;border:1px solid oklch(0.89 0.008 280);padding:9px 13px;border-radius:10px;">Upload logo</span>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <span style="font-size:12.5px;font-weight:600;color:oklch(0.4 0.08 285);background:oklch(0.96 0.025 285);border:1px solid oklch(0.9 0.035 285);padding:9px 13px;border-radius:10px;">Generate encryption key</span>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <span style="font-size:12.5px;font-weight:600;color:#fff;background:oklch(0.28 0.03 280);padding:9px 14px;border-radius:999px;">Business selection</span>
+          </div>
+        </div>
+
+        <div style="border:1px solid oklch(0.9 0.006 280);border-radius:16px;background:#fff;padding:20px 22px;box-shadow:0 6px 20px -16px rgba(40,32,90,0.2);">
+          <h3 style="margin:0 0 14px;font-size:15px;font-weight:650;">Business selection</h3>
+          <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;">
+            <span style="font-size:12.5px;font-weight:600;color:oklch(0.4 0.1 155);background:oklch(0.95 0.05 155);padding:9px 14px;border-radius:999px;">Start</span>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <span style="font-size:12.5px;background:#fff;border:1px solid oklch(0.89 0.008 280);padding:9px 13px;border-radius:10px;">Choose business type</span>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <span style="font-size:12.5px;font-weight:600;color:oklch(0.4 0.08 285);background:oklch(0.96 0.025 285);border:1px solid oklch(0.9 0.035 285);padding:9px 13px;border-radius:10px;">Metadata generates fields</span>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <span style="font-size:12.5px;background:#fff;border:1px solid oklch(0.89 0.008 280);padding:9px 13px;border-radius:10px;">Preview workspace</span>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <span style="font-size:12.5px;background:#fff;border:1px solid oklch(0.89 0.008 280);padding:9px 13px;border-radius:10px;">Confirm</span>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <span style="font-size:12.5px;font-weight:600;color:#fff;background:oklch(0.28 0.03 280);padding:9px 14px;border-radius:999px;">Dashboard</span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- TRANSACTIONS -->
+    <section>
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:20px;"><span style="font-family:'Geist Mono',monospace;font-size:13px;color:oklch(0.55 0.14 285);">02</span><h2 style="margin:0;font-size:23px;font-weight:650;letter-spacing:-0.015em;">Transactions</h2></div>
+      <div style="display:flex;flex-direction:column;gap:16px;">
+
+        <div style="border:1px solid oklch(0.9 0.006 280);border-radius:16px;background:#fff;padding:20px 22px;box-shadow:0 6px 20px -16px rgba(40,32,90,0.2);">
+          <h3 style="margin:0 0 14px;font-size:15px;font-weight:650;">First invoice</h3>
+          <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;">
+            <span style="font-size:12.5px;font-weight:600;color:oklch(0.4 0.1 155);background:oklch(0.95 0.05 155);padding:9px 14px;border-radius:999px;">New invoice</span>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <span style="font-size:12.5px;background:#fff;border:1px solid oklch(0.89 0.008 280);padding:9px 13px;border-radius:10px;">Add customer</span>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <span style="font-size:12.5px;background:#fff;border:1px solid oklch(0.89 0.008 280);padding:9px 13px;border-radius:10px;">Add items (dynamic fields)</span>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <span style="font-size:12.5px;background:#fff;border:1px solid oklch(0.89 0.008 280);padding:9px 13px;border-radius:10px;">Auto GST</span>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <span style="font-size:12.5px;background:#fff;border:1px solid oklch(0.89 0.008 280);padding:9px 13px;border-radius:10px;">Save (local)</span>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <span style="font-size:12.5px;font-weight:600;color:oklch(0.46 0.1 75);background:oklch(0.97 0.04 75);border:1px solid oklch(0.88 0.06 75);padding:9px 13px;border-radius:10px;">◇ Online?</span>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <div style="display:flex;flex-direction:column;gap:7px;">
+              <div style="display:flex;align-items:center;gap:7px;"><span style="font-size:10.5px;font-weight:600;color:oklch(0.42 0.1 155);background:oklch(0.95 0.05 155);padding:3px 8px;border-radius:6px;">Yes</span><span style="font-size:12.5px;background:#fff;border:1px solid oklch(0.89 0.008 280);padding:8px 12px;border-radius:10px;">Sync + WhatsApp send</span></div>
+              <div style="display:flex;align-items:center;gap:7px;"><span style="font-size:10.5px;font-weight:600;color:oklch(0.5 0.1 70);background:oklch(0.96 0.05 80);padding:3px 8px;border-radius:6px;">No</span><span style="font-size:12.5px;background:#fff;border:1px solid oklch(0.89 0.008 280);padding:8px 12px;border-radius:10px;">Queued — syncs later</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div style="border:1px solid oklch(0.9 0.006 280);border-radius:16px;background:#fff;padding:20px 22px;box-shadow:0 6px 20px -16px rgba(40,32,90,0.2);">
+          <h3 style="margin:0 0 14px;font-size:15px;font-weight:650;">Purchase workflow</h3>
+          <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;">
+            <span style="font-size:12.5px;font-weight:600;color:oklch(0.4 0.1 155);background:oklch(0.95 0.05 155);padding:9px 14px;border-radius:999px;">New PO</span>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <span style="font-size:12.5px;background:#fff;border:1px solid oklch(0.89 0.008 280);padding:9px 13px;border-radius:10px;">Select supplier</span>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <span style="font-size:12.5px;background:#fff;border:1px solid oklch(0.89 0.008 280);padding:9px 13px;border-radius:10px;">Add items</span>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <span style="font-size:12.5px;background:#fff;border:1px solid oklch(0.89 0.008 280);padding:9px 13px;border-radius:10px;">Send PO</span>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <span style="font-size:12.5px;background:#fff;border:1px solid oklch(0.89 0.008 280);padding:9px 13px;border-radius:10px;">Receive goods (GRN)</span>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <span style="font-size:12.5px;background:#fff;border:1px solid oklch(0.89 0.008 280);padding:9px 13px;border-radius:10px;">Purchase bill</span>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <span style="font-size:12.5px;font-weight:600;color:#fff;background:oklch(0.28 0.03 280);padding:9px 14px;border-radius:999px;">Stock updated</span>
+          </div>
+        </div>
+
+        <div style="border:1px solid oklch(0.9 0.006 280);border-radius:16px;background:#fff;padding:20px 22px;box-shadow:0 6px 20px -16px rgba(40,32,90,0.2);">
+          <h3 style="margin:0 0 14px;font-size:15px;font-weight:650;">Return workflow</h3>
+          <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;">
+            <span style="font-size:12.5px;font-weight:600;color:oklch(0.4 0.1 155);background:oklch(0.95 0.05 155);padding:9px 14px;border-radius:999px;">Open invoice / bill</span>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <span style="font-size:12.5px;background:#fff;border:1px solid oklch(0.89 0.008 280);padding:9px 13px;border-radius:10px;">Select return items</span>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <span style="font-size:12.5px;background:#fff;border:1px solid oklch(0.89 0.008 280);padding:9px 13px;border-radius:10px;">Choose reason</span>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <span style="font-size:12.5px;background:#fff;border:1px solid oklch(0.89 0.008 280);padding:9px 13px;border-radius:10px;">Credit / debit note</span>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <span style="font-size:12.5px;background:#fff;border:1px solid oklch(0.89 0.008 280);padding:9px 13px;border-radius:10px;">Stock adjusted</span>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <span style="font-size:12.5px;font-weight:600;color:#fff;background:oklch(0.28 0.03 280);padding:9px 14px;border-radius:999px;">Refund / adjust</span>
+          </div>
+        </div>
+
+        <div style="border:1px solid oklch(0.9 0.006 280);border-radius:16px;background:#fff;padding:20px 22px;box-shadow:0 6px 20px -16px rgba(40,32,90,0.2);">
+          <h3 style="margin:0 0 14px;font-size:15px;font-weight:650;">Payment workflow</h3>
+          <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;">
+            <span style="font-size:12.5px;font-weight:600;color:oklch(0.4 0.1 155);background:oklch(0.95 0.05 155);padding:9px 14px;border-radius:999px;">Open invoice</span>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <span style="font-size:12.5px;background:#fff;border:1px solid oklch(0.89 0.008 280);padding:9px 13px;border-radius:10px;">Record payment</span>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <span style="font-size:12.5px;font-weight:600;color:oklch(0.46 0.1 75);background:oklch(0.97 0.04 75);border:1px solid oklch(0.88 0.06 75);padding:9px 13px;border-radius:10px;">◇ Full or partial?</span>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <div style="display:flex;flex-direction:column;gap:7px;">
+              <div style="display:flex;align-items:center;gap:7px;"><span style="font-size:10.5px;font-weight:600;color:oklch(0.42 0.1 155);background:oklch(0.95 0.05 155);padding:3px 8px;border-radius:6px;">Full</span><span style="font-size:12.5px;background:#fff;border:1px solid oklch(0.89 0.008 280);padding:8px 12px;border-radius:10px;">Marked paid</span></div>
+              <div style="display:flex;align-items:center;gap:7px;"><span style="font-size:10.5px;font-weight:600;color:oklch(0.5 0.1 70);background:oklch(0.96 0.05 80);padding:3px 8px;border-radius:6px;">Partial</span><span style="font-size:12.5px;background:#fff;border:1px solid oklch(0.89 0.008 280);padding:8px 12px;border-radius:10px;">Balance due tracked</span></div>
+            </div>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <span style="font-size:12.5px;font-weight:600;color:#fff;background:oklch(0.28 0.03 280);padding:9px 14px;border-radius:999px;">Receipt + ledger</span>
+          </div>
+        </div>
+
+        <div style="border:1px solid oklch(0.9 0.006 280);border-radius:16px;background:#fff;padding:20px 22px;box-shadow:0 6px 20px -16px rgba(40,32,90,0.2);">
+          <h3 style="margin:0 0 14px;font-size:15px;font-weight:650;">Stock management</h3>
+          <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;">
+            <span style="font-size:12.5px;font-weight:600;color:oklch(0.4 0.1 155);background:oklch(0.95 0.05 155);padding:9px 14px;border-radius:999px;">Inventory</span>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <span style="font-size:12.5px;font-weight:600;color:oklch(0.46 0.1 75);background:oklch(0.97 0.04 75);border:1px solid oklch(0.88 0.06 75);padding:9px 13px;border-radius:10px;">◇ Trigger</span>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <div style="display:flex;flex-direction:column;gap:7px;">
+              <div style="display:flex;align-items:center;gap:7px;"><span style="font-size:10.5px;font-weight:600;color:oklch(0.5 0.1 70);background:oklch(0.96 0.05 80);padding:3px 8px;border-radius:6px;">Alert</span><span style="font-size:12.5px;background:#fff;border:1px solid oklch(0.89 0.008 280);padding:8px 12px;border-radius:10px;">Low-stock / expiry</span></div>
+              <div style="display:flex;align-items:center;gap:7px;"><span style="font-size:10.5px;font-weight:600;color:oklch(0.5 0.02 280);background:oklch(0.95 0.005 280);padding:3px 8px;border-radius:6px;">Manual</span><span style="font-size:12.5px;background:#fff;border:1px solid oklch(0.89 0.008 280);padding:8px 12px;border-radius:10px;">Adjust count</span></div>
+            </div>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <span style="font-size:12.5px;background:#fff;border:1px solid oklch(0.89 0.008 280);padding:9px 13px;border-radius:10px;">Reorder / update batches</span>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <span style="font-size:12.5px;font-weight:600;color:#fff;background:oklch(0.28 0.03 280);padding:9px 14px;border-radius:999px;">Synced</span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- DATA & ACCOUNT -->
+    <section>
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:20px;"><span style="font-family:'Geist Mono',monospace;font-size:13px;color:oklch(0.55 0.14 285);">03</span><h2 style="margin:0;font-size:23px;font-weight:650;letter-spacing:-0.015em;">Data &amp; account</h2></div>
+      <div style="display:flex;flex-direction:column;gap:16px;">
+
+        <div style="border:1px solid oklch(0.9 0.006 280);border-radius:16px;background:#fff;padding:20px 22px;box-shadow:0 6px 20px -16px rgba(40,32,90,0.2);">
+          <h3 style="margin:0 0 14px;font-size:15px;font-weight:650;">Backup</h3>
+          <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;">
+            <span style="font-size:12.5px;font-weight:600;color:oklch(0.4 0.1 155);background:oklch(0.95 0.05 155);padding:9px 14px;border-radius:999px;">Settings → Backup</span>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <span style="font-size:12.5px;font-weight:600;color:oklch(0.4 0.08 285);background:oklch(0.96 0.025 285);border:1px solid oklch(0.9 0.035 285);padding:9px 13px;border-radius:10px;">Encrypt snapshot</span>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <span style="font-size:12.5px;font-weight:600;color:oklch(0.46 0.1 75);background:oklch(0.97 0.04 75);border:1px solid oklch(0.88 0.06 75);padding:9px 13px;border-radius:10px;">◇ Destination</span>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <div style="display:flex;flex-direction:column;gap:7px;">
+              <div style="display:flex;align-items:center;gap:7px;"><span style="font-size:10.5px;font-weight:600;color:oklch(0.5 0.02 280);background:oklch(0.95 0.005 280);padding:3px 8px;border-radius:6px;">Local</span><span style="font-size:12.5px;background:#fff;border:1px solid oklch(0.89 0.008 280);padding:8px 12px;border-radius:10px;">Download .vyora file</span></div>
+              <div style="display:flex;align-items:center;gap:7px;"><span style="font-size:10.5px;font-weight:600;color:oklch(0.42 0.1 155);background:oklch(0.95 0.05 155);padding:3px 8px;border-radius:6px;">Cloud</span><span style="font-size:12.5px;background:#fff;border:1px solid oklch(0.89 0.008 280);padding:8px 12px;border-radius:10px;">Encrypted to Storage</span></div>
+            </div>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <span style="font-size:12.5px;font-weight:600;color:#fff;background:oklch(0.28 0.03 280);padding:9px 14px;border-radius:999px;">Done</span>
+          </div>
+        </div>
+
+        <div style="border:1px solid oklch(0.9 0.006 280);border-radius:16px;background:#fff;padding:20px 22px;box-shadow:0 6px 20px -16px rgba(40,32,90,0.2);">
+          <h3 style="margin:0 0 14px;font-size:15px;font-weight:650;">Restore</h3>
+          <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;">
+            <span style="font-size:12.5px;font-weight:600;color:oklch(0.4 0.1 155);background:oklch(0.95 0.05 155);padding:9px 14px;border-radius:999px;">Settings → Restore</span>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <span style="font-size:12.5px;background:#fff;border:1px solid oklch(0.89 0.008 280);padding:9px 13px;border-radius:10px;">Select backup</span>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <span style="font-size:12.5px;font-weight:600;color:oklch(0.46 0.1 75);background:oklch(0.97 0.04 75);border:1px solid oklch(0.88 0.06 75);padding:9px 13px;border-radius:10px;">◇ Valid key?</span>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <div style="display:flex;flex-direction:column;gap:7px;">
+              <div style="display:flex;align-items:center;gap:7px;"><span style="font-size:10.5px;font-weight:600;color:oklch(0.42 0.1 155);background:oklch(0.95 0.05 155);padding:3px 8px;border-radius:6px;">Yes</span><span style="font-size:12.5px;background:#fff;border:1px solid oklch(0.89 0.008 280);padding:8px 12px;border-radius:10px;">Decrypt &amp; merge</span><span style="color:oklch(0.6 0.05 280);font-size:14px;">→</span><span style="font-size:12.5px;font-weight:600;color:#fff;background:oklch(0.28 0.03 280);padding:8px 13px;border-radius:999px;">Restored</span></div>
+              <div style="display:flex;align-items:center;gap:7px;"><span style="font-size:10.5px;font-weight:600;color:oklch(0.48 0.14 25);background:oklch(0.96 0.05 25);padding:3px 8px;border-radius:6px;">No</span><span style="font-size:12.5px;background:#fff;border:1px solid oklch(0.89 0.008 280);padding:8px 12px;border-radius:10px;">Error — key required</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div style="border:1px solid oklch(0.9 0.006 280);border-radius:16px;background:#fff;padding:20px 22px;box-shadow:0 6px 20px -16px rgba(40,32,90,0.2);">
+          <h3 style="margin:0 0 14px;font-size:15px;font-weight:650;">Subscription</h3>
+          <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;">
+            <span style="font-size:12.5px;font-weight:600;color:oklch(0.4 0.1 155);background:oklch(0.95 0.05 155);padding:9px 14px;border-radius:999px;">Plans</span>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <span style="font-size:12.5px;background:#fff;border:1px solid oklch(0.89 0.008 280);padding:9px 13px;border-radius:10px;">Choose seats (1–unlimited)</span>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <span style="font-size:12.5px;background:#fff;border:1px solid oklch(0.89 0.008 280);padding:9px 13px;border-radius:10px;">Payment</span>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <span style="font-size:12.5px;background:#fff;border:1px solid oklch(0.89 0.008 280);padding:9px 13px;border-radius:10px;">Activate</span>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <span style="font-size:12.5px;font-weight:600;color:#fff;background:oklch(0.28 0.03 280);padding:9px 14px;border-radius:999px;">Seats provisioned</span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- INTELLIGENCE -->
+    <section>
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:20px;"><span style="font-family:'Geist Mono',monospace;font-size:13px;color:oklch(0.55 0.14 285);">04</span><h2 style="margin:0;font-size:23px;font-weight:650;letter-spacing:-0.015em;">Intelligence</h2></div>
+      <div style="display:flex;flex-direction:column;gap:16px;">
+
+        <div style="border:1px solid oklch(0.9 0.035 285);border-radius:16px;background:oklch(0.985 0.012 285);padding:20px 22px;">
+          <h3 style="margin:0 0 14px;font-size:15px;font-weight:650;color:oklch(0.36 0.1 285);">AI assistant</h3>
+          <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;">
+            <span style="font-size:12.5px;font-weight:600;color:oklch(0.4 0.1 155);background:oklch(0.95 0.05 155);padding:9px 14px;border-radius:999px;">Open Copilot</span>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <span style="font-size:12.5px;background:#fff;border:1px solid oklch(0.89 0.035 285);padding:9px 13px;border-radius:10px;">Type / speak request</span>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <span style="font-size:12.5px;font-weight:600;color:oklch(0.4 0.08 285);background:oklch(0.96 0.025 285);border:1px solid oklch(0.9 0.035 285);padding:9px 13px;border-radius:10px;">Interpret intent</span>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <span style="font-size:12.5px;font-weight:600;color:oklch(0.46 0.1 75);background:oklch(0.97 0.04 75);border:1px solid oklch(0.88 0.06 75);padding:9px 13px;border-radius:10px;">◇ Action?</span>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <div style="display:flex;flex-direction:column;gap:7px;">
+              <div style="display:flex;align-items:center;gap:7px;"><span style="font-size:10.5px;font-weight:600;color:oklch(0.4 0.08 285);background:oklch(0.96 0.025 285);padding:3px 8px;border-radius:6px;">Create</span><span style="font-size:12.5px;background:#fff;border:1px solid oklch(0.89 0.035 285);padding:8px 12px;border-radius:10px;">Draft doc → review → confirm</span></div>
+              <div style="display:flex;align-items:center;gap:7px;"><span style="font-size:10.5px;font-weight:600;color:oklch(0.42 0.1 155);background:oklch(0.95 0.05 155);padding:3px 8px;border-radius:6px;">Answer</span><span style="font-size:12.5px;background:#fff;border:1px solid oklch(0.89 0.035 285);padding:8px 12px;border-radius:10px;">Report / insight inline</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div style="border:1px solid oklch(0.9 0.035 285);border-radius:16px;background:oklch(0.985 0.012 285);padding:20px 22px;">
+          <h3 style="margin:0 0 14px;font-size:15px;font-weight:650;color:oklch(0.36 0.1 285);">OCR capture</h3>
+          <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;">
+            <span style="font-size:12.5px;font-weight:600;color:oklch(0.4 0.1 155);background:oklch(0.95 0.05 155);padding:9px 14px;border-radius:999px;">Upload PO / bill photo</span>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <span style="font-size:12.5px;background:#fff;border:1px solid oklch(0.89 0.035 285);padding:9px 13px;border-radius:10px;">OCR extract</span>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <span style="font-size:12.5px;font-weight:600;color:oklch(0.4 0.08 285);background:oklch(0.96 0.025 285);border:1px solid oklch(0.9 0.035 285);padding:9px 13px;border-radius:10px;">AI maps fields</span>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <span style="font-size:12.5px;background:#fff;border:1px solid oklch(0.89 0.035 285);padding:9px 13px;border-radius:10px;">Review &amp; edit</span>
+            <span style="color:oklch(0.6 0.05 280);font-size:15px;">→</span>
+            <span style="font-size:12.5px;font-weight:600;color:#fff;background:oklch(0.28 0.03 280);padding:9px 14px;border-radius:999px;">Invoice / expense created</span>
+          </div>
+        </div>
+
+      </div>
+      <p style="margin:22px 0 0;font-size:12px;color:oklch(0.6 0.012 280);">Next: wireframe or high-fidelity screens for these flows — Sales / first invoice is the usual starting point.</p>
+    </section>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals(){ return {}; }
+}
+</script>
+</body>
+</html>

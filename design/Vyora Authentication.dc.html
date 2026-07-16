@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;}
+body{margin:0;background:oklch(0.975 0.004 280);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
+a{color:oklch(0.52 0.2 285);text-decoration:none;}
+a:hover{color:oklch(0.44 0.2 285);}
+</style>
+</helmet>
+
+<div style="font-family:Geist,system-ui,sans-serif;color:oklch(0.24 0.02 280);padding:0 0 70px;">
+
+  <div style="background:oklch(0.22 0.03 280);color:oklch(0.98 0.005 280);padding:52px 48px 44px;">
+    <div style="max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:16px;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span style="width:30px;height:30px;border-radius:8px;background:oklch(0.6 0.2 285);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;">V</span>
+        <span style="font-size:14px;font-weight:600;">Vyora</span>
+        <span style="font-size:13px;color:oklch(0.72 0.02 280);">Authentication · Doc 07</span>
+      </div>
+      <h1 style="margin:0;font-size:32px;font-weight:650;letter-spacing:-0.02em;line-height:1.14;">Phone-first login that unlocks an encryption key</h1>
+      <p style="margin:0;font-size:14.5px;line-height:1.6;color:oklch(0.78 0.02 280);max-width:760px;">MSME owners log in with a phone number and OTP — no passwords to forget. Behind it, authentication also unwraps the company's data-encryption key, binds the session to a device, and issues short-lived tokens carrying the tenant claim.</p>
+    </div>
+  </div>
+
+  <div style="max-width:1120px;margin:0 auto;padding:0 48px;display:flex;flex-direction:column;gap:52px;">
+
+    <!-- OTP FLOW -->
+    <section style="margin-top:48px;">
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:18px;"><span style="font-family:'Geist Mono',monospace;font-size:13px;color:oklch(0.55 0.14 285);">01</span><h2 style="margin:0;font-size:23px;font-weight:650;letter-spacing:-0.015em;">Login flow — OTP to unlocked key</h2></div>
+      <div style="display:flex;align-items:stretch;gap:12px;flex-wrap:wrap;">
+        <sc-for list="{{ flow }}" as="s" hint-placeholder-count="5">
+          <div style="flex:1;min-width:170px;border:1px solid oklch(0.91 0.006 280);border-radius:14px;background:#fff;padding:18px;display:flex;flex-direction:column;gap:8px;box-shadow:0 5px 16px -14px rgba(40,32,90,0.2);">
+            <span style="width:28px;height:28px;border-radius:50%;background:oklch(0.52 0.2 285);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:650;">{{ s.n }}</span>
+            <span style="font-size:13px;font-weight:650;margin-top:2px;">{{ s.title }}</span>
+            <span style="font-size:11.5px;line-height:1.45;color:oklch(0.52 0.015 280);">{{ s.desc }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <!-- TOKENS -->
+    <section>
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:18px;"><span style="font-family:'Geist Mono',monospace;font-size:13px;color:oklch(0.55 0.14 285);">02</span><h2 style="margin:0;font-size:23px;font-weight:650;letter-spacing:-0.015em;">Tokens &amp; the JWT claim set</h2></div>
+      <div style="display:grid;grid-template-columns:1fr 1.1fr;gap:18px;align-items:start;">
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div style="border:1px solid oklch(0.91 0.006 280);border-radius:13px;background:#fff;padding:18px;"><div style="display:flex;justify-content:space-between;align-items:baseline;"><span style="font-size:13px;font-weight:650;">Access token</span><span style="font-family:'Geist Mono',monospace;font-size:11.5px;color:oklch(0.45 0.1 285);">15 min</span></div><p style="margin:6px 0 0;font-size:12px;line-height:1.5;color:oklch(0.52 0.015 280);">Short-lived JWT sent as a Bearer header. Carries tenant + role; RLS reads it directly.</p></div>
+          <div style="border:1px solid oklch(0.91 0.006 280);border-radius:13px;background:#fff;padding:18px;"><div style="display:flex;justify-content:space-between;align-items:baseline;"><span style="font-size:13px;font-weight:650;">Refresh token</span><span style="font-family:'Geist Mono',monospace;font-size:11.5px;color:oklch(0.45 0.1 285);">30 days · rotating</span></div><p style="margin:6px 0 0;font-size:12px;line-height:1.5;color:oklch(0.52 0.015 280);">Stored in secure storage, bound to device_id. Rotated on every use; reuse = breach → revoke all.</p></div>
+        </div>
+        <div style="border:1px solid oklch(0.9 0.006 280);border-radius:14px;background:oklch(0.19 0.02 280);overflow:hidden;box-shadow:0 12px 34px -22px rgba(40,32,90,0.4);">
+          <div style="padding:10px 18px;border-bottom:1px solid oklch(0.3 0.02 280);display:flex;gap:8px;align-items:center;"><span style="width:11px;height:11px;border-radius:50%;background:oklch(0.6 0.15 25);"></span><span style="width:11px;height:11px;border-radius:50%;background:oklch(0.78 0.13 85);"></span><span style="width:11px;height:11px;border-radius:50%;background:oklch(0.7 0.14 145);"></span><span style="font-family:'Geist Mono',monospace;font-size:11px;color:oklch(0.6 0.02 280);margin-left:8px;">jwt.payload</span></div>
+          <pre style="margin:0;padding:18px 20px;font-family:'Geist Mono',monospace;font-size:12px;line-height:1.7;color:oklch(0.85 0.02 280);overflow-x:auto;"><span style="color:oklch(0.6 0.02 280);">{</span>
+  <span style="color:oklch(0.75 0.12 285);">"sub"</span>: <span style="color:oklch(0.8 0.1 145);">"usr_4471"</span>,
+  <span style="color:oklch(0.75 0.12 285);">"org_id"</span>: <span style="color:oklch(0.8 0.1 145);">"org_7712"</span>,   <span style="color:oklch(0.55 0.02 280);">// RLS tenant key</span>
+  <span style="color:oklch(0.75 0.12 285);">"role"</span>: <span style="color:oklch(0.8 0.1 145);">"owner"</span>,
+  <span style="color:oklch(0.75 0.12 285);">"device_id"</span>: <span style="color:oklch(0.8 0.1 145);">"dev_a19f"</span>,
+  <span style="color:oklch(0.75 0.12 285);">"exp"</span>: <span style="color:oklch(0.82 0.13 60);">1752661924</span>
+<span style="color:oklch(0.6 0.02 280);">}</span></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- RBAC + DEVICES -->
+    <section>
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:18px;"><span style="font-family:'Geist Mono',monospace;font-size:13px;color:oklch(0.55 0.14 285);">03</span><h2 style="margin:0;font-size:23px;font-weight:650;letter-spacing:-0.015em;">Roles &amp; device sessions</h2></div>
+      <div style="display:grid;grid-template-columns:1.3fr 1fr;gap:18px;align-items:start;">
+        <div style="border:1px solid oklch(0.91 0.006 280);border-radius:14px;background:#fff;overflow:hidden;">
+          <div style="display:grid;grid-template-columns:1.4fr repeat(4,1fr);gap:8px;padding:11px 18px;background:oklch(0.98 0.004 280);border-bottom:1px solid oklch(0.92 0.006 280);"><span style="font-size:10px;font-weight:600;text-transform:uppercase;color:oklch(0.55 0.012 280);">Capability</span><span style="font-size:10px;font-weight:600;text-align:center;color:oklch(0.42 0.02 280);">Owner</span><span style="font-size:10px;font-weight:600;text-align:center;color:oklch(0.42 0.02 280);">Mgr</span><span style="font-size:10px;font-weight:600;text-align:center;color:oklch(0.42 0.02 280);">Cashier</span><span style="font-size:10px;font-weight:600;text-align:center;color:oklch(0.42 0.02 280);">Acct</span></div>
+          <sc-for list="{{ rbac }}" as="r" hint-placeholder-count="5">
+            <div style="display:grid;grid-template-columns:1.4fr repeat(4,1fr);gap:8px;padding:11px 18px;border-bottom:1px solid oklch(0.96 0.004 280);align-items:center;"><span style="font-size:12px;">{{ r.cap }}</span><span style="text-align:center;color:oklch(0.55 0.18 285);font-size:13px;">{{ r.o }}</span><span style="text-align:center;color:oklch(0.55 0.18 285);font-size:13px;">{{ r.m }}</span><span style="text-align:center;color:oklch(0.55 0.18 285);font-size:13px;">{{ r.c }}</span><span style="text-align:center;color:oklch(0.55 0.18 285);font-size:13px;">{{ r.a }}</span></div>
+          </sc-for>
+          <div style="padding:10px 18px;font-size:11px;color:oklch(0.6 0.012 280);">● full · ○ read-only · &nbsp;·&nbsp; none</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div style="border:1px solid oklch(0.91 0.006 280);border-radius:14px;background:#fff;padding:18px;">
+            <h3 style="margin:0 0 12px;font-size:13.5px;font-weight:650;">Trusted devices</h3>
+            <sc-for list="{{ devices }}" as="d" hint-placeholder-count="3">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid oklch(0.96 0.004 280);"><span style="display:flex;flex-direction:column;"><span style="font-size:12.5px;font-weight:600;">{{ d.name }}</span><span style="font-size:11px;color:oklch(0.58 0.012 280);">{{ d.last }}</span></span><span style="{{ d.badge }}">{{ d.state }}</span></div>
+            </sc-for>
+            <p style="margin:12px 0 0;font-size:11.5px;line-height:1.5;color:oklch(0.55 0.015 280);">The owner can revoke any device instantly; its refresh token dies and its local key cache is wiped on next launch.</p>
+          </div>
+          <div style="border:1px solid oklch(0.9 0.035 285);border-radius:14px;background:oklch(0.985 0.012 285);padding:16px 18px;"><p style="margin:0;font-size:12.5px;line-height:1.55;color:oklch(0.36 0.04 285);">Support staff never get a role that reads tenant data — cross-tenant access always requires a time-boxed owner OTP grant. See <a href="Vyora Security Architecture.dc.html">Security</a>.</p></div>
+        </div>
+      </div>
+      <p style="margin:22px 2px 0;font-size:12px;color:oklch(0.6 0.012 280);">Related: <a href="Vyora Security Architecture.dc.html">Security Architecture</a> · <a href="Vyora API Spec.dc.html">API Spec</a> · <a href="Vyora Index.dc.html">Project index</a></p>
+    </section>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals(){
+    const flow=[
+      {n:'1',title:'Enter phone',desc:'Owner types their mobile number — the only credential they need to remember.'},
+      {n:'2',title:'Verify OTP',desc:'6-digit code via SMS/WhatsApp. Rate-limited, expires in 5 min, 3 attempts.'},
+      {n:'3',title:'Issue tokens',desc:'Server returns a 15-min access JWT + rotating refresh token bound to this device.'},
+      {n:'4',title:'Unlock key',desc:'A passphrase/biometric-derived KEK (Argon2id) unwraps the company\u2019s data key locally.'},
+      {n:'5',title:'Ready offline',desc:'Session + key cached securely; the app now reads and writes with zero further network.'}
+    ];
+    const rbac=[
+      {cap:'Create invoices',o:'\u25cf',m:'\u25cf',c:'\u25cf',a:'\u00b7'},
+      {cap:'Edit products & pricing',o:'\u25cf',m:'\u25cf',c:'\u00b7',a:'\u00b7'},
+      {cap:'View reports',o:'\u25cf',m:'\u25cf',c:'\u00b7',a:'\u25cf'},
+      {cap:'File GST returns',o:'\u25cf',m:'\u00b7',c:'\u00b7',a:'\u25cf'},
+      {cap:'Manage users & devices',o:'\u25cf',m:'\u00b7',c:'\u00b7',a:'\u00b7'}
+    ];
+    const bdg=(kind)=>{
+      const c={active:['oklch(0.44 0.11 155)','oklch(0.95 0.05 155)','oklch(0.86 0.07 155)'],this:['oklch(0.42 0.13 285)','oklch(0.96 0.03 285)','oklch(0.9 0.04 285)']}[kind];
+      return {fontSize:'10.5px',fontWeight:600,color:c[0],background:c[1],border:'1px solid '+c[2],padding:'3px 9px',borderRadius:'999px',whiteSpace:'nowrap'};
+    };
+    const devices=[
+      {name:'Redmi Note 13 · Owner',last:'This device · active now',state:'This device',badge:bdg('this')},
+      {name:'Counter PC · Windows',last:'Last synced 4 min ago',state:'Active',badge:bdg('active')},
+      {name:'iPad · Billing desk',last:'Last synced 2 hr ago',state:'Active',badge:bdg('active')}
+    ];
+    return { flow, rbac, devices };
+  }
+}
+</script>
+</body>
+</html>

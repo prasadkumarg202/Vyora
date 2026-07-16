@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;}
+body{margin:0;background:oklch(0.975 0.004 280);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
+a{color:oklch(0.52 0.2 285);text-decoration:none;}
+a:hover{color:oklch(0.44 0.2 285);}
+</style>
+</helmet>
+
+<div style="font-family:Geist,system-ui,sans-serif;color:oklch(0.24 0.02 280);padding:0 0 70px;">
+
+  <div style="background:oklch(0.22 0.03 280);color:oklch(0.98 0.005 280);padding:52px 48px 44px;">
+    <div style="max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:16px;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span style="width:30px;height:30px;border-radius:8px;background:oklch(0.6 0.2 285);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;">V</span>
+        <span style="font-size:14px;font-weight:600;">Vyora</span>
+        <span style="font-size:13px;color:oklch(0.72 0.02 280);">Sync Engine · Doc 09</span>
+      </div>
+      <h1 style="margin:0;font-size:32px;font-weight:650;letter-spacing:-0.02em;line-height:1.14;">A durable outbox that drains without losing a byte</h1>
+      <p style="margin:0;font-size:14.5px;line-height:1.6;color:oklch(0.78 0.02 280);max-width:760px;">The sync engine turns local writes into a queue of encrypted envelopes, flushes them to the server on a delta cursor, resolves conflicts deterministically, and fans changes back to every device via Realtime. This doc is the algorithm; <a href="Vyora Offline Architecture.dc.html" style="color:oklch(0.7 0.12 285);">Offline Architecture</a> has the interactive demo.</p>
+    </div>
+  </div>
+
+  <div style="max-width:1120px;margin:0 auto;padding:0 48px;display:flex;flex-direction:column;gap:52px;">
+
+    <!-- OUTBOX STATE MACHINE -->
+    <section style="margin-top:48px;">
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:18px;"><span style="font-family:'Geist Mono',monospace;font-size:13px;color:oklch(0.55 0.14 285);">01</span><h2 style="margin:0;font-size:23px;font-weight:650;letter-spacing:-0.015em;">Outbox record state machine</h2></div>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        <sc-for list="{{ states }}" as="s" hint-placeholder-count="4">
+          <div style="{{ s.box }}"><span style="font-family:'Geist Mono',monospace;font-size:13px;font-weight:600;">{{ s.name }}</span><div style="font-size:11px;margin-top:4px;opacity:0.85;">{{ s.desc }}</div></div>
+          <sc-if value="{{ s.arrow }}" hint-placeholder-val="{{ true }}"><span style="font-size:22px;color:oklch(0.6 0.05 280);">→</span></sc-if>
+        </sc-for>
+      </div>
+      <div style="margin-top:14px;display:flex;gap:10px;align-items:center;">
+        <span style="font-size:22px;color:oklch(0.6 0.05 280);">↺</span>
+        <p style="margin:0;font-size:12.5px;line-height:1.5;color:oklch(0.5 0.015 280);"><strong>failed</strong> re-enters <strong>pending</strong> with exponential backoff (2s → 4s → … → 5 min cap). A record never leaves the outbox until the server acknowledges it.</p>
+      </div>
+    </section>
+
+    <!-- SYNC CYCLE -->
+    <section>
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:18px;"><span style="font-family:'Geist Mono',monospace;font-size:13px;color:oklch(0.55 0.14 285);">02</span><h2 style="margin:0;font-size:23px;font-weight:650;letter-spacing:-0.015em;">The sync cycle</h2></div>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px;">
+        <sc-for list="{{ cycle }}" as="c" hint-placeholder-count="4">
+          <div style="border:1px solid oklch(0.91 0.006 280);border-radius:14px;background:#fff;padding:20px;box-shadow:0 5px 16px -14px rgba(40,32,90,0.2);">
+            <div style="display:flex;align-items:center;gap:10px;"><span style="width:26px;height:26px;border-radius:8px;background:oklch(0.96 0.03 285);color:oklch(0.45 0.15 285);display:flex;align-items:center;justify-content:center;font-family:'Geist Mono',monospace;font-size:12px;font-weight:600;">{{ c.n }}</span><span style="font-size:14px;font-weight:650;">{{ c.title }}</span></div>
+            <p style="margin:10px 0 0;font-size:12.5px;line-height:1.55;color:oklch(0.5 0.015 280);">{{ c.desc }}</p>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <!-- TRIGGERS -->
+    <section>
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:18px;"><span style="font-family:'Geist Mono',monospace;font-size:13px;color:oklch(0.55 0.14 285);">03</span><h2 style="margin:0;font-size:23px;font-weight:650;letter-spacing:-0.015em;">What triggers a flush</h2></div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <sc-for list="{{ triggers }}" as="t" hint-placeholder-count="4">
+          <div style="flex:1;min-width:200px;border:1px solid oklch(0.91 0.006 280);border-radius:13px;background:#fff;padding:16px 18px;"><span style="font-size:13px;font-weight:650;">{{ t.name }}</span><p style="margin:5px 0 0;font-size:12px;line-height:1.5;color:oklch(0.52 0.015 280);">{{ t.desc }}</p></div>
+        </sc-for>
+      </div>
+    </section>
+
+    <!-- CONFLICT RESOLUTION -->
+    <section>
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:18px;"><span style="font-family:'Geist Mono',monospace;font-size:13px;color:oklch(0.55 0.14 285);">04</span><h2 style="margin:0;font-size:23px;font-weight:650;letter-spacing:-0.015em;">Conflict resolution rules</h2></div>
+      <p style="margin:0 0 16px;font-size:14px;line-height:1.55;color:oklch(0.5 0.015 280);max-width:720px;">Resolution is deterministic and per record-type — the same inputs always merge the same way on every device, so no divergence is possible.</p>
+      <div style="border:1px solid oklch(0.91 0.006 280);border-radius:14px;background:#fff;overflow:hidden;">
+        <div style="display:grid;grid-template-columns:1fr 1.2fr 1.4fr;gap:16px;padding:12px 20px;background:oklch(0.98 0.004 280);border-bottom:1px solid oklch(0.92 0.006 280);"><span style="font-size:10.5px;font-weight:600;text-transform:uppercase;color:oklch(0.55 0.012 280);">Record type</span><span style="font-size:10.5px;font-weight:600;text-transform:uppercase;color:oklch(0.55 0.012 280);">Strategy</span><span style="font-size:10.5px;font-weight:600;text-transform:uppercase;color:oklch(0.55 0.012 280);">Why</span></div>
+        <sc-for list="{{ conflicts }}" as="c" hint-placeholder-count="5">
+          <div style="display:grid;grid-template-columns:1fr 1.2fr 1.4fr;gap:16px;padding:13px 20px;border-bottom:1px solid oklch(0.96 0.004 280);align-items:center;"><span style="font-size:12.5px;font-weight:600;">{{ c.type }}</span><span style="font-size:12px;color:oklch(0.42 0.12 285);font-weight:500;">{{ c.strategy }}</span><span style="font-size:12px;color:oklch(0.5 0.015 280);line-height:1.45;">{{ c.why }}</span></div>
+        </sc-for>
+      </div>
+      <div style="margin-top:16px;border:1px solid oklch(0.9 0.035 285);border-radius:13px;background:oklch(0.985 0.012 285);padding:16px 20px;display:flex;gap:14px;align-items:flex-start;">
+        <span style="width:5px;align-self:stretch;border-radius:3px;background:oklch(0.55 0.18 285);flex-shrink:0;"></span>
+        <p style="margin:0;font-size:13px;line-height:1.55;color:oklch(0.36 0.04 285);">Client UUIDs mean two devices never mint the same key. Stock uses CRDT counters (sum of deltas) so simultaneous sales on two counters both count. Deletes are tombstones — a late edit can never resurrect a deleted record.</p>
+      </div>
+      <p style="margin:22px 2px 0;font-size:12px;color:oklch(0.6 0.012 280);">Related: <a href="Vyora Offline Architecture.dc.html">Offline Architecture (demo)</a> · <a href="Vyora API Spec.dc.html">API Spec</a> · <a href="Vyora Database Schema.dc.html">Database</a> · <a href="Vyora Index.dc.html">Project index</a></p>
+    </section>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals(){
+    const sbox=(hue,L)=>({minWidth:'150px',borderRadius:'12px',padding:'15px 18px',color:'#fff',background:`oklch(${L} 0.13 ${hue})`});
+    const states=[
+      {name:'pending',desc:'written locally, awaiting flush',box:sbox(285,0.55),arrow:true},
+      {name:'syncing',desc:'in-flight to server',box:sbox(70,0.55),arrow:true},
+      {name:'synced',desc:'server-acknowledged',box:sbox(155,0.5),arrow:true},
+      {name:'failed',desc:'error — retry w/ backoff',box:sbox(25,0.52),arrow:false}
+    ];
+    const cycle=[
+      {n:'01',title:'Collect',desc:'Gather all pending envelopes from the local outbox, oldest first, into a bounded batch.'},
+      {n:'02',title:'Push',desc:'POST /sync/push with idempotency keys. Server upserts by (id, org_id), increments version, returns acks.'},
+      {n:'03',title:'Pull',desc:'GET /sync/pull?since=cursor fetches every change from other devices since our last cursor.'},
+      {n:'04',title:'Merge & advance',desc:'Apply incoming envelopes through the conflict rules, mark local records synced, advance the cursor.'}
+    ];
+    const triggers=[
+      {name:'Connectivity regained',desc:'The online event fires an immediate flush of the whole outbox.'},
+      {name:'Background Sync',desc:'The service worker replays the queue even if the app/tab was closed.'},
+      {name:'Periodic timer',desc:'A lightweight poll every ~30s while online catches slow drips.'},
+      {name:'Manual',desc:'Pull-to-refresh / \u201cSync now\u201d for owners who want certainty before closing shop.'}
+    ];
+    const conflicts=[
+      {type:'Invoices',strategy:'Immutable + append',why:'Once issued, corrections are new credit/debit notes — never edits.'},
+      {type:'Products',strategy:'Field-level merge',why:'Price from one device, stock from another merge without clobbering.'},
+      {type:'Stock levels',strategy:'CRDT delta counter',why:'Concurrent sales on two counters both decrement correctly.'},
+      {type:'Customer profile',strategy:'Last-writer-wins',why:'Latest updated_at wins; low-contention descriptive data.'},
+      {type:'Any delete',strategy:'Tombstone',why:'Deletion is a flag that always beats a concurrent edit.'}
+    ];
+    return { states, cycle, triggers, conflicts };
+  }
+}
+</script>
+</body>
+</html>

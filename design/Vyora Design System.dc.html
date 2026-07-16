@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;}
+body{margin:0;background:oklch(0.975 0.004 280);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
+a{color:oklch(0.52 0.2 285);text-decoration:none;}
+a:hover{color:oklch(0.44 0.2 285);}
+@keyframes vshim{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+</style>
+</helmet>
+
+<div style="font-family:Geist,system-ui,sans-serif;color:oklch(0.24 0.02 280);padding:0 0 80px;">
+
+  <div style="background:oklch(0.22 0.03 280);color:oklch(0.98 0.005 280);padding:56px 48px 48px;">
+    <div style="max-width:1080px;margin:0 auto;display:flex;flex-direction:column;gap:18px;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span style="width:30px;height:30px;border-radius:8px;background:oklch(0.6 0.2 285);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;">V</span>
+        <span style="font-size:14px;font-weight:600;">Vyora</span>
+        <span style="font-size:13px;color:oklch(0.72 0.02 280);">Design System</span>
+      </div>
+      <h1 style="margin:0;font-size:34px;font-weight:650;letter-spacing:-0.02em;line-height:1.12;">Foundations &amp; components</h1>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:oklch(0.78 0.02 280);max-width:680px;">A Material 3–inspired system on Tailwind + shadcn/ui. Cool-neutral surfaces, an indigo primary, and Geist type. Every token below maps to a Tailwind theme value; this page is the visual contract, not the code.</p>
+    </div>
+  </div>
+
+  <div style="max-width:1080px;margin:0 auto;padding:0 48px;display:flex;flex-direction:column;gap:60px;">
+
+    <!-- 01 COLOR -->
+    <section style="margin-top:52px;">
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:8px;"><span style="font-family:'Geist Mono',monospace;font-size:13px;color:oklch(0.55 0.14 285);">01</span><h2 style="margin:0;font-size:23px;font-weight:650;letter-spacing:-0.015em;">Color</h2></div>
+      <p style="margin:0 0 24px;font-size:14px;line-height:1.55;color:oklch(0.5 0.015 280);max-width:640px;">Primary carries actions and focus. Neutrals build 90% of the surface. Semantic colors are reserved for status only.</p>
+
+      <div style="display:flex;flex-direction:column;gap:22px;">
+        <div>
+          <div style="font-size:12px;font-weight:600;color:oklch(0.46 0.02 280);margin-bottom:10px;">Primary · indigo</div>
+          <div style="display:grid;grid-template-columns:repeat(10,1fr);gap:6px;">
+            <div style="height:64px;border-radius:9px;background:oklch(0.97 0.02 285);border:1px solid oklch(0.92 0.006 280);display:flex;align-items:flex-end;padding:6px;"><span style="font-family:'Geist Mono',monospace;font-size:9.5px;color:oklch(0.4 0.05 285);">50</span></div>
+            <div style="height:64px;border-radius:9px;background:oklch(0.94 0.04 285);display:flex;align-items:flex-end;padding:6px;"><span style="font-family:'Geist Mono',monospace;font-size:9.5px;color:oklch(0.4 0.08 285);">100</span></div>
+            <div style="height:64px;border-radius:9px;background:oklch(0.88 0.07 285);display:flex;align-items:flex-end;padding:6px;"><span style="font-family:'Geist Mono',monospace;font-size:9.5px;color:oklch(0.35 0.1 285);">200</span></div>
+            <div style="height:64px;border-radius:9px;background:oklch(0.78 0.11 285);display:flex;align-items:flex-end;padding:6px;"><span style="font-family:'Geist Mono',monospace;font-size:9.5px;color:#fff;">300</span></div>
+            <div style="height:64px;border-radius:9px;background:oklch(0.66 0.16 285);display:flex;align-items:flex-end;padding:6px;"><span style="font-family:'Geist Mono',monospace;font-size:9.5px;color:#fff;">400</span></div>
+            <div style="height:64px;border-radius:9px;background:oklch(0.55 0.2 285);display:flex;align-items:flex-end;padding:6px;"><span style="font-family:'Geist Mono',monospace;font-size:9.5px;color:#fff;">500</span></div>
+            <div style="height:64px;border-radius:9px;background:oklch(0.48 0.2 285);display:flex;align-items:flex-end;padding:6px;"><span style="font-family:'Geist Mono',monospace;font-size:9.5px;color:#fff;">600</span></div>
+            <div style="height:64px;border-radius:9px;background:oklch(0.41 0.18 285);display:flex;align-items:flex-end;padding:6px;"><span style="font-family:'Geist Mono',monospace;font-size:9.5px;color:#fff;">700</span></div>
+            <div style="height:64px;border-radius:9px;background:oklch(0.34 0.14 285);display:flex;align-items:flex-end;padding:6px;"><span style="font-family:'Geist Mono',monospace;font-size:9.5px;color:#fff;">800</span></div>
+            <div style="height:64px;border-radius:9px;background:oklch(0.26 0.09 285);display:flex;align-items:flex-end;padding:6px;"><span style="font-family:'Geist Mono',monospace;font-size:9.5px;color:#fff;">900</span></div>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:12px;font-weight:600;color:oklch(0.46 0.02 280);margin-bottom:10px;">Neutral · cool gray</div>
+          <div style="display:grid;grid-template-columns:repeat(10,1fr);gap:6px;">
+            <div style="height:64px;border-radius:9px;background:oklch(0.985 0.003 280);border:1px solid oklch(0.92 0.006 280);display:flex;align-items:flex-end;padding:6px;"><span style="font-family:'Geist Mono',monospace;font-size:9.5px;color:oklch(0.5 0.01 280);">50</span></div>
+            <div style="height:64px;border-radius:9px;background:oklch(0.96 0.004 280);display:flex;align-items:flex-end;padding:6px;"><span style="font-family:'Geist Mono',monospace;font-size:9.5px;color:oklch(0.5 0.01 280);">100</span></div>
+            <div style="height:64px;border-radius:9px;background:oklch(0.92 0.006 280);display:flex;align-items:flex-end;padding:6px;"><span style="font-family:'Geist Mono',monospace;font-size:9.5px;color:oklch(0.45 0.01 280);">200</span></div>
+            <div style="height:64px;border-radius:9px;background:oklch(0.87 0.008 280);display:flex;align-items:flex-end;padding:6px;"><span style="font-family:'Geist Mono',monospace;font-size:9.5px;color:oklch(0.4 0.01 280);">300</span></div>
+            <div style="height:64px;border-radius:9px;background:oklch(0.72 0.01 280);display:flex;align-items:flex-end;padding:6px;"><span style="font-family:'Geist Mono',monospace;font-size:9.5px;color:#fff;">400</span></div>
+            <div style="height:64px;border-radius:9px;background:oklch(0.58 0.012 280);display:flex;align-items:flex-end;padding:6px;"><span style="font-family:'Geist Mono',monospace;font-size:9.5px;color:#fff;">500</span></div>
+            <div style="height:64px;border-radius:9px;background:oklch(0.46 0.015 280);display:flex;align-items:flex-end;padding:6px;"><span style="font-family:'Geist Mono',monospace;font-size:9.5px;color:#fff;">600</span></div>
+            <div style="height:64px;border-radius:9px;background:oklch(0.36 0.018 280);display:flex;align-items:flex-end;padding:6px;"><span style="font-family:'Geist Mono',monospace;font-size:9.5px;color:#fff;">700</span></div>
+            <div style="height:64px;border-radius:9px;background:oklch(0.26 0.02 280);display:flex;align-items:flex-end;padding:6px;"><span style="font-family:'Geist Mono',monospace;font-size:9.5px;color:#fff;">800</span></div>
+            <div style="height:64px;border-radius:9px;background:oklch(0.18 0.025 280);display:flex;align-items:flex-end;padding:6px;"><span style="font-family:'Geist Mono',monospace;font-size:9.5px;color:#fff;">900</span></div>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:12px;font-weight:600;color:oklch(0.46 0.02 280);margin-bottom:10px;">Semantic</div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">
+            <div style="border:1px solid oklch(0.92 0.006 280);border-radius:11px;overflow:hidden;"><div style="height:44px;background:oklch(0.6 0.14 155);"></div><div style="padding:10px 12px;"><div style="font-size:12.5px;font-weight:600;">Success</div><div style="font-family:'Geist Mono',monospace;font-size:10px;color:oklch(0.55 0.012 280);margin-top:2px;">paid · in-stock</div></div></div>
+            <div style="border:1px solid oklch(0.92 0.006 280);border-radius:11px;overflow:hidden;"><div style="height:44px;background:oklch(0.75 0.15 75);"></div><div style="padding:10px 12px;"><div style="font-size:12.5px;font-weight:600;">Warning</div><div style="font-family:'Geist Mono',monospace;font-size:10px;color:oklch(0.55 0.012 280);margin-top:2px;">low stock · offline</div></div></div>
+            <div style="border:1px solid oklch(0.92 0.006 280);border-radius:11px;overflow:hidden;"><div style="height:44px;background:oklch(0.58 0.2 25);"></div><div style="padding:10px 12px;"><div style="font-size:12.5px;font-weight:600;">Danger</div><div style="font-family:'Geist Mono',monospace;font-size:10px;color:oklch(0.55 0.012 280);margin-top:2px;">overdue · expired</div></div></div>
+            <div style="border:1px solid oklch(0.92 0.006 280);border-radius:11px;overflow:hidden;"><div style="height:44px;background:oklch(0.6 0.14 235);"></div><div style="padding:10px 12px;"><div style="font-size:12.5px;font-weight:600;">Info</div><div style="font-family:'Geist Mono',monospace;font-size:10px;color:oklch(0.55 0.012 280);margin-top:2px;">syncing · draft</div></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 02 TYPOGRAPHY -->
+    <section>
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:8px;"><span style="font-family:'Geist Mono',monospace;font-size:13px;color:oklch(0.55 0.14 285);">02</span><h2 style="margin:0;font-size:23px;font-weight:650;letter-spacing:-0.015em;">Typography</h2></div>
+      <p style="margin:0 0 24px;font-size:14px;line-height:1.55;color:oklch(0.5 0.015 280);max-width:640px;">Geist for UI, Geist Mono for numbers, codes, and tabular figures (invoice totals, IMEI, GSTIN).</p>
+      <div style="border:1px solid oklch(0.9 0.006 280);border-radius:16px;background:#fff;padding:8px 24px;box-shadow:0 8px 30px -20px rgba(40,32,90,0.25);">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding:16px 0;border-bottom:1px solid oklch(0.94 0.005 280);"><span style="font-size:34px;font-weight:650;letter-spacing:-0.02em;">Display</span><span style="font-family:'Geist Mono',monospace;font-size:11px;color:oklch(0.55 0.012 280);">34 / 650 / -0.02em</span></div>
+        <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding:16px 0;border-bottom:1px solid oklch(0.94 0.005 280);"><span style="font-size:28px;font-weight:650;letter-spacing:-0.018em;">Heading 1</span><span style="font-family:'Geist Mono',monospace;font-size:11px;color:oklch(0.55 0.012 280);">28 / 650</span></div>
+        <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding:16px 0;border-bottom:1px solid oklch(0.94 0.005 280);"><span style="font-size:23px;font-weight:650;letter-spacing:-0.015em;">Heading 2</span><span style="font-family:'Geist Mono',monospace;font-size:11px;color:oklch(0.55 0.012 280);">23 / 650</span></div>
+        <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding:16px 0;border-bottom:1px solid oklch(0.94 0.005 280);"><span style="font-size:18px;font-weight:600;">Heading 3</span><span style="font-family:'Geist Mono',monospace;font-size:11px;color:oklch(0.55 0.012 280);">18 / 600</span></div>
+        <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding:16px 0;border-bottom:1px solid oklch(0.94 0.005 280);"><span style="font-size:15px;">Body large — the quick brown fox</span><span style="font-family:'Geist Mono',monospace;font-size:11px;color:oklch(0.55 0.012 280);">15 / 400</span></div>
+        <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding:16px 0;border-bottom:1px solid oklch(0.94 0.005 280);"><span style="font-size:13.5px;">Body — the quick brown fox jumps</span><span style="font-family:'Geist Mono',monospace;font-size:11px;color:oklch(0.55 0.012 280);">13.5 / 400</span></div>
+        <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding:16px 0;border-bottom:1px solid oklch(0.94 0.005 280);"><span style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.5 0.015 280);">Caption / label</span><span style="font-family:'Geist Mono',monospace;font-size:11px;color:oklch(0.55 0.012 280);">11 / 600 / caps</span></div>
+        <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding:16px 0;"><span style="font-family:'Geist Mono',monospace;font-size:14px;">₹ 1,24,850.00 · 29ABCDE1234F</span><span style="font-family:'Geist Mono',monospace;font-size:11px;color:oklch(0.55 0.012 280);">Geist Mono</span></div>
+      </div>
+    </section>
+
+    <!-- 03 SPACING / RADIUS / ELEVATION -->
+    <section>
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:8px;"><span style="font-family:'Geist Mono',monospace;font-size:13px;color:oklch(0.55 0.14 285);">03</span><h2 style="margin:0;font-size:23px;font-weight:650;letter-spacing:-0.015em;">Spacing, radius &amp; elevation</h2></div>
+      <p style="margin:0 0 24px;font-size:14px;line-height:1.55;color:oklch(0.5 0.015 280);max-width:640px;">A 4px base grid. Radius scales with component size. Shadows stay soft and cool — three levels only.</p>
+      <div style="display:grid;grid-template-columns:1.4fr 1fr 1.2fr;gap:20px;">
+        <div style="border:1px solid oklch(0.9 0.006 280);border-radius:16px;background:#fff;padding:22px;box-shadow:0 8px 30px -20px rgba(40,32,90,0.25);">
+          <div style="font-size:12px;font-weight:600;color:oklch(0.46 0.02 280);margin-bottom:16px;">Spacing · 4px base</div>
+          <div style="display:flex;flex-direction:column;gap:11px;">
+            <div style="display:flex;align-items:center;gap:12px;"><div style="height:12px;width:4px;background:oklch(0.6 0.16 285);border-radius:2px;"></div><span style="font-family:'Geist Mono',monospace;font-size:11px;color:oklch(0.5 0.012 280);">4 · xs</span></div>
+            <div style="display:flex;align-items:center;gap:12px;"><div style="height:12px;width:8px;background:oklch(0.6 0.16 285);border-radius:2px;"></div><span style="font-family:'Geist Mono',monospace;font-size:11px;color:oklch(0.5 0.012 280);">8 · sm</span></div>
+            <div style="display:flex;align-items:center;gap:12px;"><div style="height:12px;width:16px;background:oklch(0.6 0.16 285);border-radius:2px;"></div><span style="font-family:'Geist Mono',monospace;font-size:11px;color:oklch(0.5 0.012 280);">16 · md</span></div>
+            <div style="display:flex;align-items:center;gap:12px;"><div style="height:12px;width:24px;background:oklch(0.6 0.16 285);border-radius:2px;"></div><span style="font-family:'Geist Mono',monospace;font-size:11px;color:oklch(0.5 0.012 280);">24 · lg</span></div>
+            <div style="display:flex;align-items:center;gap:12px;"><div style="height:12px;width:48px;background:oklch(0.6 0.16 285);border-radius:2px;"></div><span style="font-family:'Geist Mono',monospace;font-size:11px;color:oklch(0.5 0.012 280);">48 · xl</span></div>
+          </div>
+        </div>
+        <div style="border:1px solid oklch(0.9 0.006 280);border-radius:16px;background:#fff;padding:22px;box-shadow:0 8px 30px -20px rgba(40,32,90,0.25);">
+          <div style="font-size:12px;font-weight:600;color:oklch(0.46 0.02 280);margin-bottom:16px;">Radius</div>
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <div style="display:flex;align-items:center;gap:12px;"><div style="width:36px;height:36px;background:oklch(0.94 0.04 285);border:1px solid oklch(0.86 0.07 285);border-radius:6px;"></div><span style="font-family:'Geist Mono',monospace;font-size:11px;color:oklch(0.5 0.012 280);">6 · controls</span></div>
+            <div style="display:flex;align-items:center;gap:12px;"><div style="width:36px;height:36px;background:oklch(0.94 0.04 285);border:1px solid oklch(0.86 0.07 285);border-radius:10px;"></div><span style="font-family:'Geist Mono',monospace;font-size:11px;color:oklch(0.5 0.012 280);">10 · inputs</span></div>
+            <div style="display:flex;align-items:center;gap:12px;"><div style="width:36px;height:36px;background:oklch(0.94 0.04 285);border:1px solid oklch(0.86 0.07 285);border-radius:16px;"></div><span style="font-family:'Geist Mono',monospace;font-size:11px;color:oklch(0.5 0.012 280);">16 · cards</span></div>
+            <div style="display:flex;align-items:center;gap:12px;"><div style="width:36px;height:36px;background:oklch(0.94 0.04 285);border:1px solid oklch(0.86 0.07 285);border-radius:999px;"></div><span style="font-family:'Geist Mono',monospace;font-size:11px;color:oklch(0.5 0.012 280);">full · pills</span></div>
+          </div>
+        </div>
+        <div style="border:1px solid oklch(0.9 0.006 280);border-radius:16px;background:#fff;padding:22px;box-shadow:0 8px 30px -20px rgba(40,32,90,0.25);">
+          <div style="font-size:12px;font-weight:600;color:oklch(0.46 0.02 280);margin-bottom:16px;">Elevation</div>
+          <div style="display:flex;flex-direction:column;gap:16px;">
+            <div style="display:flex;align-items:center;gap:14px;"><div style="width:52px;height:36px;background:#fff;border:1px solid oklch(0.92 0.006 280);border-radius:9px;box-shadow:0 1px 2px rgba(40,32,90,0.06);"></div><span style="font-family:'Geist Mono',monospace;font-size:11px;color:oklch(0.5 0.012 280);">1 · rest</span></div>
+            <div style="display:flex;align-items:center;gap:14px;"><div style="width:52px;height:36px;background:#fff;border-radius:9px;box-shadow:0 6px 20px -10px rgba(40,32,90,0.22);"></div><span style="font-family:'Geist Mono',monospace;font-size:11px;color:oklch(0.5 0.012 280);">2 · card</span></div>
+            <div style="display:flex;align-items:center;gap:14px;"><div style="width:52px;height:36px;background:#fff;border-radius:9px;box-shadow:0 20px 44px -20px rgba(40,32,90,0.4);"></div><span style="font-family:'Geist Mono',monospace;font-size:11px;color:oklch(0.5 0.012 280);">3 · overlay</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 04 BUTTONS -->
+    <section>
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:8px;"><span style="font-family:'Geist Mono',monospace;font-size:13px;color:oklch(0.55 0.14 285);">04</span><h2 style="margin:0;font-size:23px;font-weight:650;letter-spacing:-0.015em;">Buttons</h2></div>
+      <p style="margin:0 0 24px;font-size:14px;line-height:1.55;color:oklch(0.5 0.015 280);max-width:640px;">One primary action per view. Height 40px desktop, 44px touch. States shown left to right.</p>
+      <div style="border:1px solid oklch(0.9 0.006 280);border-radius:16px;background:#fff;padding:26px;box-shadow:0 8px 30px -20px rgba(40,32,90,0.25);display:flex;flex-direction:column;gap:22px;">
+        <div style="display:flex;flex-direction:column;gap:10px;"><span style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.55 0.012 280);">Primary</span>
+          <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+            <span style="background:oklch(0.52 0.2 285);color:#fff;font-size:13.5px;font-weight:600;padding:11px 20px;border-radius:10px;">Create invoice</span>
+            <span style="background:oklch(0.44 0.2 285);color:#fff;font-size:13.5px;font-weight:600;padding:11px 20px;border-radius:10px;box-shadow:0 0 0 3px oklch(0.85 0.06 285);">Hover</span>
+            <span style="background:oklch(0.38 0.16 285);color:#fff;font-size:13.5px;font-weight:600;padding:11px 20px;border-radius:10px;">Pressed</span>
+            <span style="background:oklch(0.9 0.02 285);color:oklch(0.72 0.03 285);font-size:13.5px;font-weight:600;padding:11px 20px;border-radius:10px;">Disabled</span>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;"><span style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.55 0.012 280);">Secondary · outline · ghost · danger</span>
+          <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+            <span style="background:oklch(0.95 0.02 285);color:oklch(0.42 0.15 285);font-size:13.5px;font-weight:600;padding:11px 20px;border-radius:10px;">Secondary</span>
+            <span style="background:#fff;color:oklch(0.34 0.02 280);border:1px solid oklch(0.86 0.01 280);font-size:13.5px;font-weight:600;padding:10px 20px;border-radius:10px;">Outline</span>
+            <span style="background:transparent;color:oklch(0.42 0.02 280);font-size:13.5px;font-weight:600;padding:11px 16px;border-radius:10px;">Ghost</span>
+            <span style="background:oklch(0.58 0.2 25);color:#fff;font-size:13.5px;font-weight:600;padding:11px 20px;border-radius:10px;">Delete</span>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;"><span style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.55 0.012 280);">Sizes</span>
+          <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+            <span style="background:oklch(0.52 0.2 285);color:#fff;font-size:12px;font-weight:600;padding:7px 14px;border-radius:8px;">Small · 32</span>
+            <span style="background:oklch(0.52 0.2 285);color:#fff;font-size:13.5px;font-weight:600;padding:11px 20px;border-radius:10px;">Medium · 40</span>
+            <span style="background:oklch(0.52 0.2 285);color:#fff;font-size:15px;font-weight:600;padding:14px 26px;border-radius:11px;">Large · 48</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 05 FORMS -->
+    <section>
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:8px;"><span style="font-family:'Geist Mono',monospace;font-size:13px;color:oklch(0.55 0.14 285);">05</span><h2 style="margin:0;font-size:23px;font-weight:650;letter-spacing:-0.015em;">Forms &amp; inputs</h2></div>
+      <p style="margin:0 0 24px;font-size:14px;line-height:1.55;color:oklch(0.5 0.015 280);max-width:640px;">Metadata-driven fields render into this input set. Labels above, helper/error below, 10px radius throughout.</p>
+      <div style="border:1px solid oklch(0.9 0.006 280);border-radius:16px;background:#fff;padding:26px;box-shadow:0 8px 30px -20px rgba(40,32,90,0.25);display:grid;grid-template-columns:1fr 1fr;gap:22px;">
+        <label style="display:flex;flex-direction:column;gap:6px;"><span style="font-size:12.5px;font-weight:600;color:oklch(0.4 0.02 280);">Default</span><span style="font-size:13.5px;color:oklch(0.6 0.012 280);padding:11px 13px;border:1px solid oklch(0.87 0.008 280);border-radius:10px;">Placeholder text</span></label>
+        <label style="display:flex;flex-direction:column;gap:6px;"><span style="font-size:12.5px;font-weight:600;color:oklch(0.4 0.02 280);">Focused</span><span style="font-size:13.5px;color:oklch(0.26 0.02 280);padding:11px 13px;border:1.5px solid oklch(0.52 0.2 285);border-radius:10px;box-shadow:0 0 0 3px oklch(0.92 0.04 285);">Sharma Traders</span></label>
+        <label style="display:flex;flex-direction:column;gap:6px;"><span style="font-size:12.5px;font-weight:600;color:oklch(0.4 0.02 280);">Filled · mono</span><span style="font-family:'Geist Mono',monospace;font-size:13px;color:oklch(0.26 0.02 280);padding:11px 13px;border:1px solid oklch(0.87 0.008 280);border-radius:10px;">29ABCDE1234F1Z5</span></label>
+        <label style="display:flex;flex-direction:column;gap:6px;"><span style="font-size:12.5px;font-weight:600;color:oklch(0.5 0.14 25);">Error</span><span style="font-size:13.5px;color:oklch(0.26 0.02 280);padding:11px 13px;border:1.5px solid oklch(0.6 0.18 25);border-radius:10px;">Invalid GSTIN</span><span style="font-size:11.5px;color:oklch(0.55 0.15 25);">Must be 15 characters.</span></label>
+        <div style="display:flex;flex-direction:column;gap:6px;"><span style="font-size:12.5px;font-weight:600;color:oklch(0.4 0.02 280);">Select</span><span style="display:flex;align-items:center;justify-content:space-between;font-size:13.5px;color:oklch(0.3 0.02 280);padding:11px 13px;border:1px solid oklch(0.87 0.008 280);border-radius:10px;">GST 18% <span style="color:oklch(0.6 0.012 280);">▾</span></span></div>
+        <div style="display:flex;flex-direction:column;gap:10px;justify-content:flex-end;">
+          <div style="display:flex;align-items:center;gap:10px;"><span style="width:36px;height:20px;background:oklch(0.52 0.2 285);border-radius:999px;position:relative;"><span style="position:absolute;top:2px;right:2px;width:16px;height:16px;background:#fff;border-radius:50%;"></span></span><span style="font-size:12.5px;color:oklch(0.4 0.02 280);">Toggle · on</span></div>
+          <div style="display:flex;align-items:center;gap:10px;"><span style="width:18px;height:18px;background:oklch(0.52 0.2 285);border-radius:5px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;">✓</span><span style="font-size:12.5px;color:oklch(0.4 0.02 280);">Checkbox · checked</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 06 CARDS -->
+    <section>
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:8px;"><span style="font-family:'Geist Mono',monospace;font-size:13px;color:oklch(0.55 0.14 285);">06</span><h2 style="margin:0;font-size:23px;font-weight:650;letter-spacing:-0.015em;">Cards &amp; surfaces</h2></div>
+      <p style="margin:0 0 24px;font-size:14px;line-height:1.55;color:oklch(0.5 0.015 280);max-width:640px;">Surfaces layer with elevation, not heavy borders. Tonal cards carry status; the AI card uses the primary tint.</p>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+        <div style="border:1px solid oklch(0.91 0.006 280);border-radius:16px;background:#fff;padding:20px;box-shadow:0 6px 20px -14px rgba(40,32,90,0.2);"><span style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.55 0.012 280);">Standard</span><h3 style="margin:8px 0 4px;font-size:16px;font-weight:650;">Today's sales</h3><p style="margin:0;font-size:13px;line-height:1.5;color:oklch(0.55 0.015 280);">A neutral surface for most content.</p></div>
+        <div style="border:1px solid oklch(0.9 0.035 285);border-radius:16px;background:oklch(0.97 0.02 285);padding:20px;"><span style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.5 0.14 285);">AI · tonal</span><h3 style="margin:8px 0 4px;font-size:16px;font-weight:650;color:oklch(0.34 0.1 285);">Copilot suggestion</h3><p style="margin:0;font-size:13px;line-height:1.5;color:oklch(0.42 0.06 285);">Primary tint signals AI-generated insight.</p></div>
+        <div style="border:1px solid oklch(0.86 0.07 155);border-radius:16px;background:oklch(0.96 0.04 155);padding:20px;"><span style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.44 0.1 155);">Status · success</span><h3 style="margin:8px 0 4px;font-size:16px;font-weight:650;color:oklch(0.38 0.09 155);">Payment received</h3><p style="margin:0;font-size:13px;line-height:1.5;color:oklch(0.44 0.06 155);">Semantic surface for confirmations.</p></div>
+      </div>
+    </section>
+
+    <!-- 07 NAVIGATION -->
+    <section>
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:8px;"><span style="font-family:'Geist Mono',monospace;font-size:13px;color:oklch(0.55 0.14 285);">07</span><h2 style="margin:0;font-size:23px;font-weight:650;letter-spacing:-0.015em;">Navigation</h2></div>
+      <p style="margin:0 0 24px;font-size:14px;line-height:1.55;color:oklch(0.5 0.015 280);max-width:640px;">A persistent sidebar on desktop; tabs for sub-sections. The active item uses a primary tint pill.</p>
+      <div style="display:grid;grid-template-columns:240px 1fr;gap:16px;">
+        <div style="border:1px solid oklch(0.9 0.006 280);border-radius:16px;background:#fff;padding:16px 12px;box-shadow:0 6px 20px -14px rgba(40,32,90,0.2);display:flex;flex-direction:column;gap:4px;">
+          <div style="display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:9px;background:oklch(0.96 0.025 285);"><span style="width:16px;height:16px;border-radius:4px;background:oklch(0.52 0.2 285);"></span><span style="font-size:13px;font-weight:600;color:oklch(0.4 0.12 285);">Dashboard</span></div>
+          <div style="display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:9px;"><span style="width:16px;height:16px;border-radius:4px;background:oklch(0.85 0.01 280);"></span><span style="font-size:13px;color:oklch(0.42 0.02 280);">Invoices</span></div>
+          <div style="display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:9px;"><span style="width:16px;height:16px;border-radius:4px;background:oklch(0.85 0.01 280);"></span><span style="font-size:13px;color:oklch(0.42 0.02 280);">Inventory</span></div>
+          <div style="display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:9px;"><span style="width:16px;height:16px;border-radius:4px;background:oklch(0.85 0.01 280);"></span><span style="font-size:13px;color:oklch(0.42 0.02 280);">Reports</span></div>
+          <div style="display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:9px;"><span style="width:16px;height:16px;border-radius:4px;background:oklch(0.85 0.01 280);"></span><span style="font-size:13px;color:oklch(0.42 0.02 280);">Copilot</span></div>
+        </div>
+        <div style="border:1px solid oklch(0.9 0.006 280);border-radius:16px;background:#fff;padding:22px;box-shadow:0 6px 20px -14px rgba(40,32,90,0.2);">
+          <div style="display:flex;gap:4px;border-bottom:1px solid oklch(0.92 0.006 280);margin-bottom:18px;">
+            <span style="font-size:13px;font-weight:600;color:oklch(0.42 0.15 285);padding:10px 4px;border-bottom:2px solid oklch(0.52 0.2 285);">All</span>
+            <span style="font-size:13px;color:oklch(0.5 0.015 280);padding:10px 14px;">Paid</span>
+            <span style="font-size:13px;color:oklch(0.5 0.015 280);padding:10px 14px;">Pending</span>
+            <span style="font-size:13px;color:oklch(0.5 0.015 280);padding:10px 14px;">Overdue</span>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <span style="font-size:12px;font-weight:500;color:oklch(0.4 0.12 285);background:oklch(0.96 0.025 285);padding:6px 12px;border-radius:999px;">Breadcrumb</span>
+            <span style="font-size:12px;color:oklch(0.55 0.012 280);padding:6px 4px;">Invoices</span>
+            <span style="font-size:12px;color:oklch(0.55 0.012 280);padding:6px 4px;">/ New</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 08 TABLE -->
+    <section>
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:8px;"><span style="font-family:'Geist Mono',monospace;font-size:13px;color:oklch(0.55 0.14 285);">08</span><h2 style="margin:0;font-size:23px;font-weight:650;letter-spacing:-0.015em;">Data table</h2></div>
+      <p style="margin:0 0 24px;font-size:14px;line-height:1.55;color:oklch(0.5 0.015 280);max-width:640px;">Dense, scannable rows. Numbers align right in Geist Mono; status uses semantic badges.</p>
+      <div style="border:1px solid oklch(0.9 0.006 280);border-radius:16px;background:#fff;overflow:hidden;box-shadow:0 6px 20px -14px rgba(40,32,90,0.2);">
+        <div style="display:grid;grid-template-columns:1fr 1.4fr 1fr 0.9fr;gap:16px;padding:12px 20px;background:oklch(0.98 0.004 280);border-bottom:1px solid oklch(0.92 0.006 280);"><span style="font-size:11px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;color:oklch(0.55 0.012 280);">Invoice</span><span style="font-size:11px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;color:oklch(0.55 0.012 280);">Customer</span><span style="font-size:11px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;color:oklch(0.55 0.012 280);text-align:right;">Amount</span><span style="font-size:11px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;color:oklch(0.55 0.012 280);text-align:right;">Status</span></div>
+        <div style="display:grid;grid-template-columns:1fr 1.4fr 1fr 0.9fr;gap:16px;padding:14px 20px;border-bottom:1px solid oklch(0.95 0.005 280);align-items:center;"><span style="font-family:'Geist Mono',monospace;font-size:12.5px;color:oklch(0.4 0.02 280);">INV-1042</span><span style="font-size:13px;">Rahul Verma</span><span style="font-family:'Geist Mono',monospace;font-size:12.5px;text-align:right;">₹ 12,400</span><span style="text-align:right;"><span style="font-size:11px;font-weight:600;color:oklch(0.4 0.09 155);background:oklch(0.95 0.04 155);padding:4px 10px;border-radius:999px;">Paid</span></span></div>
+        <div style="display:grid;grid-template-columns:1fr 1.4fr 1fr 0.9fr;gap:16px;padding:14px 20px;border-bottom:1px solid oklch(0.95 0.005 280);align-items:center;"><span style="font-family:'Geist Mono',monospace;font-size:12.5px;color:oklch(0.4 0.02 280);">INV-1041</span><span style="font-size:13px;">Meena Stores</span><span style="font-family:'Geist Mono',monospace;font-size:12.5px;text-align:right;">₹ 4,850</span><span style="text-align:right;"><span style="font-size:11px;font-weight:600;color:oklch(0.46 0.1 75);background:oklch(0.96 0.05 80);padding:4px 10px;border-radius:999px;">Pending</span></span></div>
+        <div style="display:grid;grid-template-columns:1fr 1.4fr 1fr 0.9fr;gap:16px;padding:14px 20px;align-items:center;"><span style="font-family:'Geist Mono',monospace;font-size:12.5px;color:oklch(0.4 0.02 280);">INV-1039</span><span style="font-size:13px;">S. K. Traders</span><span style="font-family:'Geist Mono',monospace;font-size:12.5px;text-align:right;">₹ 28,900</span><span style="text-align:right;"><span style="font-size:11px;font-weight:600;color:oklch(0.48 0.14 25);background:oklch(0.96 0.05 25);padding:4px 10px;border-radius:999px;">Overdue</span></span></div>
+      </div>
+    </section>
+
+    <!-- 09 DIALOG -->
+    <section>
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:8px;"><span style="font-family:'Geist Mono',monospace;font-size:13px;color:oklch(0.55 0.14 285);">09</span><h2 style="margin:0;font-size:23px;font-weight:650;letter-spacing:-0.015em;">Dialog &amp; overlays</h2></div>
+      <p style="margin:0 0 24px;font-size:14px;line-height:1.55;color:oklch(0.5 0.015 280);max-width:640px;">Centered modal on a scrim; destructive actions confirm before running.</p>
+      <div style="border-radius:18px;background:oklch(0.4 0.03 280);padding:44px;display:flex;justify-content:center;">
+        <div style="width:400px;background:#fff;border-radius:16px;box-shadow:0 30px 60px -24px rgba(20,14,50,0.55);overflow:hidden;">
+          <div style="padding:22px 22px 4px;"><h3 style="margin:0;font-size:17px;font-weight:650;">Delete invoice INV-1042?</h3><p style="margin:8px 0 0;font-size:13px;line-height:1.5;color:oklch(0.55 0.015 280);">This removes it from this device and all synced devices. This can't be undone.</p></div>
+          <div style="display:flex;justify-content:flex-end;gap:10px;padding:20px 22px;"><span style="background:#fff;color:oklch(0.34 0.02 280);border:1px solid oklch(0.86 0.01 280);font-size:13px;font-weight:600;padding:9px 16px;border-radius:9px;">Cancel</span><span style="background:oklch(0.58 0.2 25);color:#fff;font-size:13px;font-weight:600;padding:9px 16px;border-radius:9px;">Delete</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 10 FEEDBACK -->
+    <section>
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:8px;"><span style="font-family:'Geist Mono',monospace;font-size:13px;color:oklch(0.55 0.14 285);">10</span><h2 style="margin:0;font-size:23px;font-weight:650;letter-spacing:-0.015em;">Badges &amp; states</h2></div>
+      <p style="margin:0 0 24px;font-size:14px;line-height:1.55;color:oklch(0.5 0.015 280);max-width:640px;">Every list and screen defines empty, loading, and error states — never a blank rectangle.</p>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+        <div style="border:1px solid oklch(0.9 0.006 280);border-radius:16px;background:#fff;padding:28px 22px;box-shadow:0 6px 20px -14px rgba(40,32,90,0.2);display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;min-height:180px;justify-content:center;">
+          <div style="width:40px;height:40px;border-radius:11px;border:1.5px dashed oklch(0.8 0.01 280);"></div>
+          <div><div style="font-size:13.5px;font-weight:600;">No invoices yet</div><p style="margin:4px 0 0;font-size:12px;color:oklch(0.58 0.012 280);line-height:1.5;">Create your first invoice to get started.</p></div>
+          <span style="background:oklch(0.52 0.2 285);color:#fff;font-size:12px;font-weight:600;padding:8px 14px;border-radius:9px;">New invoice</span>
+        </div>
+        <div style="border:1px solid oklch(0.9 0.006 280);border-radius:16px;background:#fff;padding:22px;box-shadow:0 6px 20px -14px rgba(40,32,90,0.2);display:flex;flex-direction:column;gap:12px;min-height:180px;justify-content:center;">
+          <span style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.6 0.012 280);">Loading · skeleton</span>
+          <div style="height:16px;border-radius:6px;background:linear-gradient(90deg,oklch(0.95 0.005 280) 25%,oklch(0.9 0.01 280) 37%,oklch(0.95 0.005 280) 63%);background-size:400% 100%;animation:vshim 1.2s linear infinite;"></div>
+          <div style="height:16px;width:80%;border-radius:6px;background:linear-gradient(90deg,oklch(0.95 0.005 280) 25%,oklch(0.9 0.01 280) 37%,oklch(0.95 0.005 280) 63%);background-size:400% 100%;animation:vshim 1.2s linear infinite;"></div>
+          <div style="height:16px;width:60%;border-radius:6px;background:linear-gradient(90deg,oklch(0.95 0.005 280) 25%,oklch(0.9 0.01 280) 37%,oklch(0.95 0.005 280) 63%);background-size:400% 100%;animation:vshim 1.2s linear infinite;"></div>
+        </div>
+        <div style="border:1px solid oklch(0.88 0.06 25);border-radius:16px;background:oklch(0.98 0.02 25);padding:28px 22px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;min-height:180px;justify-content:center;">
+          <div style="width:40px;height:40px;border-radius:50%;background:oklch(0.96 0.05 25);border:1px solid oklch(0.85 0.1 25);display:flex;align-items:center;justify-content:center;color:oklch(0.55 0.18 25);font-size:20px;">!</div>
+          <div><div style="font-size:13.5px;font-weight:600;color:oklch(0.44 0.14 25);">Couldn't sync</div><p style="margin:4px 0 0;font-size:12px;color:oklch(0.5 0.08 25);line-height:1.5;">Saved locally. We'll retry automatically.</p></div>
+          <span style="background:#fff;color:oklch(0.44 0.12 25);border:1px solid oklch(0.85 0.08 25);font-size:12px;font-weight:600;padding:8px 14px;border-radius:9px;">Retry now</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 11 DASHBOARD WIDGETS + CHARTS -->
+    <section>
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:8px;"><span style="font-family:'Geist Mono',monospace;font-size:13px;color:oklch(0.55 0.14 285);">11</span><h2 style="margin:0;font-size:23px;font-weight:650;letter-spacing:-0.015em;">Dashboard widgets &amp; charts</h2></div>
+      <p style="margin:0 0 24px;font-size:14px;line-height:1.55;color:oklch(0.5 0.015 280);max-width:640px;">Stat cards lead with the number. Charts stay minimal — one accent, clear axis, no chart-junk.</p>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px;">
+        <div style="border:1px solid oklch(0.91 0.006 280);border-radius:14px;background:#fff;padding:18px;box-shadow:0 6px 20px -14px rgba(40,32,90,0.2);"><span style="font-size:11px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;color:oklch(0.58 0.012 280);">Today's sales</span><div style="font-family:'Geist Mono',monospace;font-size:24px;font-weight:500;margin:8px 0 4px;">₹ 48,250</div><span style="font-size:11.5px;font-weight:600;color:oklch(0.46 0.1 155);">▲ 12% vs yesterday</span></div>
+        <div style="border:1px solid oklch(0.91 0.006 280);border-radius:14px;background:#fff;padding:18px;box-shadow:0 6px 20px -14px rgba(40,32,90,0.2);"><span style="font-size:11px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;color:oklch(0.58 0.012 280);">Invoices</span><div style="font-family:'Geist Mono',monospace;font-size:24px;font-weight:500;margin:8px 0 4px;">37</div><span style="font-size:11.5px;color:oklch(0.55 0.012 280);">6 pending</span></div>
+        <div style="border:1px solid oklch(0.91 0.006 280);border-radius:14px;background:#fff;padding:18px;box-shadow:0 6px 20px -14px rgba(40,32,90,0.2);"><span style="font-size:11px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;color:oklch(0.58 0.012 280);">Low stock</span><div style="font-family:'Geist Mono',monospace;font-size:24px;font-weight:500;margin:8px 0 4px;color:oklch(0.5 0.14 75);">9</div><span style="font-size:11.5px;color:oklch(0.55 0.012 280);">items to reorder</span></div>
+        <div style="border:1px solid oklch(0.91 0.006 280);border-radius:14px;background:#fff;padding:18px;box-shadow:0 6px 20px -14px rgba(40,32,90,0.2);"><span style="font-size:11px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;color:oklch(0.58 0.012 280);">Receivables</span><div style="font-family:'Geist Mono',monospace;font-size:24px;font-weight:500;margin:8px 0 4px;">₹ 1.2L</div><span style="font-size:11.5px;font-weight:600;color:oklch(0.5 0.14 25);">₹ 34k overdue</span></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:16px;">
+        <div style="border:1px solid oklch(0.91 0.006 280);border-radius:16px;background:#fff;padding:22px;box-shadow:0 6px 20px -14px rgba(40,32,90,0.2);">
+          <div style="font-size:13.5px;font-weight:650;margin-bottom:18px;">Sales · last 7 days</div>
+          <div style="display:flex;align-items:flex-end;gap:14px;height:150px;">
+            <div style="flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:8px;"><div style="width:100%;height:54%;background:oklch(0.8 0.09 285);border-radius:6px 6px 0 0;"></div><span style="font-size:10.5px;color:oklch(0.58 0.012 280);">Mon</span></div>
+            <div style="flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:8px;"><div style="width:100%;height:68%;background:oklch(0.8 0.09 285);border-radius:6px 6px 0 0;"></div><span style="font-size:10.5px;color:oklch(0.58 0.012 280);">Tue</span></div>
+            <div style="flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:8px;"><div style="width:100%;height:48%;background:oklch(0.8 0.09 285);border-radius:6px 6px 0 0;"></div><span style="font-size:10.5px;color:oklch(0.58 0.012 280);">Wed</span></div>
+            <div style="flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:8px;"><div style="width:100%;height:80%;background:oklch(0.8 0.09 285);border-radius:6px 6px 0 0;"></div><span style="font-size:10.5px;color:oklch(0.58 0.012 280);">Thu</span></div>
+            <div style="flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:8px;"><div style="width:100%;height:100%;background:oklch(0.55 0.2 285);border-radius:6px 6px 0 0;"></div><span style="font-size:10.5px;font-weight:600;color:oklch(0.42 0.12 285);">Fri</span></div>
+            <div style="flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:8px;"><div style="width:100%;height:88%;background:oklch(0.8 0.09 285);border-radius:6px 6px 0 0;"></div><span style="font-size:10.5px;color:oklch(0.58 0.012 280);">Sat</span></div>
+            <div style="flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:8px;"><div style="width:100%;height:40%;background:oklch(0.8 0.09 285);border-radius:6px 6px 0 0;"></div><span style="font-size:10.5px;color:oklch(0.58 0.012 280);">Sun</span></div>
+          </div>
+        </div>
+        <div style="border:1px solid oklch(0.91 0.006 280);border-radius:16px;background:#fff;padding:22px;box-shadow:0 6px 20px -14px rgba(40,32,90,0.2);display:flex;flex-direction:column;">
+          <div style="font-size:13.5px;font-weight:650;margin-bottom:18px;">Sales by category</div>
+          <div style="display:flex;align-items:center;gap:20px;">
+            <div style="width:110px;height:110px;border-radius:50%;background:conic-gradient(oklch(0.55 0.2 285) 0 45%, oklch(0.7 0.13 200) 45% 72%, oklch(0.75 0.13 155) 72% 90%, oklch(0.85 0.03 280) 90% 100%);"></div>
+            <div style="display:flex;flex-direction:column;gap:9px;">
+              <div style="display:flex;align-items:center;gap:8px;"><span style="width:10px;height:10px;border-radius:3px;background:oklch(0.55 0.2 285);"></span><span style="font-size:12px;color:oklch(0.42 0.02 280);">Medicine 45%</span></div>
+              <div style="display:flex;align-items:center;gap:8px;"><span style="width:10px;height:10px;border-radius:3px;background:oklch(0.7 0.13 200);"></span><span style="font-size:12px;color:oklch(0.42 0.02 280);">Wellness 27%</span></div>
+              <div style="display:flex;align-items:center;gap:8px;"><span style="width:10px;height:10px;border-radius:3px;background:oklch(0.75 0.13 155);"></span><span style="font-size:12px;color:oklch(0.42 0.02 280);">Devices 18%</span></div>
+              <div style="display:flex;align-items:center;gap:8px;"><span style="width:10px;height:10px;border-radius:3px;background:oklch(0.85 0.03 280);"></span><span style="font-size:12px;color:oklch(0.42 0.02 280);">Other 10%</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 12 MOBILE -->
+    <section>
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:8px;"><span style="font-family:'Geist Mono',monospace;font-size:13px;color:oklch(0.55 0.14 285);">12</span><h2 style="margin:0;font-size:23px;font-weight:650;letter-spacing:-0.015em;">Mobile guidelines</h2></div>
+      <p style="margin:0 0 24px;font-size:14px;line-height:1.55;color:oklch(0.5 0.015 280);max-width:640px;">Same tokens, denser layout. Bottom nav for primary destinations; 44px minimum touch targets; a floating action for the primary create action.</p>
+      <div style="display:grid;grid-template-columns:300px 1fr;gap:24px;align-items:start;">
+        <div style="width:300px;border:1px solid oklch(0.86 0.008 280);border-radius:32px;background:#fff;padding:10px;box-shadow:0 20px 50px -24px rgba(40,32,90,0.4);">
+          <div style="border-radius:24px;overflow:hidden;background:oklch(0.985 0.004 280);">
+            <div style="height:40px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;"><span style="font-family:'Geist Mono',monospace;font-size:11px;color:oklch(0.4 0.02 280);">9:41</span><span style="font-size:11px;color:oklch(0.5 0.06 155);">● Synced</span></div>
+            <div style="padding:12px 16px 16px;">
+              <div style="font-size:17px;font-weight:650;margin-bottom:12px;">Dashboard</div>
+              <div style="border:1px solid oklch(0.91 0.006 280);border-radius:14px;background:#fff;padding:16px;margin-bottom:10px;"><span style="font-size:10.5px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;color:oklch(0.58 0.012 280);">Today's sales</span><div style="font-family:'Geist Mono',monospace;font-size:22px;font-weight:500;margin-top:6px;">₹ 48,250</div></div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"><div style="border:1px solid oklch(0.91 0.006 280);border-radius:12px;padding:13px;"><span style="font-size:10px;color:oklch(0.58 0.012 280);">Invoices</span><div style="font-family:'Geist Mono',monospace;font-size:17px;margin-top:3px;">37</div></div><div style="border:1px solid oklch(0.91 0.006 280);border-radius:12px;padding:13px;"><span style="font-size:10px;color:oklch(0.58 0.012 280);">Low stock</span><div style="font-family:'Geist Mono',monospace;font-size:17px;margin-top:3px;color:oklch(0.5 0.14 75);">9</div></div></div>
+            </div>
+            <div style="position:relative;height:64px;border-top:1px solid oklch(0.92 0.006 280);display:flex;align-items:center;justify-content:space-around;background:#fff;">
+              <div style="display:flex;flex-direction:column;align-items:center;gap:3px;"><span style="width:20px;height:20px;border-radius:6px;background:oklch(0.52 0.2 285);"></span><span style="font-size:9.5px;font-weight:600;color:oklch(0.42 0.12 285);">Home</span></div>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:3px;"><span style="width:20px;height:20px;border-radius:6px;background:oklch(0.85 0.01 280);"></span><span style="font-size:9.5px;color:oklch(0.55 0.012 280);">Items</span></div>
+              <div style="width:52px;"></div>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:3px;"><span style="width:20px;height:20px;border-radius:6px;background:oklch(0.85 0.01 280);"></span><span style="font-size:9.5px;color:oklch(0.55 0.012 280);">Reports</span></div>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:3px;"><span style="width:20px;height:20px;border-radius:6px;background:oklch(0.85 0.01 280);"></span><span style="font-size:9.5px;color:oklch(0.55 0.012 280);">More</span></div>
+              <div style="position:absolute;top:-22px;left:50%;transform:translateX(-50%);width:52px;height:52px;border-radius:50%;background:oklch(0.52 0.2 285);color:#fff;display:flex;align-items:center;justify-content:center;font-size:26px;box-shadow:0 8px 20px -6px oklch(0.52 0.2 285 / 0.6);">+</div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div style="border:1px solid oklch(0.92 0.006 280);border-radius:12px;background:#fff;padding:14px 16px;"><span style="font-size:13px;font-weight:600;">Touch targets ≥ 44px</span><p style="margin:4px 0 0;font-size:12.5px;color:oklch(0.55 0.015 280);line-height:1.5;">All interactive elements clear the 44px minimum, with 8px spacing between.</p></div>
+          <div style="border:1px solid oklch(0.92 0.006 280);border-radius:12px;background:#fff;padding:14px 16px;"><span style="font-size:13px;font-weight:600;">Bottom nav + FAB</span><p style="margin:4px 0 0;font-size:12.5px;color:oklch(0.55 0.015 280);line-height:1.5;">Up to 5 destinations; the primary create action is a center floating button.</p></div>
+          <div style="border:1px solid oklch(0.92 0.006 280);border-radius:12px;background:#fff;padding:14px 16px;"><span style="font-size:13px;font-weight:600;">Offline pill persists</span><p style="margin:4px 0 0;font-size:12.5px;color:oklch(0.55 0.015 280);line-height:1.5;">Sync status stays visible in the status bar on every screen.</p></div>
+          <div style="border:1px solid oklch(0.92 0.006 280);border-radius:12px;background:#fff;padding:14px 16px;"><span style="font-size:13px;font-weight:600;">Breakpoints</span><p style="margin:4px 0 0;font-family:'Geist Mono',monospace;font-size:12px;color:oklch(0.5 0.012 280);line-height:1.6;">sm 640 · md 768 · lg 1024 · xl 1280</p></div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals(){ return {}; }
+}
+</script>
+</body>
+</html>

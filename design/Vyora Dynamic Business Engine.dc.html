@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;}
+body{margin:0;background:oklch(0.975 0.004 280);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
+a{color:oklch(0.52 0.2 285);text-decoration:none;}
+a:hover{color:oklch(0.44 0.2 285);}
+::-webkit-scrollbar{width:10px;height:10px;}
+::-webkit-scrollbar-thumb{background:oklch(0.88 0.008 280);border-radius:6px;border:2px solid oklch(0.975 0.004 280);}
+</style>
+</helmet>
+
+<div style="font-family:Geist,system-ui,sans-serif;color:oklch(0.24 0.02 280);padding:0 0 60px;">
+
+  <div style="background:oklch(0.22 0.03 280);color:oklch(0.98 0.005 280);padding:52px 48px 44px;">
+    <div style="max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:16px;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span style="width:30px;height:30px;border-radius:8px;background:oklch(0.6 0.2 285);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;">V</span>
+        <span style="font-size:14px;font-weight:600;">Vyora</span>
+        <span style="font-size:13px;color:oklch(0.72 0.02 280);">Dynamic Business Engine</span>
+      </div>
+      <h1 style="margin:0;font-size:32px;font-weight:650;letter-spacing:-0.02em;line-height:1.14;">One engine. Change the metadata — the whole app changes.</h1>
+      <p style="margin:0;font-size:14.5px;line-height:1.6;color:oklch(0.78 0.02 280);max-width:720px;">Pick a business type on the left. Its fields, validations, GST rules, invoice template, and reports are all generated from a metadata record — no application code changes. Adding a new vertical means inserting a new record.</p>
+    </div>
+  </div>
+
+  <div style="max-width:1180px;margin:26px auto 0;padding:0 48px;">
+    <div style="border:1px solid oklch(0.9 0.006 280);border-radius:18px;background:#fff;box-shadow:0 16px 44px -24px rgba(40,32,90,0.3);overflow:hidden;display:flex;min-height:640px;">
+
+      <!-- LEFT RAIL -->
+      <div style="width:246px;flex-shrink:0;border-right:1px solid oklch(0.93 0.006 280);background:oklch(0.985 0.004 280);padding:14px 10px;overflow-y:auto;max-height:760px;">
+        <div style="font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.6 0.012 280);padding:6px 10px 10px;">Business types · 18</div>
+        <div style="display:flex;flex-direction:column;gap:2px;">
+          <sc-for list="{{ types }}" as="t" hint-placeholder-count="12">
+            <button onClick="{{ t.pick }}" style="{{ t.rowStyle }}">
+              <span style="{{ t.tileStyle }}">{{ t.letter }}</span>
+              <span style="display:flex;flex-direction:column;gap:1px;min-width:0;text-align:left;">
+                <span style="font-size:12.5px;font-weight:600;color:oklch(0.28 0.02 280);">{{ t.name }}</span>
+                <span style="font-size:10.5px;color:oklch(0.6 0.012 280);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ t.sector }}</span>
+              </span>
+            </button>
+          </sc-for>
+        </div>
+      </div>
+
+      <!-- RIGHT PANEL -->
+      <div style="flex:1;display:flex;flex-direction:column;min-width:0;">
+        <div style="padding:22px 26px 0;border-bottom:1px solid oklch(0.93 0.006 280);">
+          <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px;">
+            <span style="{{ sel.tileStyleLg }}">{{ sel.letter }}</span>
+            <div style="display:flex;flex-direction:column;gap:2px;">
+              <div style="display:flex;align-items:center;gap:10px;"><h2 style="margin:0;font-size:19px;font-weight:650;">{{ sel.name }}</h2><span style="font-size:11px;font-weight:600;color:oklch(0.44 0.1 155);background:oklch(0.95 0.05 155);border:1px solid oklch(0.86 0.07 155);padding:3px 9px;border-radius:999px;">No code · metadata only</span></div>
+              <span style="font-size:12.5px;color:oklch(0.55 0.015 280);">{{ sel.sector }}</span>
+            </div>
+          </div>
+          <div style="display:flex;gap:2px;">
+            <sc-for list="{{ tabs }}" as="tab" hint-placeholder-count="6">
+              <button onClick="{{ tab.pick }}" style="{{ tab.style }}">{{ tab.label }}</button>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="flex:1;padding:24px 26px;overflow-y:auto;max-height:700px;">
+
+          <sc-if value="{{ isFields }}" hint-placeholder-val="{{ true }}">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:22px;">
+              <div>
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;"><span style="font-size:11px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.5 0.14 285);">Required fields</span><span style="font-size:11px;color:oklch(0.6 0.012 280);">{{ sel.reqCount }}</span></div>
+                <div style="display:flex;flex-direction:column;gap:7px;">
+                  <sc-for list="{{ sel.required }}" as="f" hint-placeholder-count="5">
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;background:#fff;border:1px solid oklch(0.91 0.006 280);border-radius:9px;">
+                      <span style="display:flex;align-items:center;gap:8px;"><span style="width:5px;height:5px;border-radius:50%;background:oklch(0.55 0.18 285);"></span><span style="font-size:12.5px;color:oklch(0.3 0.02 280);">{{ f.l }}</span></span>
+                      <span style="font-family:'Geist Mono',monospace;font-size:10px;color:oklch(0.52 0.1 285);background:oklch(0.96 0.03 285);padding:2px 7px;border-radius:5px;">{{ f.t }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+              <div>
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;"><span style="font-size:11px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.55 0.012 280);">Optional fields</span><span style="font-size:11px;color:oklch(0.6 0.012 280);">{{ sel.optCount }}</span></div>
+                <div style="display:flex;flex-direction:column;gap:7px;">
+                  <sc-for list="{{ sel.optional }}" as="f" hint-placeholder-count="4">
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;background:oklch(0.99 0.003 280);border:1px solid oklch(0.93 0.006 280);border-radius:9px;">
+                      <span style="display:flex;align-items:center;gap:8px;"><span style="width:5px;height:5px;border-radius:50%;background:oklch(0.78 0.01 280);"></span><span style="font-size:12.5px;color:oklch(0.42 0.02 280);">{{ f.l }}</span></span>
+                      <span style="font-family:'Geist Mono',monospace;font-size:10px;color:oklch(0.5 0.012 280);background:oklch(0.96 0.004 280);padding:2px 7px;border-radius:5px;">{{ f.t }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isValid }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:9px;max-width:640px;">
+              <sc-for list="{{ sel.validations }}" as="v" hint-placeholder-count="4">
+                <div style="display:flex;align-items:flex-start;gap:11px;padding:12px 14px;background:#fff;border:1px solid oklch(0.91 0.006 280);border-radius:10px;">
+                  <span style="width:18px;height:18px;flex-shrink:0;border-radius:5px;background:oklch(0.96 0.03 285);color:oklch(0.5 0.14 285);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;">✓</span>
+                  <span style="font-size:12.5px;line-height:1.45;color:oklch(0.34 0.02 280);">{{ v }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isGst }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:14px;max-width:640px;">
+              <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:oklch(0.965 0.025 285);border:1px solid oklch(0.9 0.035 285);border-radius:10px;"><span style="font-size:12px;font-weight:600;color:oklch(0.4 0.1 285);">Default rate</span><span style="font-family:'Geist Mono',monospace;font-size:13px;font-weight:500;color:oklch(0.36 0.12 285);">{{ sel.gstDefault }}</span></div>
+              <div style="display:flex;flex-direction:column;gap:7px;">
+                <sc-for list="{{ sel.gst }}" as="g" hint-placeholder-count="3">
+                  <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 14px;background:#fff;border:1px solid oklch(0.91 0.006 280);border-radius:9px;">
+                    <span style="font-size:12.5px;color:oklch(0.34 0.02 280);">{{ g.l }}</span>
+                    <span style="font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:500;color:oklch(0.42 0.02 280);background:oklch(0.965 0.004 280);border:1px solid oklch(0.92 0.006 280);padding:4px 10px;border-radius:6px;">{{ g.r }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isInvoice }}" hint-placeholder-val="{{ false }}">
+            <div style="max-width:680px;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;"><span style="font-size:11px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.55 0.012 280);">Template</span><span style="font-size:12.5px;font-weight:600;color:oklch(0.3 0.02 280);">{{ sel.invTitle }}</span></div>
+              <div style="border:1px solid oklch(0.9 0.006 280);border-radius:12px;overflow:hidden;">
+                <div style="padding:16px 18px;border-bottom:1px solid oklch(0.93 0.006 280);display:flex;justify-content:space-between;align-items:flex-start;">
+                  <div><div style="font-size:14px;font-weight:650;">{{ sel.name }} Store</div><div style="font-family:'Geist Mono',monospace;font-size:10.5px;color:oklch(0.58 0.012 280);margin-top:3px;">GSTIN 29ABCDE1234F1Z5</div></div>
+                  <div style="text-align:right;"><div style="font-size:12px;font-weight:700;letter-spacing:0.05em;color:oklch(0.4 0.02 280);">{{ sel.invTitle }}</div><div style="font-family:'Geist Mono',monospace;font-size:10.5px;color:oklch(0.58 0.012 280);margin-top:3px;">INV-1042 · 16 Jul 2026</div></div>
+                </div>
+                <div style="padding:14px 18px;">
+                  <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;">
+                    <sc-for list="{{ sel.invCols }}" as="c" hint-placeholder-count="6">
+                      <span style="font-size:10.5px;font-weight:600;color:oklch(0.45 0.02 280);background:oklch(0.965 0.004 280);border:1px solid oklch(0.92 0.006 280);padding:5px 9px;border-radius:6px;">{{ c }}</span>
+                    </sc-for>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;">
+                    <div style="height:12px;border-radius:4px;background:oklch(0.96 0.004 280);"></div>
+                    <div style="height:12px;width:88%;border-radius:4px;background:oklch(0.96 0.004 280);"></div>
+                    <div style="height:12px;width:72%;border-radius:4px;background:oklch(0.96 0.004 280);"></div>
+                  </div>
+                  <div style="display:flex;justify-content:flex-end;border-top:1px solid oklch(0.93 0.006 280);padding-top:12px;"><div style="display:flex;flex-direction:column;gap:5px;min-width:190px;"><div style="display:flex;justify-content:space-between;font-size:11.5px;color:oklch(0.5 0.012 280);"><span>Subtotal</span><span style="font-family:'Geist Mono',monospace;">₹ 10,000</span></div><div style="display:flex;justify-content:space-between;font-size:11.5px;color:oklch(0.5 0.012 280);"><span>GST ({{ sel.gstDefault }})</span><span style="font-family:'Geist Mono',monospace;">₹ …</span></div><div style="display:flex;justify-content:space-between;font-size:13px;font-weight:650;color:oklch(0.28 0.02 280);border-top:1px solid oklch(0.93 0.006 280);padding-top:5px;"><span>Total</span><span style="font-family:'Geist Mono',monospace;">₹ …</span></div></div></div>
+                </div>
+              </div>
+              <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:14px;">
+                <sc-for list="{{ sel.invExtras }}" as="e" hint-placeholder-count="2">
+                  <span style="font-size:11px;color:oklch(0.5 0.13 285);background:oklch(0.96 0.025 285);border:1px solid oklch(0.9 0.035 285);padding:5px 10px;border-radius:6px;">{{ e }}</span>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isReports }}" hint-placeholder-val="{{ false }}">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:640px;">
+              <sc-for list="{{ sel.reports }}" as="r" hint-placeholder-count="4">
+                <div style="display:flex;align-items:center;gap:10px;padding:13px 15px;background:#fff;border:1px solid oklch(0.91 0.006 280);border-radius:10px;">
+                  <span style="width:22px;height:22px;flex-shrink:0;border-radius:6px;background:oklch(0.96 0.025 285);"></span>
+                  <span style="font-size:12.5px;font-weight:500;color:oklch(0.32 0.02 280);">{{ r }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isJson }}" hint-placeholder-val="{{ false }}">
+            <div>
+              <p style="margin:0 0 12px;font-size:12.5px;line-height:1.5;color:oklch(0.5 0.015 280);max-width:600px;">This is the record that drives everything above. Store it, edit it, or add a new one — the app re-renders without a deploy.</p>
+              <pre style="margin:0;font-family:'Geist Mono',monospace;font-size:11.5px;line-height:1.6;color:oklch(0.34 0.02 280);background:oklch(0.98 0.004 280);border:1px solid oklch(0.92 0.006 280);border-radius:12px;padding:18px 20px;overflow-x:auto;white-space:pre;">{{ jsonString }}</pre>
+            </div>
+          </sc-if>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  constructor(props){
+    super(props);
+    this.data = this.build();
+    this.state = { sel:'pharmacy', tab:'fields' };
+  }
+
+  build(){
+    const B=[
+      {id:'pharmacy',name:'Pharmacy',letter:'Rx',hue:150,sector:'Chemist & medical',
+        required:[{l:'Item name',t:'text'},{l:'Batch No',t:'text'},{l:'Expiry',t:'date'},{l:'MRP',t:'currency'},{l:'Qty',t:'number'},{l:'GST',t:'percent'}],
+        optional:[{l:'Schedule (H/H1/X)',t:'select'},{l:'HSN',t:'text'},{l:'Manufacturer',t:'text'},{l:'Rack',t:'text'}],
+        validations:['Expiry date must be after today','Batch No mandatory for scheduled drugs','Selling price cannot exceed MRP','Qty cannot exceed available stock','Schedule-H sale requires prescription reference'],
+        gstDefault:'12%',gst:[{l:'Life-saving / exempt drugs',r:'0–5%'},{l:'General medicines',r:'12%'},{l:'Wellness & OTC',r:'18%'}],
+        invTitle:'TAX INVOICE',invCols:['Item','Batch','Exp','HSN','Qty','MRP','Rate','GST','Amount'],invExtras:['Drug license no.','Pharmacist sign'],
+        reports:['GSTR-1','Expiry & batch register','Schedule-H register','Fast movers']},
+      {id:'medical',name:'Medical Store',letter:'Ms',hue:158,sector:'Retail chemist',
+        required:[{l:'Item name',t:'text'},{l:'Batch No',t:'text'},{l:'Expiry',t:'date'},{l:'MRP',t:'currency'},{l:'Qty',t:'number'},{l:'GST',t:'percent'}],
+        optional:[{l:'Prescription upload',t:'file'},{l:'Schedule',t:'select'},{l:'HSN',t:'text'},{l:'Salt / composition',t:'text'}],
+        validations:['Expiry must be after today','Substitute suggested if out of stock','Selling price ≤ MRP','Rx upload required for schedule drugs'],
+        gstDefault:'12%',gst:[{l:'Exempt drugs',r:'0%'},{l:'Most medicines',r:'12%'},{l:'Cosmetics & devices',r:'18%'}],
+        invTitle:'TAX INVOICE',invCols:['Item','Batch','Exp','Qty','MRP','Rate','GST','Amount'],invExtras:['Drug license no.'],
+        reports:['GSTR-1','Expiry alerts','Salt-wise sales','Purchase returns']},
+      {id:'grocery',name:'Grocery',letter:'Gr',hue:130,sector:'Daily needs',
+        required:[{l:'Item name',t:'text'},{l:'Weight / unit',t:'select'},{l:'MRP',t:'currency'},{l:'Qty',t:'number'},{l:'GST',t:'percent'}],
+        optional:[{l:'Barcode',t:'scan'},{l:'Brand',t:'text'},{l:'HSN',t:'text'}],
+        validations:['Weight / quantity must be greater than 0','Barcode must be unique','Loose items priced per unit weight'],
+        gstDefault:'5%',gst:[{l:'Unbranded staples',r:'0%'},{l:'Packaged food',r:'5%'},{l:'Processed / branded',r:'12–18%'}],
+        invTitle:'RETAIL BILL',invCols:['Item','Unit','Qty','Rate','GST','Amount'],invExtras:['Round-off','Thank-you note'],
+        reports:['Fast movers','Low stock','GST summary','Daily sales']},
+      {id:'kirana',name:'Kirana',letter:'Kr',hue:120,sector:'Neighbourhood store',
+        required:[{l:'Item name',t:'text'},{l:'Qty',t:'number'},{l:'Rate',t:'currency'}],
+        optional:[{l:'Unit',t:'select'},{l:'Customer khata',t:'select'},{l:'GST',t:'percent'}],
+        validations:['Credit (khata) within customer limit','Composition dealers omit tax breakup','Daily cash reconciliation prompt'],
+        gstDefault:'Composition 1%',gst:[{l:'Composition scheme',r:'1%'},{l:'Exempt goods',r:'0%'}],
+        invTitle:'BILL OF SUPPLY',invCols:['Item','Qty','Rate','Amount'],invExtras:['Khata balance','Composition dealer'],
+        reports:['Khata outstanding','Daily sales','Top customers']},
+      {id:'electronics',name:'Electronics',letter:'El',hue:245,sector:'Appliances & gadgets',
+        required:[{l:'Item name',t:'text'},{l:'Brand',t:'select'},{l:'Model',t:'text'},{l:'Serial No',t:'text'},{l:'MRP',t:'currency'},{l:'Qty',t:'number'},{l:'GST',t:'percent'}],
+        optional:[{l:'Warranty',t:'select'},{l:'HSN',t:'text'},{l:'Extended warranty',t:'select'}],
+        validations:['Serial No must be unique','Warranty end auto-calculated from sale date','Qty ≤ stock'],
+        gstDefault:'18%',gst:[{l:'Most electronics',r:'18%'},{l:'Large appliances / TVs',r:'28%'}],
+        invTitle:'TAX INVOICE',invCols:['Item','Brand','Model','Serial','Warranty','Qty','Rate','GST','Amount'],invExtras:['Warranty terms','Serial recorded'],
+        reports:['Warranty tracker','Serial ledger','Sales trend','Service claims']},
+      {id:'mobile',name:'Mobile Shop',letter:'Mb',hue:265,sector:'Phones & accessories',
+        required:[{l:'Brand',t:'select'},{l:'Model',t:'text'},{l:'IMEI',t:'scan'},{l:'Price',t:'currency'},{l:'GST',t:'percent'}],
+        optional:[{l:'Serial No',t:'text'},{l:'Warranty',t:'select'},{l:'Colour',t:'select'},{l:'Storage',t:'select'}],
+        validations:['IMEI must be 15 digits and unique','Warranty auto-registered on sale','Exchange value deducted before GST'],
+        gstDefault:'18%',gst:[{l:'Phones & tablets',r:'18%'},{l:'Accessories',r:'18%'}],
+        invTitle:'TAX INVOICE',invCols:['Brand','Model','IMEI','Warranty','Qty','Rate','GST','Amount'],invExtras:['IMEI printed','Warranty card'],
+        reports:['IMEI ledger','Warranty tracker','GSTR-1','Exchange log']},
+      {id:'restaurant',name:'Restaurant',letter:'Rt',hue:35,sector:'Dine-in & delivery',
+        required:[{l:'Item name',t:'text'},{l:'Qty',t:'number'},{l:'Rate',t:'currency'},{l:'Order type',t:'select'},{l:'GST',t:'percent'}],
+        optional:[{l:'Table',t:'select'},{l:'Waiter',t:'select'},{l:'KOT No',t:'auto'},{l:'Kitchen notes',t:'text'}],
+        validations:['Table required for dine-in orders','KOT auto-generated on confirm','Service charge shown separately from GST'],
+        gstDefault:'5%',gst:[{l:'Standard restaurant',r:'5% (no ITC)'},{l:'AC / hotel ≥ ₹7,500 room',r:'18%'}],
+        invTitle:'TAX INVOICE',invCols:['Item','Qty','Rate','Amount'],invExtras:['KOT reference','Service charge','Table / parcel'],
+        reports:['Table turnover','KOT summary','Item popularity','Daily sales']},
+      {id:'hotel',name:'Hotel',letter:'Ht',hue:210,sector:'Rooms & hospitality',
+        required:[{l:'Room type',t:'select'},{l:'Guest name',t:'text'},{l:'Check-in',t:'date'},{l:'Check-out',t:'date'},{l:'Tariff',t:'currency'},{l:'GST',t:'percent'}],
+        optional:[{l:'ID proof',t:'file'},{l:'Extra bed',t:'number'},{l:'Meal plan',t:'select'}],
+        validations:['Check-out must be after check-in','GST slab derived from room tariff','No-show / cancellation policy applied'],
+        gstDefault:'12%',gst:[{l:'Tariff < ₹7,500',r:'12%'},{l:'Tariff ≥ ₹7,500',r:'18%'},{l:'Restaurant within hotel',r:'5–18%'}],
+        invTitle:'GUEST FOLIO',invCols:['Date','Description','Nights','Rate','GST','Amount'],invExtras:['Room + services split','Guest ID recorded'],
+        reports:['Occupancy','Revenue per room','ARR & RevPAR','Advance bookings']},
+      {id:'catering',name:'Catering',letter:'Ct',hue:50,sector:'Events & bulk food',
+        required:[{l:'Event date',t:'date'},{l:'Menu items',t:'text'},{l:'Pax',t:'number'},{l:'Rate / plate',t:'currency'},{l:'GST',t:'percent'}],
+        optional:[{l:'Venue',t:'text'},{l:'Advance',t:'currency'},{l:'Delivery time',t:'time'},{l:'Staff count',t:'number'}],
+        validations:['Pax must be greater than 0','Advance cannot exceed total','Ingredient plan generated from pax'],
+        gstDefault:'5%',gst:[{l:'Outdoor catering',r:'5%'},{l:'With premises / AC',r:'18%'}],
+        invTitle:'QUOTATION / INVOICE',invCols:['Menu','Pax','Rate/plate','Amount'],invExtras:['Advance received','Balance due','Event date'],
+        reports:['Event calendar','Advance due','Ingredient plan','Per-event margin']},
+      {id:'manufacturing',name:'Manufacturing',letter:'Mf',hue:200,sector:'Production & assembly',
+        required:[{l:'Product',t:'text'},{l:'BOM',t:'text'},{l:'Qty produced',t:'number'},{l:'Batch No',t:'text'},{l:'Cost',t:'currency'},{l:'GST',t:'percent'}],
+        optional:[{l:'Machine',t:'select'},{l:'Shift',t:'select'},{l:'Wastage %',t:'percent'}],
+        validations:['BOM raw materials must be in stock','Batch No mandatory per production run','Output qty updates finished-goods stock'],
+        gstDefault:'18%',gst:[{l:'Standard goods',r:'18%'},{l:'Specific HSN slabs',r:'5–28%'}],
+        invTitle:'TAX INVOICE',invCols:['Product','HSN','Batch','Qty','Rate','GST','Amount'],invExtras:['E-way bill','HSN mandatory'],
+        reports:['Production output','Raw material consumption','WIP status','Product costing']},
+      {id:'automobile',name:'Automobile',letter:'Au',hue:20,sector:'Vehicles & service',
+        required:[{l:'Vehicle No',t:'text'},{l:'Customer',t:'text'},{l:'Service / part',t:'text'},{l:'Labour',t:'currency'},{l:'GST',t:'percent'}],
+        optional:[{l:'Odometer',t:'number'},{l:'Next service date',t:'date'},{l:'Warranty',t:'select'}],
+        validations:['Vehicle No format validated','Parts and labour taxed under correct HSN/SAC','Service-due reminder scheduled'],
+        gstDefault:'18%',gst:[{l:'Spare parts',r:'18–28%'},{l:'Labour (SAC)',r:'18%'}],
+        invTitle:'JOB CARD / INVOICE',invCols:['Description','Type','Qty','Rate','GST','Amount'],invExtras:['Parts + labour split','Vehicle No recorded'],
+        reports:['Job cards','Parts ledger','Service-due reminders','Technician load']},
+      {id:'jewellery',name:'Jewellery',letter:'Jw',hue:85,sector:'Gold & silver',
+        required:[{l:'Item',t:'text'},{l:'Purity',t:'select'},{l:'Gross wt (g)',t:'number'},{l:'Net wt (g)',t:'number'},{l:'Rate / g',t:'currency'},{l:'Making charge',t:'percent'},{l:'GST',t:'percent'}],
+        optional:[{l:'Stone wt',t:'number'},{l:'HUID',t:'text'},{l:'Hallmark no',t:'text'}],
+        validations:['Net weight cannot exceed gross weight','HUID must be 6 characters','Value = metal + making + GST','Old-gold exchange deducted before tax'],
+        gstDefault:'3%',gst:[{l:'Gold & silver ornaments',r:'3%'},{l:'Making charges',r:'5%'}],
+        invTitle:'TAX INVOICE',invCols:['Item','Purity','Gross','Net','Rate/g','Making','GST','Amount'],invExtras:['HUID printed','Hallmark details'],
+        reports:['Metal (gold/silver) ledger','Making-charge summary','Hallmark log','Old-gold exchange']},
+      {id:'garments',name:'Garments',letter:'Ga',hue:350,sector:'Apparel & textile',
+        required:[{l:'Style / SKU',t:'text'},{l:'Size',t:'select'},{l:'Colour',t:'select'},{l:'MRP',t:'currency'},{l:'Qty',t:'number'},{l:'GST',t:'percent'}],
+        optional:[{l:'HSN',t:'text'},{l:'Fabric',t:'text'},{l:'Brand',t:'select'}],
+        validations:['SKU unique per size + colour','GST slab depends on price point','Size-colour matrix keeps stock'],
+        gstDefault:'5%',gst:[{l:'Apparel < ₹1,000',r:'5%'},{l:'Apparel ≥ ₹1,000',r:'12%'}],
+        invTitle:'TAX INVOICE',invCols:['Style','Size','Colour','Qty','Rate','GST','Amount'],invExtras:['Size-colour matrix'],
+        reports:['Size-wise sales','SKU stock','Season trend','Dead stock']},
+      {id:'furniture',name:'Furniture',letter:'Fu',hue:60,sector:'Home & office',
+        required:[{l:'Item',t:'text'},{l:'Material',t:'select'},{l:'Dimensions',t:'text'},{l:'Price',t:'currency'},{l:'Qty',t:'number'},{l:'GST',t:'percent'}],
+        optional:[{l:'Warranty',t:'select'},{l:'Assembly',t:'boolean'},{l:'Delivery date',t:'date'}],
+        validations:['Delivery date must be on/after order date','Assembly charge added when selected','Made-to-order needs advance'],
+        gstDefault:'18%',gst:[{l:'Wooden furniture',r:'12%'},{l:'Metal / modular',r:'18%'}],
+        invTitle:'TAX INVOICE',invCols:['Item','Material','Dimensions','Qty','Rate','GST','Amount'],invExtras:['Delivery & assembly','Warranty terms'],
+        reports:['Order pipeline','Delivery schedule','Material stock','Made-to-order status']},
+      {id:'hardware',name:'Hardware',letter:'Hw',hue:215,sector:'Tools & building',
+        required:[{l:'Item',t:'text'},{l:'Unit',t:'select'},{l:'Qty',t:'number'},{l:'Rate',t:'currency'},{l:'GST',t:'percent'}],
+        optional:[{l:'HSN',t:'text'},{l:'Brand',t:'select'},{l:'Barcode',t:'scan'}],
+        validations:['Quantity must be greater than 0','Unit conversions kept consistent','Slab varies by HSN'],
+        gstDefault:'18%',gst:[{l:'Fittings & pipes',r:'18%'},{l:'Cement / paint',r:'28%'}],
+        invTitle:'TAX INVOICE',invCols:['Item','Unit','Qty','Rate','GST','Amount'],invExtras:['Unit-based pricing'],
+        reports:['Stock by unit','Supplier dues','GST summary','Bulk orders']},
+      {id:'wholesale',name:'Wholesale',letter:'Wh',hue:190,sector:'Bulk B2B trade',
+        required:[{l:'Item',t:'text'},{l:'Qty',t:'number'},{l:'Rate',t:'currency'},{l:'GST',t:'percent'},{l:'Party GSTIN',t:'text'}],
+        optional:[{l:'Discount slab',t:'percent'},{l:'Credit days',t:'number'},{l:'Transport',t:'text'}],
+        validations:['Party GSTIN must be valid (15 chars)','Credit within party limit','E-way bill for invoices above threshold'],
+        gstDefault:'As per HSN',gst:[{l:'Rate follows item HSN',r:'0–28%'},{l:'Inter-state',r:'IGST'}],
+        invTitle:'TAX INVOICE (B2B)',invCols:['Item','HSN','Qty','Rate','Disc','GST','Amount'],invExtras:['E-way bill','Party GSTIN'],
+        reports:['Party outstanding','Bulk movers','Margin analysis','Credit ageing']},
+      {id:'retail',name:'Retail',letter:'Rl',hue:280,sector:'General store / POS',
+        required:[{l:'Item',t:'text'},{l:'Qty',t:'number'},{l:'Rate',t:'currency'},{l:'GST',t:'percent'}],
+        optional:[{l:'Barcode',t:'scan'},{l:'Customer',t:'select'},{l:'Discount',t:'percent'}],
+        validations:['Qty cannot exceed stock','GST per item HSN','Discount within allowed limit'],
+        gstDefault:'As per HSN',gst:[{l:'Rate follows item HSN',r:'0–28%'}],
+        invTitle:'RETAIL BILL',invCols:['Item','Qty','Rate','Disc','GST','Amount'],invExtras:['POS quick-bill','Loyalty points'],
+        reports:['Daily sales','Fast movers','Average bill value','Hourly footfall']},
+      {id:'distributor',name:'Distributor',letter:'Ds',hue:170,sector:'Supply & route sales',
+        required:[{l:'Item',t:'text'},{l:'Batch',t:'text'},{l:'Qty',t:'number'},{l:'Rate',t:'currency'},{l:'GST',t:'percent'},{l:'Retailer GSTIN',t:'text'}],
+        optional:[{l:'Scheme',t:'text'},{l:'Credit days',t:'number'},{l:'Route',t:'select'},{l:'Salesman',t:'select'}],
+        validations:['Scheme discount within margin','Retailer GSTIN valid','Batch tracked for secondary sales','E-way bill above threshold'],
+        gstDefault:'As per HSN',gst:[{l:'Rate follows item HSN',r:'0–28%'},{l:'Scheme discount pre-tax',r:'—'}],
+        invTitle:'TAX INVOICE (B2B)',invCols:['Item','Batch','Qty','Rate','Scheme','GST','Amount'],invExtras:['E-way bill','Route / salesman'],
+        reports:['Route sales','Scheme cost','Secondary sales','Outstanding by retailer']}
+    ];
+    return B.map(b=>{
+      const bg=`oklch(0.955 0.045 ${b.hue})`, fg=`oklch(0.48 0.16 ${b.hue})`;
+      return {...b, reqCount:b.required.length, optCount:b.optional.length,
+        tileStyle:{width:'28px',height:'28px',flexShrink:0,borderRadius:'7px',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:700,fontSize:'11px',background:bg,color:fg},
+        tileStyleLg:{width:'40px',height:'40px',flexShrink:0,borderRadius:'11px',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:700,fontSize:'15px',background:bg,color:fg}};
+    });
+  }
+
+  find(id){ return this.data.find(b=>b.id===id) || this.data[0]; }
+
+  buildJson(b){
+    const obj={
+      businessType:b.id,
+      label:b.name,
+      fields:{
+        required:b.required.map(f=>({name:f.l,type:f.t,required:true})),
+        optional:b.optional.map(f=>({name:f.l,type:f.t,required:false}))
+      },
+      validations:b.validations,
+      gst:{ default:b.gstDefault, rules:b.gst.map(g=>({applies:g.l,rate:g.r})) },
+      invoice:{ template:b.invTitle, columns:b.invCols, extras:b.invExtras },
+      reports:b.reports
+    };
+    return JSON.stringify(obj,null,2);
+  }
+
+  renderVals(){
+    const st=this.state;
+    const types=this.data.map(b=>({
+      id:b.id,name:b.name,letter:b.letter,sector:b.sector,tileStyle:b.tileStyle,
+      pick:()=>this.setState({sel:b.id}),
+      rowStyle:{display:'flex',alignItems:'center',gap:'10px',width:'100%',cursor:'pointer',padding:'8px 10px',borderRadius:'9px',border:'none',
+        background: st.sel===b.id ? 'oklch(0.96 0.025 285)' : 'transparent',
+        boxShadow: st.sel===b.id ? 'inset 0 0 0 1px oklch(0.9 0.035 285)' : 'none'}
+    }));
+    const sel=this.find(st.sel);
+    const tabDefs=[['fields','Fields'],['validations','Validations'],['gst','GST rules'],['invoice','Invoice'],['reports','Reports'],['json','Metadata JSON']];
+    const tabs=tabDefs.map(([id,label])=>({
+      id,label,pick:()=>this.setState({tab:id}),
+      style:{cursor:'pointer',border:'none',background:'transparent',fontFamily:'inherit',fontSize:'13px',
+        fontWeight: st.tab===id?600:500,
+        color: st.tab===id?'oklch(0.42 0.15 285)':'oklch(0.52 0.015 280)',
+        padding:'10px 14px',borderBottom: st.tab===id?'2px solid oklch(0.52 0.2 285)':'2px solid transparent'}
+    }));
+    return {
+      types, tabs, sel,
+      isFields:st.tab==='fields', isValid:st.tab==='validations', isGst:st.tab==='gst',
+      isInvoice:st.tab==='invoice', isReports:st.tab==='reports', isJson:st.tab==='json',
+      jsonString:this.buildJson(sel)
+    };
+  }
+}
+</script>
+</body>
+</html>

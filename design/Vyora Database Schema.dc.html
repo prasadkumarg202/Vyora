@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;}
+body{margin:0;background:oklch(0.975 0.004 280);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
+a{color:oklch(0.52 0.2 285);text-decoration:none;}
+a:hover{color:oklch(0.44 0.2 285);}
+</style>
+</helmet>
+
+<div style="font-family:Geist,system-ui,sans-serif;color:oklch(0.24 0.02 280);padding:0 0 70px;">
+
+  <div style="background:oklch(0.22 0.03 280);color:oklch(0.98 0.005 280);padding:52px 48px 44px;">
+    <div style="max-width:1160px;margin:0 auto;display:flex;flex-direction:column;gap:16px;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span style="width:30px;height:30px;border-radius:8px;background:oklch(0.6 0.2 285);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;">V</span>
+        <span style="font-size:14px;font-weight:600;">Vyora</span>
+        <span style="font-size:13px;color:oklch(0.72 0.02 280);">Database Schema</span>
+      </div>
+      <h1 style="margin:0;font-size:32px;font-weight:650;letter-spacing:-0.02em;line-height:1.14;">Multi-tenant PostgreSQL, unlimited business types</h1>
+      <p style="margin:0;font-size:14.5px;line-height:1.6;color:oklch(0.78 0.02 280);max-width:720px;">One shared database, isolated per company by <span style="font-family:'Geist Mono',monospace;font-size:13px;">org_id</span> and row-level security. Business-specific fields live in <span style="font-family:'Geist Mono',monospace;font-size:13px;">custom_fields</span> JSONB, so new verticals need no migration. Sensitive invoice bodies are stored encrypted.</p>
+    </div>
+  </div>
+
+  <div style="max-width:1160px;margin:0 auto;padding:0 48px;display:flex;flex-direction:column;gap:48px;">
+
+    <!-- CONVENTIONS -->
+    <section style="margin-top:44px;">
+      <div style="display:flex;flex-wrap:wrap;gap:20px;align-items:center;border:1px solid oklch(0.9 0.006 280);border-radius:14px;background:#fff;padding:18px 22px;box-shadow:0 6px 20px -16px rgba(40,32,90,0.2);">
+        <span style="font-size:11px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.55 0.012 280);">Legend</span>
+        <span style="display:inline-flex;align-items:center;gap:7px;font-size:12px;color:oklch(0.42 0.02 280);"><span style="font-family:'Geist Mono',monospace;font-size:9.5px;padding:1px 6px;border-radius:4px;background:oklch(0.95 0.045 285);color:oklch(0.45 0.17 285);">PK</span>primary key</span>
+        <span style="display:inline-flex;align-items:center;gap:7px;font-size:12px;color:oklch(0.42 0.02 280);"><span style="font-family:'Geist Mono',monospace;font-size:9.5px;padding:1px 6px;border-radius:4px;background:oklch(0.95 0.03 235);color:oklch(0.44 0.13 235);">FK</span>foreign key</span>
+        <span style="display:inline-flex;align-items:center;gap:7px;font-size:12px;color:oklch(0.42 0.02 280);"><span style="font-family:'Geist Mono',monospace;font-size:9.5px;padding:1px 6px;border-radius:4px;background:oklch(0.96 0.004 280);color:oklch(0.5 0.012 280);">UQ</span>unique</span>
+        <span style="display:inline-flex;align-items:center;gap:7px;font-size:12px;color:oklch(0.42 0.02 280);"><span style="font-family:'Geist Mono',monospace;font-size:9.5px;padding:1px 6px;border-radius:4px;background:oklch(0.96 0.05 75);color:oklch(0.48 0.11 70);">IDX</span>indexed</span>
+        <span style="display:inline-flex;align-items:center;gap:7px;font-size:12px;color:oklch(0.42 0.02 280);"><span style="font-family:'Geist Mono',monospace;font-size:9.5px;padding:1px 6px;border-radius:4px;background:oklch(0.95 0.05 165);color:oklch(0.4 0.1 165);">JSONB</span>metadata / flexible</span>
+        <span style="display:inline-flex;align-items:center;gap:7px;font-size:12px;color:oklch(0.42 0.02 280);"><span style="font-family:'Geist Mono',monospace;font-size:9.5px;padding:1px 6px;border-radius:4px;background:oklch(0.96 0.05 25);color:oklch(0.5 0.15 25);">ENC</span>encrypted</span>
+        <span style="display:inline-flex;align-items:center;gap:7px;font-size:12px;color:oklch(0.42 0.02 280);"><span style="font-size:10px;font-weight:600;color:oklch(0.44 0.11 155);background:oklch(0.95 0.05 155);border:1px solid oklch(0.86 0.07 155);padding:3px 8px;border-radius:5px;">RLS · org_id</span>tenant-scoped</span>
+      </div>
+    </section>
+
+    <sc-for list="{{ groups }}" as="g" hint-placeholder-count="6">
+      <section>
+        <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:18px;"><span style="font-family:'Geist Mono',monospace;font-size:13px;color:oklch(0.55 0.14 285);">{{ g.num }}</span><h2 style="margin:0;font-size:22px;font-weight:650;letter-spacing:-0.015em;">{{ g.title }}</h2></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;">
+          <sc-for list="{{ g.tables }}" as="t" hint-placeholder-count="4">
+            <div style="border:1px solid oklch(0.9 0.006 280);border-radius:14px;background:#fff;padding:16px 18px;box-shadow:0 6px 20px -16px rgba(40,32,90,0.2);">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding-bottom:11px;margin-bottom:6px;border-bottom:1px solid oklch(0.92 0.006 280);">
+                <span style="font-family:'Geist Mono',monospace;font-size:13.5px;font-weight:600;color:oklch(0.42 0.15 285);">{{ t.name }}</span>
+                <sc-if value="{{ t.scoped }}" hint-placeholder-val="{{ true }}"><span style="font-size:9.5px;font-weight:600;color:oklch(0.44 0.11 155);background:oklch(0.95 0.05 155);border:1px solid oklch(0.86 0.07 155);padding:2px 8px;border-radius:999px;">RLS · org_id</span></sc-if>
+              </div>
+              <sc-for list="{{ t.columns }}" as="c" hint-placeholder-count="7">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid oklch(0.965 0.004 280);">
+                  <span style="display:flex;align-items:center;gap:6px;min-width:0;flex-wrap:wrap;">
+                    <span style="font-family:'Geist Mono',monospace;font-size:11.5px;color:oklch(0.3 0.02 280);">{{ c.n }}</span>
+                    <sc-for list="{{ c.badges }}" as="bd" hint-placeholder-count="0"><span style="{{ bd.style }}">{{ bd.label }}</span></sc-for>
+                  </span>
+                  <span style="font-family:'Geist Mono',monospace;font-size:10.5px;color:oklch(0.58 0.012 280);white-space:nowrap;text-align:right;">{{ c.t }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+    </sc-for>
+
+    <p style="margin:0;font-size:12px;color:oklch(0.6 0.012 280);">Every tenant-scoped table carries <span style="font-family:'Geist Mono',monospace;font-size:11.5px;">org_id uuid → organizations</span> with an RLS policy <span style="font-family:'Geist Mono',monospace;font-size:11.5px;">using (org_id = auth.org_id())</span>. Timestamps (<span style="font-family:'Geist Mono',monospace;font-size:11.5px;">created_at</span>, <span style="font-family:'Geist Mono',monospace;font-size:11.5px;">updated_at</span>) and a <span style="font-family:'Geist Mono',monospace;font-size:11.5px;">version int</span> for sync are present on all mutable tables.</p>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  constructor(props){ super(props); this.groups = this.build(); this.state={}; }
+
+  build(){
+    const S=(bg,color)=>({fontFamily:"'Geist Mono',monospace",fontSize:'9.5px',fontWeight:500,padding:'1px 6px',borderRadius:'4px',background:bg,color,whiteSpace:'nowrap'});
+    const B={
+      pk:S('oklch(0.95 0.045 285)','oklch(0.45 0.17 285)'),
+      fk:S('oklch(0.95 0.03 235)','oklch(0.44 0.13 235)'),
+      uq:S('oklch(0.96 0.004 280)','oklch(0.5 0.012 280)'),
+      idx:S('oklch(0.96 0.05 75)','oklch(0.48 0.11 70)'),
+      enc:S('oklch(0.96 0.05 25)','oklch(0.5 0.15 25)'),
+      json:S('oklch(0.95 0.05 165)','oklch(0.4 0.1 165)')
+    };
+    const L={pk:'PK',uq:'UQ',idx:'IDX',enc:'ENC',json:'JSONB'};
+    const col=(n,t,b)=>({n,t,badges:(b||[]).map(code=>{
+      if(code.indexOf('fk:')===0) return {label:'FK→'+code.slice(3),style:B.fk};
+      return {label:L[code],style:B[code]};
+    })});
+
+    const raw=[
+      {num:'01',title:'Identity & tenancy',tables:[
+        {name:'organizations',scoped:false,columns:[
+          col('id','uuid',['pk']),col('name','text'),col('business_type_id','uuid',['fk:business_types']),
+          col('gstin','text',['uq']),col('state','text'),col('plan','text'),col('seats','int'),
+          col('encryption_key_ref','text',['enc']),col('created_at','timestamptz')]},
+        {name:'users',scoped:false,columns:[
+          col('id','uuid',['pk']),col('phone','text',['uq']),col('email','text',['uq']),
+          col('name','text'),col('password_hash','text',['enc']),col('locale','text'),col('created_at','timestamptz')]},
+        {name:'org_members',scoped:true,columns:[
+          col('id','uuid',['pk']),col('org_id','uuid',['fk:organizations','idx']),col('user_id','uuid',['fk:users']),
+          col('role','owner|manager|…'),col('status','active|invited'),col('created_at','timestamptz')]},
+        {name:'business_types',scoped:false,columns:[
+          col('id','uuid',['pk']),col('key','text',['uq']),col('label','text'),
+          col('config','jsonb',['json']),col('is_system','bool'),col('created_at','timestamptz')]}
+      ]},
+      {num:'02',title:'Catalog & stock',tables:[
+        {name:'products',scoped:true,columns:[
+          col('id','uuid',['pk']),col('org_id','uuid',['fk:organizations','idx']),col('name','text'),
+          col('sku','text',['uq']),col('category_id','uuid',['fk:categories']),col('unit','text'),
+          col('mrp','numeric'),col('sale_price','numeric'),col('tax_rate','numeric'),col('hsn','text'),
+          col('custom_fields','jsonb',['json']),col('created_at','timestamptz')]},
+        {name:'categories',scoped:true,columns:[
+          col('id','uuid',['pk']),col('org_id','uuid',['fk:organizations']),col('name','text'),
+          col('parent_id','uuid',['fk:categories'])]},
+        {name:'inventory',scoped:true,columns:[
+          col('id','uuid',['pk']),col('org_id','uuid',['fk:organizations','idx']),col('product_id','uuid',['fk:products']),
+          col('batch','text',['uq']),col('expiry','date',['idx']),col('quantity','numeric'),
+          col('reorder_level','numeric'),col('location','text'),col('updated_at','timestamptz')]},
+        {name:'stock_movements',scoped:true,columns:[
+          col('id','uuid',['pk']),col('org_id','uuid',['fk:organizations','idx']),col('product_id','uuid',['fk:products']),
+          col('type','sale|purchase|adj…'),col('qty_delta','numeric'),col('ref_type','text'),col('ref_id','uuid'),col('created_at','timestamptz')]}
+      ]},
+      {num:'03',title:'Contacts',tables:[
+        {name:'customers',scoped:true,columns:[
+          col('id','uuid',['pk']),col('org_id','uuid',['fk:organizations','idx']),col('name','text'),
+          col('phone','text',['idx']),col('gstin','text'),col('address','jsonb',['json']),
+          col('balance','numeric'),col('loyalty_points','int'),col('custom_fields','jsonb',['json']),col('created_at','timestamptz')]},
+        {name:'suppliers',scoped:true,columns:[
+          col('id','uuid',['pk']),col('org_id','uuid',['fk:organizations','idx']),col('name','text'),
+          col('phone','text'),col('gstin','text'),col('address','jsonb',['json']),
+          col('balance','numeric'),col('custom_fields','jsonb',['json']),col('created_at','timestamptz')]}
+      ]},
+      {num:'04',title:'Sales & money-in',tables:[
+        {name:'invoices',scoped:true,columns:[
+          col('id','uuid',['pk']),col('org_id','uuid',['fk:organizations','idx']),col('number','text',['uq']),
+          col('customer_id','uuid',['fk:customers']),col('date','date',['idx']),col('status','draft|paid|…'),
+          col('subtotal','numeric'),col('tax','numeric'),col('total','numeric'),col('amount_paid','numeric'),
+          col('body_enc','bytea',['enc']),col('custom_fields','jsonb',['json']),col('version','int'),
+          col('updated_at','timestamptz'),col('created_by','uuid',['fk:users'])]},
+        {name:'invoice_items',scoped:true,columns:[
+          col('id','uuid',['pk']),col('org_id','uuid',['fk:organizations']),col('invoice_id','uuid',['fk:invoices','idx']),
+          col('product_id','uuid',['fk:products']),col('description','text'),col('qty','numeric'),
+          col('rate','numeric'),col('tax_rate','numeric'),col('amount','numeric'),col('meta','jsonb',['json'])]},
+        {name:'payments',scoped:true,columns:[
+          col('id','uuid',['pk']),col('org_id','uuid',['fk:organizations','idx']),col('direction','in|out'),
+          col('party_type','customer|supplier'),col('party_id','uuid'),col('invoice_id','uuid',['fk:invoices']),
+          col('amount','numeric'),col('method','cash|upi|…'),col('date','date'),col('created_by','uuid',['fk:users'])]}
+      ]},
+      {num:'05',title:'Purchases & spend',tables:[
+        {name:'purchases',scoped:true,columns:[
+          col('id','uuid',['pk']),col('org_id','uuid',['fk:organizations','idx']),col('number','text',['uq']),
+          col('supplier_id','uuid',['fk:suppliers']),col('date','date',['idx']),col('status','draft|received'),
+          col('subtotal','numeric'),col('tax','numeric'),col('total','numeric'),
+          col('custom_fields','jsonb',['json']),col('version','int'),col('updated_at','timestamptz')]},
+        {name:'purchase_items',scoped:true,columns:[
+          col('id','uuid',['pk']),col('org_id','uuid',['fk:organizations']),col('purchase_id','uuid',['fk:purchases','idx']),
+          col('product_id','uuid',['fk:products']),col('qty','numeric'),col('rate','numeric'),
+          col('tax_rate','numeric'),col('amount','numeric'),col('meta','jsonb',['json'])]},
+        {name:'expenses',scoped:true,columns:[
+          col('id','uuid',['pk']),col('org_id','uuid',['fk:organizations','idx']),col('category','text'),
+          col('amount','numeric'),col('date','date',['idx']),col('note','text'),col('receipt_url','text'),
+          col('recurring','bool'),col('custom_fields','jsonb',['json']),col('created_by','uuid',['fk:users'])]}
+      ]},
+      {num:'06',title:'System & intelligence',tables:[
+        {name:'audit_logs',scoped:true,columns:[
+          col('id','uuid',['pk']),col('org_id','uuid',['fk:organizations','idx']),col('user_id','uuid',['fk:users']),
+          col('action','text'),col('entity','text'),col('entity_id','uuid'),col('diff','jsonb',['json']),
+          col('ip','inet'),col('created_at','timestamptz',['idx'])]},
+        {name:'notifications',scoped:true,columns:[
+          col('id','uuid',['pk']),col('org_id','uuid',['fk:organizations','idx']),col('user_id','uuid',['fk:users']),
+          col('type','text'),col('title','text'),col('body','text'),col('read','bool'),col('created_at','timestamptz')]},
+        {name:'ai_history',scoped:true,columns:[
+          col('id','uuid',['pk']),col('org_id','uuid',['fk:organizations','idx']),col('user_id','uuid',['fk:users']),
+          col('prompt','text'),col('intent','text'),col('response','jsonb',['json']),
+          col('provider','text'),col('tokens','int'),col('created_at','timestamptz')]},
+        {name:'marketing_campaigns',scoped:true,columns:[
+          col('id','uuid',['pk']),col('org_id','uuid',['fk:organizations','idx']),col('name','text'),
+          col('channel','whatsapp|sms|…'),col('segment','jsonb',['json']),col('template_id','uuid'),
+          col('status','draft|scheduled|sent'),col('scheduled_at','timestamptz'),col('stats','jsonb',['json']),col('created_by','uuid',['fk:users'])]}
+      ]}
+    ];
+    return raw;
+  }
+
+  renderVals(){ return { groups:this.groups }; }
+}
+</script>
+</body>
+</html>

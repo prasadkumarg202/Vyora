@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;}
+body{margin:0;background:oklch(0.975 0.004 280);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
+a{color:oklch(0.52 0.2 285);text-decoration:none;}
+</style>
+</helmet>
+
+<div style="font-family:Geist,system-ui,sans-serif;color:oklch(0.24 0.02 280);padding:0 0 70px;">
+
+  <div style="background:oklch(0.22 0.03 280);color:oklch(0.98 0.005 280);padding:52px 48px 44px;">
+    <div style="max-width:1060px;margin:0 auto;display:flex;flex-direction:column;gap:16px;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span style="width:30px;height:30px;border-radius:8px;background:oklch(0.6 0.2 285);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;">V</span>
+        <span style="font-size:14px;font-weight:600;">Vyora</span>
+        <span style="font-size:13px;color:oklch(0.72 0.02 280);">Build Roadmap</span>
+      </div>
+      <h1 style="margin:0;font-size:32px;font-weight:650;letter-spacing:-0.02em;line-height:1.14;">Design approved — now build in phases</h1>
+      <p style="margin:0;font-size:14.5px;line-height:1.6;color:oklch(0.78 0.02 280);max-width:720px;">This is a commercial ERP platform, not a billing app. Architecture, design system, and business rules are settled; from here, generate software in well-defined phases — each with a clear definition of done.</p>
+    </div>
+  </div>
+
+  <div style="max-width:1060px;margin:0 auto;padding:0 48px;display:flex;flex-direction:column;gap:52px;">
+
+    <!-- MONOREPO -->
+    <section style="margin-top:44px;">
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:16px;"><span style="font-family:'Geist Mono',monospace;font-size:13px;color:oklch(0.55 0.14 285);">01</span><h2 style="margin:0;font-size:23px;font-weight:650;letter-spacing:-0.015em;">Monorepo structure</h2></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;">
+        <div style="border:1px solid oklch(0.9 0.006 280);border-radius:14px;background:#fff;padding:20px;box-shadow:0 6px 20px -16px rgba(40,32,90,0.2);">
+          <pre style="margin:0;font-family:'Geist Mono',monospace;font-size:11.5px;line-height:1.7;color:oklch(0.34 0.02 280);">vyora/
+├── apps/
+│   ├── web/          # Next.js PWA · tenant app
+│   └── admin/        # internal admin portal
+├── packages/
+│   ├── ui/           # design system (shadcn + tokens)
+│   ├── core/         # metadata engine · business rules
+│   ├── db/           # SQLite WASM · schema · migrations
+│   ├── sync/         # offline sync engine
+│   ├── crypto/       # AES-256 · key management
+│   ├── ai/           # provider router · MCP clients
+│   └── config/       # eslint · tsconfig · tailwind
+├── supabase/         # migrations · RLS · edge functions
+├── e2e/              # Playwright tests
+└── .github/          # CI/CD workflows</pre>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div style="border:1px solid oklch(0.91 0.006 280);border-radius:12px;background:#fff;padding:15px 17px;"><span style="font-size:13px;font-weight:600;">Turborepo + pnpm workspaces</span><p style="margin:4px 0 0;font-size:12px;line-height:1.5;color:oklch(0.55 0.015 280);">Shared packages, cached builds, one dependency graph.</p></div>
+          <div style="border:1px solid oklch(0.91 0.006 280);border-radius:12px;background:#fff;padding:15px 17px;"><span style="font-size:13px;font-weight:600;">Two apps, shared core</span><p style="margin:4px 0 0;font-size:12px;line-height:1.5;color:oklch(0.55 0.015 280);">Tenant PWA and admin portal both consume <span style="font-family:'Geist Mono',monospace;font-size:11px;">ui</span>, <span style="font-family:'Geist Mono',monospace;font-size:11px;">core</span>, and types.</p></div>
+          <div style="border:1px solid oklch(0.91 0.006 280);border-radius:12px;background:#fff;padding:15px 17px;"><span style="font-size:13px;font-weight:600;">Types flow from the DB</span><p style="margin:4px 0 0;font-size:12px;line-height:1.5;color:oklch(0.55 0.015 280);">Supabase-generated types are the single source of truth end-to-end.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PHASES -->
+    <section>
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:20px;"><span style="font-family:'Geist Mono',monospace;font-size:13px;color:oklch(0.55 0.14 285);">02</span><h2 style="margin:0;font-size:23px;font-weight:650;letter-spacing:-0.015em;">Build phases</h2></div>
+      <div style="display:flex;flex-direction:column;gap:28px;">
+        <sc-for list="{{ stages }}" as="s" hint-placeholder-count="4">
+          <div>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;"><span style="font-family:'Geist Mono',monospace;font-size:11px;font-weight:500;color:oklch(0.5 0.14 285);background:oklch(0.96 0.025 285);border:1px solid oklch(0.9 0.035 285);padding:4px 10px;border-radius:6px;">{{ s.tag }}</span><span style="font-size:13px;font-weight:650;color:oklch(0.34 0.02 280);">{{ s.name }}</span></div>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              <sc-for list="{{ s.phases }}" as="p" hint-placeholder-count="3">
+                <div style="display:flex;gap:16px;border:1px solid oklch(0.91 0.006 280);border-radius:14px;background:#fff;padding:18px 20px;box-shadow:0 5px 16px -14px rgba(40,32,90,0.2);">
+                  <span style="width:32px;height:32px;flex-shrink:0;border-radius:9px;background:oklch(0.52 0.2 285);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Geist Mono',monospace;font-size:13px;font-weight:600;">{{ p.n }}</span>
+                  <div style="flex:1;min-width:0;">
+                    <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;"><h3 style="margin:0;font-size:15px;font-weight:650;">{{ p.title }}</h3><span style="font-size:11px;color:oklch(0.58 0.012 280);">{{ p.dep }}</span></div>
+                    <p style="margin:5px 0 10px;font-size:12.5px;line-height:1.5;color:oklch(0.55 0.015 280);">{{ p.desc }}</p>
+                    <div style="display:flex;flex-wrap:wrap;gap:6px;"><sc-for list="{{ p.items }}" as="it" hint-placeholder-count="3"><span style="font-size:11px;color:oklch(0.42 0.02 280);background:oklch(0.965 0.004 280);border:1px solid oklch(0.92 0.006 280);padding:4px 9px;border-radius:6px;">{{ it }}</span></sc-for></div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <!-- CODING RULES -->
+    <section>
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:20px;"><span style="font-family:'Geist Mono',monospace;font-size:13px;color:oklch(0.55 0.14 285);">03</span><h2 style="margin:0;font-size:23px;font-weight:650;letter-spacing:-0.015em;">Coding rules</h2></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+        <sc-for list="{{ rules }}" as="r" hint-placeholder-count="6"><div style="border:1px solid oklch(0.91 0.006 280);border-radius:14px;background:#fff;padding:18px;box-shadow:0 5px 16px -14px rgba(40,32,90,0.2);"><h3 style="margin:0 0 5px;font-size:14px;font-weight:650;">{{ r.title }}</h3><p style="margin:0;font-size:12.5px;line-height:1.5;color:oklch(0.55 0.015 280);">{{ r.desc }}</p></div></sc-for>
+      </div>
+      <div style="margin-top:18px;display:flex;gap:11px;padding:16px 18px;background:oklch(0.965 0.025 285);border:1px solid oklch(0.9 0.035 285);border-radius:12px;">
+        <span style="width:5px;flex-shrink:0;border-radius:3px;background:oklch(0.55 0.18 285);"></span>
+        <p style="margin:0;font-size:13px;line-height:1.55;color:oklch(0.38 0.03 285);">Treat this like a product company would: complete architecture, design system, business rules, and specs first — then implement in well-defined phases. That discipline yields a scalable, maintainable Business OS instead of a fragile billing app.</p>
+      </div>
+    </section>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  constructor(props){
+    super(props);
+    this.stages=[
+      {tag:'FOUNDATION',name:'Scaffold & shell',phases:[
+        {n:'1',title:'Create the monorepo',dep:'no deps',desc:'Turborepo + pnpm workspaces, shared eslint/tsconfig/tailwind, base CI skeleton.',items:['turborepo','pnpm workspaces','shared config']},
+        {n:'2',title:'Configure project structure',dep:'needs 1',desc:'Scaffold apps and packages, routing, env handling, and the installable PWA shell with Workbox.',items:['apps/web · admin','PWA shell','env + secrets']},
+        {n:'3',title:'Build authentication',dep:'needs 2 · Supabase',desc:'Supabase Auth with OTP login, device-bound sessions, refresh rotation, and RLS wiring.',items:['OTP login','device binding','RLS policies']},
+        {n:'4',title:'Implement the design system',dep:'needs 1',desc:'packages/ui — tokens, type scale, and components built from the design-system spec.',items:['tokens','shadcn components','dark mode']}
+      ]},
+      {tag:'CORE PLATFORM',name:'The differentiators',phases:[
+        {n:'5',title:'Build the metadata engine',dep:'needs 4',desc:'packages/core — business_types drive forms, invoices, validations, GST rules, and reports from data.',items:['schema-driven forms','GST rules','no-code verticals']},
+        {n:'6',title:'Offline storage & sync',dep:'needs 3, 5',desc:'db + sync + crypto packages — SQLite WASM/OPFS, the outbox, background sync, conflict resolution, AES-256.',items:['SQLite WASM · OPFS','sync engine','client encryption']}
+      ]},
+      {tag:'PRODUCT',name:'Modules',phases:[
+        {n:'7',title:'Develop modules one by one',dep:'needs 5, 6',desc:'Ship in order — Sales, Inventory, Purchase, Payments, GST, Reports, CRM, Marketing — each on the same engine.',items:['Sales → Inventory','Purchase → GST','Marketing · CRM']}
+      ]},
+      {tag:'SHIP',name:'Quality & release',phases:[
+        {n:'8',title:'Unit & integration tests',dep:'per module',desc:'Vitest for units, integration for sync/crypto, Playwright e2e for critical flows — tests are the definition of done.',items:['Vitest','integration','Playwright e2e']},
+        {n:'9',title:'Set up CI/CD',dep:'needs 8',desc:'GitHub Actions — lint, type-check, test, build, and preview deploys on every PR.',items:['GitHub Actions','preview deploys','required checks']},
+        {n:'10',title:'Generate deployment scripts',dep:'needs 9',desc:'Edge CDN release, Supabase migrations & RLS apply, PWA versioning and rollout.',items:['edge CDN','DB migrations','PWA release']}
+      ]}
+    ];
+    this.rules=[
+      {title:'Design before code',desc:'Nothing is generated until the relevant design and spec are approved.'},
+      {title:'Offline-first, always',desc:'Every write commits locally first; sync is a background concern, never a blocker.'},
+      {title:'Metadata-driven',desc:'No hardcoded business logic — behaviour comes from business_types config.'},
+      {title:'Encryption boundary',desc:'Business data is encrypted client-side; the server only ever handles ciphertext.'},
+      {title:'Tenant isolation',desc:'Every table carries org_id with an RLS policy; enforced in the database.'},
+      {title:'Tests are the DoD',desc:'A module ships only with unit + integration coverage and green e2e.'},
+      {title:'Small, module-scoped PRs',desc:'One module at a time, reviewable, behind flags where risky.'},
+      {title:'Secrets in env only',desc:'Keys and tokens live in environment config, never in the repo.'}
+    ];
+    this.state={};
+  }
+  renderVals(){ return { stages:this.stages, rules:this.rules }; }
+}
+</script>
+</body>
+</html>

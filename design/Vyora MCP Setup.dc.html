@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;}
+body{margin:0;background:oklch(0.975 0.004 280);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
+a{color:oklch(0.52 0.2 285);text-decoration:none;}
+</style>
+</helmet>
+
+<div style="font-family:Geist,system-ui,sans-serif;color:oklch(0.24 0.02 280);padding:0 0 70px;">
+
+  <div style="background:oklch(0.22 0.03 280);color:oklch(0.98 0.005 280);padding:52px 48px 44px;">
+    <div style="max-width:1040px;margin:0 auto;display:flex;flex-direction:column;gap:16px;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span style="width:30px;height:30px;border-radius:8px;background:oklch(0.6 0.2 285);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;">V</span>
+        <span style="font-size:14px;font-weight:600;">Vyora</span>
+        <span style="font-size:13px;color:oklch(0.72 0.02 280);">MCP Setup</span>
+      </div>
+      <h1 style="margin:0;font-size:32px;font-weight:650;letter-spacing:-0.02em;line-height:1.14;">The MCP toolchain to install first</h1>
+      <p style="margin:0;font-size:14.5px;line-height:1.6;color:oklch(0.78 0.02 280);max-width:700px;">Connect these servers before generating code. Core first (they unblock everything), then development, design, AI, documents, and marketing as features come online.</p>
+    </div>
+  </div>
+
+  <div style="max-width:1040px;margin:0 auto;padding:0 48px;display:flex;flex-direction:column;gap:14px;">
+
+    <div style="margin-top:44px;display:flex;gap:11px;padding:14px 16px;background:oklch(0.965 0.025 285);border:1px solid oklch(0.9 0.035 285);border-radius:11px;">
+      <span style="width:5px;flex-shrink:0;border-radius:3px;background:oklch(0.55 0.18 285);"></span>
+      <p style="margin:0;font-size:12.5px;line-height:1.5;color:oklch(0.38 0.03 285);"><strong>Install order:</strong> Core → Development → Design → AI → Documents → Marketing. Add secrets (Supabase keys, Meta tokens, Twilio SID) as environment variables — never in the repo.</p>
+    </div>
+
+    <sc-for list="{{ groups }}" as="g" hint-placeholder-count="6">
+      <section style="margin-top:22px;">
+        <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:14px;">
+          <span style="font-family:'Geist Mono',monospace;font-size:12px;font-weight:500;color:oklch(0.5 0.14 285);background:oklch(0.96 0.025 285);border:1px solid oklch(0.9 0.035 285);padding:4px 10px;border-radius:6px;">{{ g.tag }}</span>
+          <h2 style="margin:0;font-size:19px;font-weight:650;letter-spacing:-0.015em;">{{ g.title }}</h2>
+          <span style="font-size:12.5px;color:oklch(0.55 0.015 280);">{{ g.note }}</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <sc-for list="{{ g.servers }}" as="s" hint-placeholder-count="4">
+            <div style="display:flex;gap:12px;border:1px solid oklch(0.91 0.006 280);border-radius:12px;background:#fff;padding:15px 16px;box-shadow:0 4px 14px -12px rgba(40,32,90,0.2);">
+              <span style="width:32px;height:32px;flex-shrink:0;border-radius:9px;display:flex;align-items:center;justify-content:center;font-family:'Geist Mono',monospace;font-size:12px;font-weight:700;background:oklch(0.965 0.025 285);color:oklch(0.48 0.15 285);">{{ s.abbr }}</span>
+              <div style="min-width:0;"><div style="font-size:13.5px;font-weight:650;">{{ s.name }}</div><p style="margin:3px 0 0;font-size:12px;line-height:1.45;color:oklch(0.55 0.015 280);">{{ s.desc }}</p></div>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+    </sc-for>
+
+    <p style="margin:26px 0 0;font-size:12px;color:oklch(0.6 0.012 280);">With these connected, generation can proceed module by module — starting from the schema and the metadata engine outward.</p>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  constructor(props){
+    super(props);
+    this.groups=[
+      {tag:'CORE',title:'Core',note:'Install these first — they unblock everything',servers:[
+        {abbr:'C7',name:'Context7',desc:'Up-to-date library docs and API references while coding.'},
+        {abbr:'FS',name:'Filesystem',desc:'Read and write project files directly.'},
+        {abbr:'GH',name:'GitHub',desc:'Repos, PRs, issues, and CI from the assistant.'},
+        {abbr:'PW',name:'Playwright',desc:'End-to-end browser tests for the PWA.'},
+        {abbr:'SB',name:'Supabase',desc:'Postgres, Auth, RLS, Realtime, Storage, Edge Functions.'},
+        {abbr:'PG',name:'PostgreSQL',desc:'Direct SQL — schema, queries, migrations.'}
+      ]},
+      {tag:'DEV',title:'Development',note:'Build & runtime helpers',servers:[
+        {abbr:'FE',name:'Fetch',desc:'Fetch and parse web resources during development.'},
+        {abbr:'BS',name:'Brave Search',desc:'Live web search for research and troubleshooting.'},
+        {abbr:'DK',name:'Docker',desc:'Containers for local services and reproducible builds.'},
+        {abbr:'BA',name:'Browser Automation',desc:'Drive real browsers for scraping and QA flows.'}
+      ]},
+      {tag:'DESIGN',title:'Design',note:'Design-to-code',servers:[
+        {abbr:'FG',name:'Figma',desc:'Pull frames, tokens, and specs into the build.'},
+        {abbr:'FS',name:'Filesystem',desc:'Sync exported assets into the project.'}
+      ]},
+      {tag:'AI',title:'AI',note:'Reasoning & memory',servers:[
+        {abbr:'ME',name:'Memory',desc:'Persistent context across sessions.'},
+        {abbr:'ST',name:'Sequential Thinking',desc:'Structured multi-step planning and reasoning.'}
+      ]},
+      {tag:'DOCS',title:'Documents',note:'For the OCR engine',servers:[
+        {abbr:'PD',name:'PDF',desc:'Parse and generate PDFs (invoices, reports).'},
+        {abbr:'OC',name:'OCR',desc:'Extract text and fields from scans and photos.'}
+      ]},
+      {tag:'MKTG',title:'Marketing',note:'Channel integrations',servers:[
+        {abbr:'WA',name:'WhatsApp Cloud API',desc:'Send invoices, reminders, and campaigns.'},
+        {abbr:'MG',name:'Meta Graph API',desc:'Instagram and Facebook messaging & posts.'},
+        {abbr:'TW',name:'Twilio',desc:'SMS delivery for reminders and OTP.'},
+        {abbr:'GM',name:'Gmail',desc:'Email invoices, statements, and campaigns.'}
+      ]}
+    ];
+    this.state={};
+  }
+  renderVals(){ return { groups:this.groups }; }
+}
+</script>
+</body>
+</html>

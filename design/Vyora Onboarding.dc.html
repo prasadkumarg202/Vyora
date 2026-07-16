@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;}
+body{margin:0;background:oklch(0.975 0.004 280);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
+button{font-family:inherit;}
+a{color:oklch(0.52 0.2 280);text-decoration:none;}
+a:hover{color:oklch(0.44 0.2 280);}
+input::placeholder{color:oklch(0.68 0.01 280);}
+@keyframes vfade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+@keyframes vshim{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+</style>
+</helmet>
+
+<section style="padding:64px 72px 96px;display:flex;flex-direction:column;gap:44px;font-family:Geist,system-ui,sans-serif;color:oklch(0.26 0.02 280);">
+
+  <div style="display:flex;flex-direction:column;gap:14px;max-width:900px;">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <span style="width:30px;height:30px;border-radius:8px;background:oklch(0.52 0.2 280);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;">V</span>
+      <span style="font-size:15px;font-weight:600;letter-spacing:-0.01em;">Vyora — Business Onboarding</span>
+    </div>
+    <h1 style="margin:0;font-size:30px;font-weight:650;letter-spacing:-0.02em;line-height:1.15;">Business selection → an auto-generated workspace</h1>
+    <p style="margin:0;font-size:15px;line-height:1.6;color:oklch(0.5 0.015 280);max-width:720px;">Three UX directions for the same flow. Everything below is live — pick a business in any frame and watch Vyora generate the invoice fields, GST rules, and reports from metadata. Toggle the status pill to see the offline-first behaviour.</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;">
+      <a href="#1a" style="font-size:12.5px;font-weight:600;padding:6px 12px;border:1px solid oklch(0.88 0.01 280);border-radius:999px;">1a · Command Grid</a>
+      <a href="#1b" style="font-size:12.5px;font-weight:600;padding:6px 12px;border:1px solid oklch(0.88 0.01 280);border-radius:999px;">1b · Conversational</a>
+      <a href="#1c" style="font-size:12.5px;font-weight:600;padding:6px 12px;border:1px solid oklch(0.88 0.01 280);border-radius:999px;">1c · Guided Wizard</a>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-wrap:wrap;gap:56px;align-items:flex-start;">
+
+    <!-- ============ OPTION 1a — COMMAND GRID ============ -->
+    <div id="1a" style="width:1200px;display:flex;flex-direction:column;gap:16px;">
+      <div style="display:flex;align-items:baseline;gap:12px;">
+        <span style="font-size:12px;font-weight:700;color:#fff;background:oklch(0.52 0.2 280);padding:3px 9px;border-radius:6px;">1a</span>
+        <span style="font-size:17px;font-weight:650;letter-spacing:-0.01em;">Command Grid</span>
+        <span style="font-size:13.5px;color:oklch(0.55 0.015 280);">Search-first. See the generated workspace the instant you pick — great for owners who know their type.</span>
+      </div>
+
+      <div style="border:1px solid oklch(0.9 0.006 280);border-radius:18px;background:#fff;box-shadow:0 20px 50px -24px rgba(40,32,90,0.28);overflow:hidden;">
+        <div style="height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;border-bottom:1px solid oklch(0.93 0.006 280);background:oklch(0.99 0.003 280);">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="width:22px;height:22px;border-radius:6px;background:oklch(0.52 0.2 280);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;">V</span>
+            <span style="font-weight:600;font-size:13px;">Vyora</span>
+            <span style="font-size:12px;color:oklch(0.62 0.01 280);">· Workspace setup</span>
+          </div>
+          <button onClick="{{ toggleOnline }}" style="cursor:pointer;border:none;background:transparent;padding:0;">
+            <sc-if value="{{ online }}" hint-placeholder-val="{{ true }}"><span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:oklch(0.46 0.11 155);background:oklch(0.95 0.05 155);border:1px solid oklch(0.86 0.07 155);padding:5px 11px;border-radius:999px;"><span style="width:7px;height:7px;border-radius:50%;background:oklch(0.6 0.14 155);"></span>Synced</span></sc-if>
+            <sc-if value="{{ offline }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:oklch(0.5 0.11 70);background:oklch(0.96 0.06 80);border:1px solid oklch(0.87 0.08 75);padding:5px 11px;border-radius:999px;"><span style="width:7px;height:7px;border-radius:50%;background:oklch(0.72 0.14 70);"></span>Offline · saved locally</span></sc-if>
+          </button>
+        </div>
+
+        <div style="display:flex;min-height:600px;">
+          <div style="flex:1;padding:32px 28px;border-right:1px solid oklch(0.93 0.006 280);">
+            <h2 style="margin:0;font-size:20px;font-weight:650;letter-spacing:-0.01em;">Set up your business</h2>
+            <p style="margin:6px 0 20px;font-size:13.5px;line-height:1.5;color:oklch(0.55 0.015 280);max-width:440px;">Choose your type. Vyora builds the invoice fields, GST rules, and reports automatically — no setup, no code.</p>
+            <div style="position:relative;margin-bottom:20px;">
+              <input value="{{ q1a }}" onChange="{{ onQ1a }}" placeholder="Search business type…" style="width:100%;padding:11px 14px;font-size:13.5px;font-family:inherit;color:oklch(0.26 0.02 280);border:1px solid oklch(0.88 0.008 280);border-radius:10px;outline:none;background:#fff;">
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+              <sc-for list="{{ filtered1a }}" as="b" hint-placeholder-count="9">
+                <button onClick="{{ b.pick }}" style="position:relative;text-align:left;cursor:pointer;background:#fff;border:1px solid oklch(0.9 0.006 280);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px;">
+                  <span style="{{ b.tileStyle }}">{{ b.letter }}</span>
+                  <span style="display:flex;flex-direction:column;gap:2px;">
+                    <span style="font-size:13px;font-weight:600;">{{ b.name }}</span>
+                    <span style="font-size:11px;color:oklch(0.6 0.012 280);">{{ b.fieldsCount }} fields · {{ b.sector }}</span>
+                  </span>
+                  <sc-if value="{{ b.selected }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;top:12px;right:12px;width:18px;height:18px;border-radius:50%;background:oklch(0.52 0.2 280);color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;">✓</span></sc-if>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="width:372px;flex-shrink:0;background:oklch(0.985 0.004 280);">
+            <sc-if value="{{ show1a }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:28px 24px;display:flex;flex-direction:column;gap:18px;animation:vfade .35s ease;">
+                <div>
+                  <span style="font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.55 0.13 285);">Generated workspace</span>
+                  <h3 style="margin:6px 0 2px;font-size:18px;font-weight:650;">{{ b1a.name }}</h3>
+                  <span style="font-size:12.5px;color:oklch(0.58 0.012 280);">{{ b1a.sector }}</span>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:8px;">
+                  <span style="font-size:12px;font-weight:600;color:oklch(0.42 0.02 280);">Invoice fields</span>
+                  <div style="display:flex;flex-direction:column;gap:6px;">
+                    <sc-for list="{{ b1a.fields }}" as="f" hint-placeholder-count="5">
+                      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 11px;background:#fff;border:1px solid oklch(0.92 0.006 280);border-radius:9px;">
+                        <span style="font-size:12.5px;color:oklch(0.3 0.02 280);">{{ f.l }}</span>
+                        <span style="display:flex;align-items:center;gap:8px;">
+                          <span style="font-family:'Geist Mono',monospace;font-size:11.5px;color:oklch(0.5 0.015 280);">{{ f.v }}</span>
+                          <span style="font-family:'Geist Mono',monospace;font-size:10px;color:oklch(0.52 0.1 285);background:oklch(0.96 0.03 285);padding:2px 6px;border-radius:5px;">{{ f.k }}</span>
+                        </span>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                  <span style="font-size:11.5px;font-weight:500;color:oklch(0.42 0.02 280);background:#fff;border:1px solid oklch(0.9 0.006 280);padding:5px 10px;border-radius:7px;">GST {{ b1a.gst }}</span>
+                  <span style="font-size:11.5px;font-weight:500;color:oklch(0.42 0.02 280);background:#fff;border:1px solid oklch(0.9 0.006 280);padding:5px 10px;border-radius:7px;">{{ b1a.reportsCount }} auto reports</span>
+                </div>
+                <div style="display:flex;gap:11px;padding:13px;background:oklch(0.97 0.02 285);border:1px solid oklch(0.91 0.03 285);border-radius:10px;">
+                  <span style="width:5px;flex-shrink:0;border-radius:3px;background:oklch(0.55 0.18 285);"></span>
+                  <div style="display:flex;flex-direction:column;gap:3px;">
+                    <span style="font-size:10.5px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.52 0.14 285);">AI suggestion</span>
+                    <p style="margin:0;font-size:12.5px;line-height:1.45;color:oklch(0.36 0.02 280);">{{ b1a.aiTip }}</p>
+                  </div>
+                </div>
+                <button style="cursor:pointer;border:none;background:oklch(0.52 0.2 280);color:#fff;font-size:13.5px;font-weight:600;padding:12px;border-radius:10px;">Open {{ b1a.name }} workspace →</button>
+                <span style="font-size:11.5px;color:oklch(0.62 0.012 280);line-height:1.5;text-align:center;">Saved on this device first, then synced with your own encryption key.</span>
+              </div>
+            </sc-if>
+            <sc-if value="{{ empty1a }}" hint-placeholder-val="{{ true }}">
+              <div style="height:100%;min-height:600px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:40px;text-align:center;">
+                <div style="width:42px;height:42px;border-radius:11px;border:1.5px dashed oklch(0.8 0.01 280);"></div>
+                <p style="margin:0;font-size:13px;color:oklch(0.6 0.012 280);max-width:220px;line-height:1.55;">Select a business to preview the workspace Vyora generates for it.</p>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ OPTION 1b — CONVERSATIONAL ============ -->
+    <div id="1b" style="width:1200px;display:flex;flex-direction:column;gap:16px;">
+      <div style="display:flex;align-items:baseline;gap:12px;">
+        <span style="font-size:12px;font-weight:700;color:#fff;background:oklch(0.52 0.2 280);padding:3px 9px;border-radius:6px;">1b</span>
+        <span style="font-size:17px;font-weight:650;letter-spacing:-0.01em;">Conversational</span>
+        <span style="font-size:13.5px;color:oklch(0.55 0.015 280);">AI-native. The Copilot sets everything up from a sentence — showcases the “tell it what you do” promise.</span>
+      </div>
+
+      <div style="border:1px solid oklch(0.9 0.006 280);border-radius:18px;background:#fff;box-shadow:0 20px 50px -24px rgba(40,32,90,0.28);overflow:hidden;">
+        <div style="height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;border-bottom:1px solid oklch(0.93 0.006 280);background:oklch(0.99 0.003 280);">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="width:22px;height:22px;border-radius:6px;background:oklch(0.52 0.2 280);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;">V</span>
+            <span style="font-weight:600;font-size:13px;">Vyora Copilot</span>
+          </div>
+          <button onClick="{{ toggleOnline }}" style="cursor:pointer;border:none;background:transparent;padding:0;">
+            <sc-if value="{{ online }}" hint-placeholder-val="{{ true }}"><span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:oklch(0.46 0.11 155);background:oklch(0.95 0.05 155);border:1px solid oklch(0.86 0.07 155);padding:5px 11px;border-radius:999px;"><span style="width:7px;height:7px;border-radius:50%;background:oklch(0.6 0.14 155);"></span>Synced</span></sc-if>
+            <sc-if value="{{ offline }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:oklch(0.5 0.11 70);background:oklch(0.96 0.06 80);border:1px solid oklch(0.87 0.08 75);padding:5px 11px;border-radius:999px;"><span style="width:7px;height:7px;border-radius:50%;background:oklch(0.72 0.14 70);"></span>Offline · saved locally</span></sc-if>
+          </button>
+        </div>
+
+        <div style="min-height:600px;display:flex;justify-content:center;padding:52px 32px;background:oklch(0.992 0.003 280);">
+          <div style="width:100%;max-width:600px;">
+
+            <sc-if value="{{ isAsk }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;flex-direction:column;gap:22px;animation:vfade .3s ease;">
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <span style="width:26px;height:26px;border-radius:8px;background:oklch(0.52 0.2 280);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:13px;">V</span>
+                  <span style="font-size:13px;font-weight:600;color:oklch(0.5 0.015 280);">Copilot</span>
+                </div>
+                <h2 style="margin:0;font-size:26px;font-weight:650;letter-spacing:-0.02em;line-height:1.2;">What kind of business<br>do you run?</h2>
+                <p style="margin:0;font-size:14px;line-height:1.55;color:oklch(0.52 0.015 280);">Tell me in your words — I’ll set up your invoices, fields, taxes, and reports to match.</p>
+                <div style="display:flex;align-items:center;gap:8px;border:1px solid oklch(0.87 0.008 280);border-radius:12px;padding:6px 6px 6px 16px;background:#fff;box-shadow:0 2px 8px -4px rgba(40,32,90,0.15);">
+                  <span style="flex:1;font-size:14px;color:oklch(0.68 0.01 280);">e.g. I run a pharmacy in Pune…</span>
+                  <span style="width:34px;height:34px;border-radius:9px;background:oklch(0.52 0.2 280);display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;">↑</span>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:10px;">
+                  <span style="font-size:11.5px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;color:oklch(0.6 0.012 280);">Or pick a common type</span>
+                  <div style="display:flex;flex-wrap:wrap;gap:9px;">
+                    <sc-for list="{{ chips1b }}" as="b" hint-placeholder-count="8">
+                      <button onClick="{{ b.pick }}" style="cursor:pointer;display:flex;align-items:center;gap:9px;background:#fff;border:1px solid oklch(0.88 0.008 280);border-radius:999px;padding:7px 14px 7px 8px;font-size:13px;font-weight:500;color:oklch(0.3 0.02 280);">
+                        <span style="{{ b.chipStyle }}">{{ b.letter }}</span>{{ b.name }}
+                      </button>
+                    </sc-for>
+                  </div>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ isConfiguring }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:20px;animation:vfade .3s ease;">
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <span style="width:26px;height:26px;border-radius:8px;background:oklch(0.52 0.2 280);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:13px;">V</span>
+                  <span style="font-size:14px;font-weight:600;">Setting up your {{ b1b.name }} workspace…</span>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:11px;">
+                  <div style="height:44px;border-radius:10px;background:linear-gradient(90deg,oklch(0.95 0.005 280) 25%,oklch(0.9 0.01 280) 37%,oklch(0.95 0.005 280) 63%);background-size:400% 100%;animation:vshim 1.2s linear infinite;"></div>
+                  <div style="height:44px;border-radius:10px;background:linear-gradient(90deg,oklch(0.95 0.005 280) 25%,oklch(0.9 0.01 280) 37%,oklch(0.95 0.005 280) 63%);background-size:400% 100%;animation:vshim 1.2s linear infinite;"></div>
+                  <div style="height:44px;width:70%;border-radius:10px;background:linear-gradient(90deg,oklch(0.95 0.005 280) 25%,oklch(0.9 0.01 280) 37%,oklch(0.95 0.005 280) 63%);background-size:400% 100%;animation:vshim 1.2s linear infinite;"></div>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ isReady }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:18px;animation:vfade .4s ease;">
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <span style="width:26px;height:26px;border-radius:50%;background:oklch(0.6 0.14 155);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;">✓</span>
+                  <span style="font-size:15px;font-weight:600;">Done — your {{ b1b.name }} workspace is ready.</span>
+                </div>
+                <div style="border:1px solid oklch(0.9 0.006 280);border-radius:14px;overflow:hidden;">
+                  <div style="display:flex;align-items:center;gap:12px;padding:16px 18px;border-bottom:1px solid oklch(0.93 0.006 280);background:oklch(0.99 0.003 280);">
+                    <span style="{{ b1b.tileStyle }}">{{ b1b.letter }}</span>
+                    <div style="display:flex;flex-direction:column;gap:1px;">
+                      <span style="font-size:14px;font-weight:650;">{{ b1b.name }}</span>
+                      <span style="font-size:12px;color:oklch(0.58 0.012 280);">{{ b1b.sector }}</span>
+                    </div>
+                  </div>
+                  <div style="padding:16px 18px;display:flex;flex-direction:column;gap:14px;">
+                    <div style="display:flex;flex-direction:column;gap:8px;">
+                      <span style="font-size:11.5px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;color:oklch(0.6 0.012 280);">Fields I created</span>
+                      <div style="display:flex;flex-wrap:wrap;gap:7px;">
+                        <sc-for list="{{ b1b.fields }}" as="f" hint-placeholder-count="5">
+                          <span style="font-size:12px;color:oklch(0.34 0.02 280);background:oklch(0.965 0.004 280);border:1px solid oklch(0.92 0.006 280);padding:5px 10px;border-radius:7px;">{{ f.l }}</span>
+                        </sc-for>
+                      </div>
+                    </div>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                      <span style="font-size:11.5px;font-weight:500;color:oklch(0.42 0.02 280);background:oklch(0.965 0.004 280);border:1px solid oklch(0.92 0.006 280);padding:5px 10px;border-radius:7px;">GST {{ b1b.gst }} applied</span>
+                      <span style="font-size:11.5px;font-weight:500;color:oklch(0.42 0.02 280);background:oklch(0.965 0.004 280);border:1px solid oklch(0.92 0.006 280);padding:5px 10px;border-radius:7px;">{{ b1b.reportsCount }} reports ready</span>
+                    </div>
+                    <div style="display:flex;gap:11px;padding:12px;background:oklch(0.97 0.02 285);border:1px solid oklch(0.91 0.03 285);border-radius:10px;">
+                      <span style="width:5px;flex-shrink:0;border-radius:3px;background:oklch(0.55 0.18 285);"></span>
+                      <p style="margin:0;font-size:12.5px;line-height:1.45;color:oklch(0.36 0.02 280);">{{ b1b.aiTip }}</p>
+                    </div>
+                  </div>
+                </div>
+                <span style="font-size:12px;color:oklch(0.6 0.012 280);line-height:1.5;">Saved offline on this device. It’ll sync automatically when you reconnect.</span>
+                <div style="display:flex;gap:10px;">
+                  <button style="cursor:pointer;border:none;background:oklch(0.52 0.2 280);color:#fff;font-size:13.5px;font-weight:600;padding:12px 20px;border-radius:10px;">Continue to Vyora</button>
+                  <button onClick="{{ reset1b }}" style="cursor:pointer;background:#fff;border:1px solid oklch(0.88 0.008 280);color:oklch(0.4 0.02 280);font-size:13.5px;font-weight:600;padding:12px 20px;border-radius:10px;">Try another business</button>
+                </div>
+              </div>
+            </sc-if>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ OPTION 1c — GUIDED WIZARD ============ -->
+    <div id="1c" style="width:1200px;display:flex;flex-direction:column;gap:16px;">
+      <div style="display:flex;align-items:baseline;gap:12px;">
+        <span style="font-size:12px;font-weight:700;color:#fff;background:oklch(0.52 0.2 280);padding:3px 9px;border-radius:6px;">1c</span>
+        <span style="font-size:17px;font-weight:650;letter-spacing:-0.01em;">Guided Wizard</span>
+        <span style="font-size:13.5px;color:oklch(0.55 0.015 280);">Structured & reassuring. Steps with an explicit sync-&-encryption finish — best for first-time software users.</span>
+      </div>
+
+      <div style="border:1px solid oklch(0.9 0.006 280);border-radius:18px;background:#fff;box-shadow:0 20px 50px -24px rgba(40,32,90,0.28);overflow:hidden;">
+        <div style="height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;border-bottom:1px solid oklch(0.93 0.006 280);background:oklch(0.99 0.003 280);">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="width:22px;height:22px;border-radius:6px;background:oklch(0.52 0.2 280);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;">V</span>
+            <span style="font-weight:600;font-size:13px;">Vyora</span>
+            <span style="font-size:12px;color:oklch(0.62 0.01 280);">· Get started</span>
+          </div>
+          <button onClick="{{ toggleOnline }}" style="cursor:pointer;border:none;background:transparent;padding:0;">
+            <sc-if value="{{ online }}" hint-placeholder-val="{{ true }}"><span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:oklch(0.46 0.11 155);background:oklch(0.95 0.05 155);border:1px solid oklch(0.86 0.07 155);padding:5px 11px;border-radius:999px;"><span style="width:7px;height:7px;border-radius:50%;background:oklch(0.6 0.14 155);"></span>Synced</span></sc-if>
+            <sc-if value="{{ offline }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:oklch(0.5 0.11 70);background:oklch(0.96 0.06 80);border:1px solid oklch(0.87 0.08 75);padding:5px 11px;border-radius:999px;"><span style="width:7px;height:7px;border-radius:50%;background:oklch(0.72 0.14 70);"></span>Offline · saved locally</span></sc-if>
+          </button>
+        </div>
+
+        <div style="display:flex;min-height:620px;">
+          <div style="width:236px;flex-shrink:0;padding:30px 24px;border-right:1px solid oklch(0.93 0.006 280);background:oklch(0.985 0.004 280);display:flex;flex-direction:column;gap:22px;">
+            <span style="font-size:11.5px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.58 0.012 280);">Step {{ cStepNum }} of 4</span>
+            <div style="display:flex;flex-direction:column;gap:20px;">
+              <sc-for list="{{ steps1c }}" as="s" hint-placeholder-count="4">
+                <div style="display:flex;align-items:center;gap:12px;">
+                  <span style="{{ s.circleStyle }}"><sc-if value="{{ s.done }}" hint-placeholder-val="{{ false }}">✓</sc-if><sc-if value="{{ s.notDone }}" hint-placeholder-val="{{ true }}">{{ s.n }}</sc-if></span>
+                  <span style="{{ s.labelStyle }}">{{ s.label }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="flex:1;display:flex;flex-direction:column;">
+            <div style="flex:1;padding:34px 34px;">
+
+              <sc-if value="{{ cStep0 }}" hint-placeholder-val="{{ true }}">
+                <div style="animation:vfade .3s ease;">
+                  <h2 style="margin:0 0 6px;font-size:20px;font-weight:650;letter-spacing:-0.01em;">What business do you run?</h2>
+                  <p style="margin:0 0 22px;font-size:13.5px;color:oklch(0.55 0.015 280);">Pick one — we’ll tailor every screen to it. You can change it later.</p>
+                  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">
+                    <sc-for list="{{ grid1c }}" as="b" hint-placeholder-count="12">
+                      <button onClick="{{ b.pick }}" style="position:relative;text-align:left;cursor:pointer;background:#fff;border:1px solid oklch(0.9 0.006 280);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px;">
+                        <span style="{{ b.tileStyle }}">{{ b.letter }}</span>
+                        <span style="font-size:12.5px;font-weight:600;">{{ b.name }}</span>
+                        <sc-if value="{{ b.selected }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;top:10px;right:10px;width:17px;height:17px;border-radius:50%;background:oklch(0.52 0.2 280);color:#fff;font-size:10px;display:flex;align-items:center;justify-content:center;">✓</span></sc-if>
+                      </button>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ cStep1 }}" hint-placeholder-val="{{ false }}">
+                <div style="animation:vfade .3s ease;max-width:460px;">
+                  <h2 style="margin:0 0 6px;font-size:20px;font-weight:650;letter-spacing:-0.01em;">Your business details</h2>
+                  <p style="margin:0 0 22px;font-size:13.5px;color:oklch(0.55 0.015 280);">Only what we need for GST-compliant invoices.</p>
+                  <div style="display:flex;flex-direction:column;gap:16px;">
+                    <label style="display:flex;flex-direction:column;gap:6px;font-size:12.5px;font-weight:600;color:oklch(0.4 0.02 280);">Business name<input placeholder="e.g. Sharma Traders" style="font-family:inherit;font-size:13.5px;padding:11px 13px;border:1px solid oklch(0.88 0.008 280);border-radius:10px;outline:none;color:oklch(0.26 0.02 280);"></label>
+                    <label style="display:flex;flex-direction:column;gap:6px;font-size:12.5px;font-weight:600;color:oklch(0.4 0.02 280);">GSTIN <span style="font-weight:400;color:oklch(0.62 0.012 280);">(optional)</span><input placeholder="29ABCDE1234F1Z5" style="font-family:'Geist Mono',monospace;font-size:13px;padding:11px 13px;border:1px solid oklch(0.88 0.008 280);border-radius:10px;outline:none;color:oklch(0.26 0.02 280);"></label>
+                    <div style="display:flex;gap:14px;">
+                      <label style="flex:1;display:flex;flex-direction:column;gap:6px;font-size:12.5px;font-weight:600;color:oklch(0.4 0.02 280);">State<input placeholder="Karnataka" style="font-family:inherit;font-size:13.5px;padding:11px 13px;border:1px solid oklch(0.88 0.008 280);border-radius:10px;outline:none;color:oklch(0.26 0.02 280);"></label>
+                      <label style="flex:1;display:flex;flex-direction:column;gap:6px;font-size:12.5px;font-weight:600;color:oklch(0.4 0.02 280);">Contact<input placeholder="+91 98765 43210" style="font-family:inherit;font-size:13.5px;padding:11px 13px;border:1px solid oklch(0.88 0.008 280);border-radius:10px;outline:none;color:oklch(0.26 0.02 280);"></label>
+                    </div>
+                  </div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ cStep2 }}" hint-placeholder-val="{{ false }}">
+                <div style="animation:vfade .3s ease;max-width:520px;">
+                  <h2 style="margin:0 0 6px;font-size:20px;font-weight:650;letter-spacing:-0.01em;">Review the fields Vyora generated</h2>
+                  <p style="margin:0 0 20px;font-size:13.5px;color:oklch(0.55 0.015 280);">Built from your <strong style="color:oklch(0.4 0.02 280);">{{ b1c.name }}</strong> template. Edit or add more anytime — no code needed.</p>
+                  <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:18px;">
+                    <sc-for list="{{ b1c.fields }}" as="f" hint-placeholder-count="5">
+                      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 13px;background:oklch(0.99 0.003 280);border:1px solid oklch(0.92 0.006 280);border-radius:9px;">
+                        <span style="font-size:13px;color:oklch(0.3 0.02 280);">{{ f.l }}</span>
+                        <span style="display:flex;align-items:center;gap:8px;">
+                          <span style="font-family:'Geist Mono',monospace;font-size:11.5px;color:oklch(0.5 0.015 280);">{{ f.v }}</span>
+                          <span style="font-family:'Geist Mono',monospace;font-size:10px;color:oklch(0.52 0.1 285);background:oklch(0.96 0.03 285);padding:2px 6px;border-radius:5px;">{{ f.k }}</span>
+                        </span>
+                      </div>
+                    </sc-for>
+                  </div>
+                  <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                    <span style="font-size:11.5px;font-weight:500;color:oklch(0.42 0.02 280);background:oklch(0.965 0.004 280);border:1px solid oklch(0.92 0.006 280);padding:6px 11px;border-radius:7px;">GST {{ b1c.gst }} preset</span>
+                    <span style="font-size:11.5px;font-weight:500;color:oklch(0.42 0.02 280);background:oklch(0.965 0.004 280);border:1px solid oklch(0.92 0.006 280);padding:6px 11px;border-radius:7px;">{{ b1c.reportsCount }} reports</span>
+                  </div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ cStep3 }}" hint-placeholder-val="{{ false }}">
+                <div style="animation:vfade .3s ease;max-width:440px;">
+                  <div style="width:48px;height:48px;border-radius:13px;background:oklch(0.95 0.05 155);border:1px solid oklch(0.86 0.07 155);display:flex;align-items:center;justify-content:center;color:oklch(0.55 0.14 155);font-size:22px;margin-bottom:16px;">✓</div>
+                  <h2 style="margin:0 0 6px;font-size:20px;font-weight:650;letter-spacing:-0.01em;">Your {{ b1c.name }} workspace is ready</h2>
+                  <p style="margin:0 0 22px;font-size:13.5px;color:oklch(0.55 0.015 280);line-height:1.5;">Everything works right now — even without internet.</p>
+                  <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:24px;">
+                    <div style="display:flex;align-items:center;gap:12px;padding:13px 15px;border:1px solid oklch(0.92 0.006 280);border-radius:11px;">
+                      <span style="width:22px;height:22px;border-radius:50%;background:oklch(0.6 0.14 155);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;">✓</span>
+                      <div style="display:flex;flex-direction:column;"><span style="font-size:13px;font-weight:600;">Local database created</span><span style="font-size:11.5px;color:oklch(0.6 0.012 280);">Invoices save instantly on this device</span></div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:12px;padding:13px 15px;border:1px solid oklch(0.92 0.006 280);border-radius:11px;">
+                      <span style="width:22px;height:22px;border-radius:50%;background:oklch(0.6 0.14 155);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;">✓</span>
+                      <div style="display:flex;flex-direction:column;"><span style="font-size:13px;font-weight:600;">Your encryption key generated</span><span style="font-size:11.5px;color:oklch(0.6 0.012 280);">Only you can read your invoices — not even Vyora</span></div>
+                    </div>
+                    <sc-if value="{{ online }}" hint-placeholder-val="{{ true }}">
+                      <div style="display:flex;align-items:center;gap:12px;padding:13px 15px;border:1px solid oklch(0.92 0.006 280);border-radius:11px;">
+                        <span style="width:22px;height:22px;border-radius:50%;background:oklch(0.6 0.14 155);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;">✓</span>
+                        <div style="display:flex;flex-direction:column;"><span style="font-size:13px;font-weight:600;">Cloud sync connected</span><span style="font-size:11.5px;color:oklch(0.6 0.012 280);">Your devices stay up to date automatically</span></div>
+                      </div>
+                    </sc-if>
+                    <sc-if value="{{ offline }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:flex;align-items:center;gap:12px;padding:13px 15px;border:1px solid oklch(0.87 0.08 75);border-radius:11px;background:oklch(0.98 0.02 80);">
+                        <span style="width:22px;height:22px;border-radius:50%;background:oklch(0.72 0.14 70);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;">↑</span>
+                        <div style="display:flex;flex-direction:column;"><span style="font-size:13px;font-weight:600;color:oklch(0.42 0.08 70);">Cloud sync — will connect when online</span><span style="font-size:11.5px;color:oklch(0.55 0.06 70);">Keep working; nothing is lost</span></div>
+                      </div>
+                    </sc-if>
+                  </div>
+                  <button style="cursor:pointer;border:none;background:oklch(0.52 0.2 280);color:#fff;font-size:14px;font-weight:600;padding:13px 24px;border-radius:10px;">Enter Vyora →</button>
+                </div>
+              </sc-if>
+
+            </div>
+
+            <div style="height:66px;border-top:1px solid oklch(0.93 0.006 280);display:flex;align-items:center;justify-content:space-between;padding:0 30px;background:oklch(0.992 0.003 280);">
+              <span style="font-size:12px;color:oklch(0.6 0.012 280);">Progress saved locally — you can close and return anytime.</span>
+              <div style="display:flex;gap:10px;">
+                <sc-if value="{{ cShowBack }}" hint-placeholder-val="{{ false }}"><button onClick="{{ back1c }}" style="cursor:pointer;background:#fff;border:1px solid oklch(0.88 0.008 280);color:oklch(0.4 0.02 280);font-size:13px;font-weight:600;padding:10px 18px;border-radius:9px;">Back</button></sc-if>
+                <sc-if value="{{ cNextEnabled }}" hint-placeholder-val="{{ false }}"><button onClick="{{ next1c }}" style="cursor:pointer;border:none;background:oklch(0.52 0.2 280);color:#fff;font-size:13px;font-weight:600;padding:10px 20px;border-radius:9px;">{{ cNextLabel }}</button></sc-if>
+                <sc-if value="{{ cNextDisabled }}" hint-placeholder-val="{{ true }}"><span style="background:oklch(0.93 0.005 280);color:oklch(0.72 0.01 280);font-size:13px;font-weight:600;padding:10px 20px;border-radius:9px;">Continue</span></sc-if>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  constructor(props){
+    super(props);
+    this.biz = this.buildBiz();
+    this.state = { q1a:'', sel1a:null, sel1b:null, stage1b:'ask', step1c:0, sel1c:null, online:true };
+  }
+
+  buildBiz(){
+    const raw=[
+      {id:'pharmacy',name:'Pharmacy',letter:'Rx',hue:150,sector:'Chemist & medical',gst:'12%',
+        fields:[{l:'Batch No',v:'B-2291',k:'text'},{l:'Expiry',v:'08/2027',k:'date'},{l:'Schedule',v:'H1',k:'list'},{l:'MRP',v:'\u20b942.00',k:'\u20b9'},{l:'GST',v:'12%',k:'%'},{l:'HSN',v:'3004',k:'text'}],
+        reports:['GSTR-1','Expiry & batch','Schedule-H register'],aiTip:'3 items expire within 30 days \u2014 reorder Paracetamol 500mg.'},
+      {id:'restaurant',name:'Restaurant',letter:'Rt',hue:35,sector:'Dine-in & delivery',gst:'5%',
+        fields:[{l:'Table',v:'T-07',k:'list'},{l:'Waiter',v:'Arun',k:'list'},{l:'Order type',v:'Dine-in',k:'list'},{l:'KOT',v:'#KOT-118',k:'auto'},{l:'GST',v:'5%',k:'%'}],
+        reports:['Table turnover','KOT summary','Daily sales'],aiTip:'Fridays run 34% busier \u2014 prep extra paneer and naan.'},
+      {id:'grocery',name:'Grocery',letter:'Gr',hue:130,sector:'Kirana & daily needs',gst:'0\u20135%',
+        fields:[{l:'Item',v:'Toor Dal',k:'text'},{l:'Weight / unit',v:'1 kg',k:'list'},{l:'Barcode',v:'8901\u2026',k:'scan'},{l:'MRP',v:'\u20b9145',k:'\u20b9'},{l:'GST',v:'0%',k:'%'}],
+        reports:['Fast movers','Low stock','GST summary'],aiTip:'Sugar covers ~4 days at current pace \u2014 reorder soon.'},
+      {id:'mobile',name:'Mobile Shop',letter:'Mb',hue:265,sector:'Phones & accessories',gst:'18%',
+        fields:[{l:'Brand',v:'Samsung',k:'list'},{l:'Model',v:'Galaxy A15',k:'text'},{l:'IMEI',v:'3548\u2026',k:'scan'},{l:'Serial No',v:'SN-991',k:'text'},{l:'Warranty',v:'12 mo',k:'list'},{l:'GST',v:'18%',k:'%'}],
+        reports:['IMEI ledger','Warranty tracker','GSTR-1'],aiTip:'Galaxy A-series moving fast \u2014 restock chargers to bundle.'},
+      {id:'electronics',name:'Electronics',letter:'El',hue:245,sector:'Appliances & gadgets',gst:'18%',
+        fields:[{l:'Brand',v:'LG',k:'list'},{l:'Model',v:'1.5T AC',k:'text'},{l:'Serial No',v:'SN-4471',k:'text'},{l:'Warranty',v:'24 mo',k:'list'},{l:'GST',v:'18%',k:'%'}],
+        reports:['Warranty tracker','Serial ledger','Sales trend'],aiTip:'AC demand rising with summer \u2014 highlight inverter models.'},
+      {id:'garments',name:'Garments',letter:'Ga',hue:350,sector:'Apparel & textile',gst:'5%',
+        fields:[{l:'Style / SKU',v:'KRT-402',k:'text'},{l:'Size',v:'M',k:'list'},{l:'Color',v:'Indigo',k:'list'},{l:'HSN',v:'6205',k:'text'},{l:'GST',v:'5%',k:'%'}],
+        reports:['Size-wise sales','SKU stock','GST summary'],aiTip:'Size M sells out first \u2014 raise M:S ratio next order.'},
+      {id:'jewellery',name:'Jewellery',letter:'Jw',hue:85,sector:'Gold & silver',gst:'3%',
+        fields:[{l:'Purity',v:'22K',k:'list'},{l:'Gross wt',v:'12.40 g',k:'g'},{l:'Net wt',v:'11.90 g',k:'g'},{l:'Rate / g',v:'\u20b96,240',k:'\u20b9'},{l:'Making',v:'9%',k:'%'},{l:'GST',v:'3%',k:'%'}],
+        reports:['Metal ledger','Making-charge','Hallmark log'],aiTip:'Gold rate up 1.8% today \u2014 review display pricing.'},
+      {id:'bakery',name:'Bakery',letter:'Bk',hue:55,sector:'Cakes & confectionery',gst:'18%',
+        fields:[{l:'Item',v:'Choco Truffle',k:'text'},{l:'Weight',v:'500 g',k:'list'},{l:'Custom message',v:"Happy B'day",k:'text'},{l:'MRP',v:'\u20b9520',k:'\u20b9'},{l:'GST',v:'18%',k:'%'}],
+        reports:['Order calendar','Wastage','Daily sales'],aiTip:'Weekend cake pre-orders up \u2014 batch sponge on Friday.'},
+      {id:'hardware',name:'Hardware',letter:'Hw',hue:215,sector:'Tools & building',gst:'18%',
+        fields:[{l:'Item',v:'PVC Pipe',k:'text'},{l:'Unit',v:'per ft',k:'list'},{l:'HSN',v:'3917',k:'text'},{l:'MRP',v:'\u20b938',k:'\u20b9'},{l:'GST',v:'18%',k:'%'}],
+        reports:['Stock by unit','Supplier dues','GST summary'],aiTip:'Cement low \u2014 supplier offers 3% on bulk this week.'},
+      {id:'automobile',name:'Automobile',letter:'Au',hue:20,sector:'Vehicles & service',gst:'18%',
+        fields:[{l:'Vehicle No',v:'KA05\u2026',k:'text'},{l:'Part No',v:'BRK-22',k:'text'},{l:'Labour',v:'\u20b9450',k:'\u20b9'},{l:'Warranty',v:'6 mo',k:'list'},{l:'GST',v:'18%',k:'%'}],
+        reports:['Job cards','Parts ledger','Service due'],aiTip:'12 vehicles due for service this week \u2014 send reminders.'},
+      {id:'service',name:'Service Center',letter:'Sc',hue:285,sector:'Repairs & AMC',gst:'18%',
+        fields:[{l:'Job card',v:'JC-771',k:'auto'},{l:'Device',v:'iPhone 13',k:'text'},{l:'Complaint',v:'Screen',k:'text'},{l:'Estimate',v:'\u20b94,500',k:'\u20b9'},{l:'Status',v:'In progress',k:'list'}],
+        reports:['Open jobs','Technician load','AMC renewals'],aiTip:'4 jobs pending customer approval over 48 hours.'},
+      {id:'clinic',name:'Clinic',letter:'Cl',hue:175,sector:'Doctors & OPD',gst:'0%',
+        fields:[{l:'Patient',v:'\u2014',k:'text'},{l:'Consult fee',v:'\u20b9300',k:'\u20b9'},{l:'Procedure',v:'Dressing',k:'text'},{l:'Tax',v:'0%',k:'%'}],
+        reports:['Daily OPD','Revenue','Follow-ups'],aiTip:'18 follow-ups due this week \u2014 auto-send reminders.'}
+    ];
+    return raw.map(b=>{
+      const bg=`oklch(0.955 0.045 ${b.hue})`, fg=`oklch(0.5 0.16 ${b.hue})`;
+      return {...b, fieldsCount:b.fields.length, reportsCount:b.reports.length,
+        tileStyle:{width:'34px',height:'34px',borderRadius:'9px',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:700,fontSize:'13px',background:bg,color:fg},
+        chipStyle:{width:'24px',height:'24px',borderRadius:'7px',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:700,fontSize:'11px',background:bg,color:fg}};
+    });
+  }
+
+  find(id){ return this.biz.find(b=>b.id===id)||null; }
+  toggleOnline=()=>this.setState(s=>({online:!s.online}));
+  onQ1a=e=>this.setState({q1a:e.target.value});
+
+  pick1b=(id)=>{
+    this.setState({sel1b:id,stage1b:'configuring'});
+    clearTimeout(this._t1b);
+    this._t1b=setTimeout(()=>{ if(this.state.sel1b===id) this.setState({stage1b:'ready'}); },950);
+  };
+  reset1b=()=>this.setState({sel1b:null,stage1b:'ask'});
+
+  next1c=()=>this.setState(s=>{
+    if(s.step1c===0 && !s.sel1c) return {};
+    return {step1c:Math.min(3,s.step1c+1)};
+  });
+  back1c=()=>this.setState(s=>({step1c:Math.max(0,s.step1c-1)}));
+
+  renderVals(){
+    const st=this.state;
+    const q=st.q1a.trim().toLowerCase();
+    const filtered1a=this.biz.filter(b=>!q||b.name.toLowerCase().includes(q)||b.sector.toLowerCase().includes(q))
+      .map(b=>({...b,pick:()=>this.setState({sel1a:b.id}),selected:st.sel1a===b.id}));
+    const b1a=this.find(st.sel1a);
+
+    const chips1b=this.biz.slice(0,8).map(b=>({...b,pick:()=>this.pick1b(b.id)}));
+    const b1b=this.find(st.sel1b);
+
+    const grid1c=this.biz.map(b=>({...b,pick:()=>this.setState({sel1c:b.id}),selected:st.sel1c===b.id}));
+    const b1c=this.find(st.sel1c);
+    const stepLabels=['Business type','Your details','Review fields','Sync & finish'];
+    const steps1c=stepLabels.map((label,i)=>{
+      const done=i<st.step1c, active=i===st.step1c;
+      const circleStyle={width:'26px',height:'26px',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'12px',fontWeight:600,flexShrink:0,
+        background:done?'oklch(0.52 0.2 280)':'#fff',color:done?'#fff':(active?'oklch(0.5 0.2 280)':'oklch(0.65 0.01 280)'),
+        border:done?'none':(active?'1.5px solid oklch(0.52 0.2 280)':'1px solid oklch(0.88 0.008 280)')};
+      const labelStyle={fontSize:'13px',fontWeight:(done||active)?600:400,color:(done||active)?'oklch(0.28 0.02 280)':'oklch(0.62 0.012 280)'};
+      return {n:i+1,label,done,notDone:!done,circleStyle,labelStyle};
+    });
+    const cNextEnabled=!(st.step1c===0 && !st.sel1c);
+
+    return {
+      online:st.online, offline:!st.online, toggleOnline:this.toggleOnline,
+      // 1a
+      q1a:st.q1a, onQ1a:this.onQ1a, filtered1a, b1a, show1a:!!b1a, empty1a:!b1a,
+      // 1b
+      chips1b, b1b, isAsk:st.stage1b==='ask', isConfiguring:st.stage1b==='configuring', isReady:st.stage1b==='ready', reset1b:this.reset1b,
+      // 1c
+      grid1c, b1c, steps1c, cStepNum:st.step1c+1,
+      cStep0:st.step1c===0, cStep1:st.step1c===1, cStep2:st.step1c===2, cStep3:st.step1c===3,
+      cShowBack:st.step1c>0, cNextEnabled, cNextDisabled:!cNextEnabled,
+      cNextLabel:st.step1c===3?'Enter Vyora':'Continue', next1c:this.next1c, back1c:this.back1c
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;}
+body{margin:0;background:oklch(0.975 0.004 280);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
+a{color:inherit;text-decoration:none;}
+</style>
+</helmet>
+
+<div style="font-family:Geist,system-ui,sans-serif;color:oklch(0.24 0.02 280);padding:0 0 70px;">
+
+  <div style="background:oklch(0.22 0.03 280);color:oklch(0.98 0.005 280);padding:56px 48px 48px;">
+    <div style="max-width:1060px;margin:0 auto;display:flex;flex-direction:column;gap:16px;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span style="width:30px;height:30px;border-radius:8px;background:oklch(0.6 0.2 285);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;">V</span>
+        <span style="font-size:14px;font-weight:600;">Vyora</span>
+        <span style="font-size:13px;color:oklch(0.72 0.02 280);">Project Index · 23 deliverables</span>
+      </div>
+      <h1 style="margin:0;font-size:32px;font-weight:650;letter-spacing:-0.02em;line-height:1.14;">Everything, in build order</h1>
+      <p style="margin:0;font-size:14.5px;line-height:1.6;color:oklch(0.78 0.02 280);max-width:700px;">The complete design-first package — vision through roadmap. Click any card to open the deliverable. All complete and ready to hand to implementation.</p>
+    </div>
+  </div>
+
+  <div style="max-width:1060px;margin:44px auto 0;padding:0 48px;display:flex;flex-direction:column;gap:34px;">
+    <sc-for list="{{ groups }}" as="g" hint-placeholder-count="5">
+      <section>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;"><span style="font-family:'Geist Mono',monospace;font-size:11px;font-weight:500;color:oklch(0.5 0.14 285);background:oklch(0.96 0.025 285);border:1px solid oklch(0.9 0.035 285);padding:4px 10px;border-radius:6px;">{{ g.tag }}</span><span style="font-size:13.5px;font-weight:650;">{{ g.title }}</span></div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+          <sc-for list="{{ g.items }}" as="d" hint-placeholder-count="3">
+            <a href="{{ d.href }}" style="display:flex;flex-direction:column;gap:8px;border:1px solid oklch(0.91 0.006 280);border-radius:14px;background:#fff;padding:18px;box-shadow:0 5px 16px -14px rgba(40,32,90,0.2);" style-hover="{ borderColor:'oklch(0.75 0.1 285)', boxShadow:'0 10px 26px -16px rgba(60,40,140,0.35)' }">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;"><span style="font-family:'Geist Mono',monospace;font-size:10.5px;color:oklch(0.55 0.012 280);">{{ d.phase }}</span><span style="font-size:10px;font-weight:600;color:oklch(0.44 0.11 155);background:oklch(0.95 0.05 155);border:1px solid oklch(0.86 0.07 155);padding:2px 8px;border-radius:999px;">✓ Complete</span></div>
+              <h3 style="margin:0;font-size:14.5px;font-weight:650;color:oklch(0.28 0.02 280);">{{ d.name }}</h3>
+              <p style="margin:0;font-size:11.5px;line-height:1.5;color:oklch(0.55 0.015 280);">{{ d.desc }}</p>
+              <sc-if value="{{ d.live }}" hint-placeholder-val="{{ false }}"><span style="font-size:10px;font-weight:600;color:oklch(0.44 0.13 285);">● Interactive</span></sc-if>
+            </a>
+          </sc-for>
+        </div>
+      </section>
+    </sc-for>
+    <p style="margin:0;font-size:12px;color:oklch(0.6 0.012 280);">Next after approval: implementation per the <a href="Vyora Build Roadmap.dc.html" style="color:oklch(0.5 0.16 285);font-weight:600;">Build Roadmap</a> — monorepo → auth → design system → metadata engine → offline sync → modules.</p>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  constructor(props){
+    super(props);
+    this.groups=[
+      {tag:'VISION',title:'Product & strategy',items:[
+        {phase:'Phase 0',name:'Product Vision',href:'Vyora Product Vision.dc.html',desc:'The one-liner, pillars, positioning vs incumbents, success metrics.'},
+        {phase:'Phase 17',name:'Build Roadmap',href:'Vyora Build Roadmap.dc.html',desc:'Monorepo, 10 build phases, coding rules — the implementation plan.'},
+        {phase:'Phase 16',name:'MCP Setup',href:'Vyora MCP Setup.dc.html',desc:'The toolchain to connect before generating code.'}
+      ]},
+      {tag:'ARCHITECTURE',title:'System design',items:[
+        {phase:'Phase 2',name:'System Architecture',href:'Vyora System Architecture.dc.html',desc:'Seven layers — client, local data, sync, cloud, tenant, AI, channels.'},
+        {phase:'Phase 7',name:'Offline Architecture',href:'Vyora Offline Architecture.dc.html',desc:'SQLite WASM, OPFS, outbox, background sync, conflict resolution.',live:true},
+        {phase:'Phase 8',name:'Database Schema',href:'Vyora Database Schema.dc.html',desc:'20 multi-tenant Postgres tables with RLS, JSONB metadata, encryption.'},
+        {phase:'Phase 9',name:'Security Architecture',href:'Vyora Security Architecture.dc.html',desc:'Zero-knowledge AES-256, key hierarchy, RBAC, audit, devices.'},
+        {phase:'Doc 07',name:'Authentication',href:'Vyora Authentication.dc.html',desc:'Phone/OTP login, JWT claims, token lifecycle, RBAC, device sessions.'},
+        {phase:'Doc 09',name:'Sync Engine',href:'Vyora Sync Engine.dc.html',desc:'Outbox state machine, sync cycle, triggers, conflict-resolution rules.'},
+        {phase:'Doc 06',name:'API Spec',href:'Vyora API Spec.dc.html',desc:'Encrypted envelope, endpoint catalogue, error model, rate limits.'}
+      ]},
+      {tag:'DESIGN',title:'Design system & UX',items:[
+        {phase:'Phase 3',name:'Design System',href:'Vyora Design System.dc.html',desc:'Color, type, spacing, elevation + full component specimens.'},
+        {phase:'Phase 4',name:'Information Architecture',href:'Vyora Information Architecture.dc.html',desc:'18 modules in 7 nav zones, sub-pages, role visibility.'},
+        {phase:'Phase 5',name:'User Flows',href:'Vyora User Flows.dc.html',desc:'Fourteen core journeys, decision branches, offline paths.'},
+        {phase:'Phase 1',name:'Onboarding — 3 directions',href:'Vyora Onboarding.dc.html',desc:'Command grid, conversational, wizard — pick a direction.',live:true}
+      ]},
+      {tag:'LOGIC',title:'Business logic',items:[
+        {phase:'Phase 6',name:'Dynamic Business Engine',href:'Vyora Dynamic Business Engine.dc.html',desc:'18 business types → fields, validations, GST, invoices, reports.',live:true},
+        {phase:'Phase 11',name:'OCR Engine',href:'Vyora OCR Engine.dc.html',desc:'Documents → structured records with per-field confidence.',live:true},
+        {phase:'Phase 10',name:'AI Copilot',href:'Vyora AI Copilot.dc.html',desc:'Eight capabilities, live chat demo, privacy model.',live:true},
+        {phase:'Phase 12',name:'Marketing Module',href:'Vyora Marketing Module.dc.html',desc:'Campaign builder, 5 channels, WhatsApp preview, triggers.',live:true},
+        {phase:'Phase 13',name:'Licensing',href:'Vyora Licensing.dc.html',desc:'Seat plans, multi-year pricing, trial, transfer, devices.',live:true},
+        {phase:'GST',name:'GST Filing',href:'Vyora GST Filing.dc.html',desc:'Self-serve monthly filing: 2B reconcile, CA-grade adjustments, GSP submit.',live:true}
+      ]},
+      {tag:'SCREENS',title:'Screen flows & prototypes',items:[
+        {phase:'Phase 14',name:'App Prototype',href:'Vyora App.dc.html',desc:'Splash → login → setup → all 20 core screens, fully navigable.',live:true},
+        {phase:'Phase 15',name:'Admin Portal',href:'Vyora Admin Portal.dc.html',desc:'Internal SaaS-team portal — tenants, flags, form builder, analytics.',live:true}
+      ]},
+      {tag:'QUALITY',title:'Testing & investor',items:[
+        {phase:'Doc 18',name:'Testing Strategy',href:'Vyora Testing Strategy.dc.html',desc:'Test pyramid, adversarial money/sync/crypto coverage, CI gates.'},
+        {phase:'Pitch',name:'Investor Deck',href:'Vyora Investor Deck.dc.html',desc:'12-slide raise deck — problem, market, moats, pricing, the ask.',live:true}
+      ]}
+    ];
+    this.state={};
+  }
+  renderVals(){ return { groups:this.groups }; }
+}
+</script>
+</body>
+</html>

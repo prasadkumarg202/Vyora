@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;}
+body{margin:0;background:oklch(0.975 0.004 280);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
+a{color:oklch(0.52 0.2 285);text-decoration:none;}
+@keyframes vfade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+</style>
+</helmet>
+
+<div style="font-family:Geist,system-ui,sans-serif;color:oklch(0.24 0.02 280);padding:0 0 70px;">
+
+  <div style="background:oklch(0.22 0.03 280);color:oklch(0.98 0.005 280);padding:52px 48px 44px;">
+    <div style="max-width:1160px;margin:0 auto;display:flex;flex-direction:column;gap:16px;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span style="width:30px;height:30px;border-radius:8px;background:oklch(0.6 0.2 285);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;">V</span>
+        <span style="font-size:14px;font-weight:600;">Vyora</span>
+        <span style="font-size:13px;color:oklch(0.72 0.02 280);">GST Filing · self-serve</span>
+      </div>
+      <h1 style="margin:0;font-size:32px;font-weight:650;letter-spacing:-0.02em;line-height:1.14;">File GST yourself — the way a CA would</h1>
+      <p style="margin:0;font-size:14.5px;line-height:1.6;color:oklch(0.78 0.02 280);max-width:740px;">Owners on Vyapar or Zoho still pay a CA ₹1,500–5,000 every month just to file. Vyora walks the same checklist a 20-year CA follows — reconcile with GSTR-2B, apply the right adjustments, compute, file — in plain language, with every number explained.</p>
+      <div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:2px;">
+        <span style="font-size:12px;font-weight:500;color:oklch(0.9 0.02 280);background:oklch(0.3 0.04 280);border:1px solid oklch(0.4 0.05 280);padding:6px 12px;border-radius:999px;">Saves ₹18–60k/yr in CA fees</span>
+        <span style="font-size:12px;font-weight:500;color:oklch(0.9 0.02 280);background:oklch(0.3 0.04 280);border:1px solid oklch(0.4 0.05 280);padding:6px 12px;border-radius:999px;">GSTR-1 · GSTR-3B monthly</span>
+        <span style="font-size:12px;font-weight:500;color:oklch(0.9 0.02 280);background:oklch(0.3 0.04 280);border:1px solid oklch(0.4 0.05 280);padding:6px 12px;border-radius:999px;">You approve every adjustment</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="max-width:1160px;margin:26px auto 0;padding:0 48px;">
+
+    <!-- GSTN CONNECTION -->
+    <sc-if value="{{ notConnected }}" hint-placeholder-val="{{ true }}">
+      <div style="border:1px solid oklch(0.9 0.035 285);border-radius:16px;background:oklch(0.985 0.012 285);padding:22px 24px;margin-bottom:20px;display:grid;grid-template-columns:1.1fr 1fr;gap:24px;animation:vfade .25s ease;">
+        <div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;"><h2 style="margin:0;font-size:16px;font-weight:650;">Connect to the GST portal (GSTN)</h2><span style="font-size:10.5px;font-weight:600;color:oklch(0.5 0.1 70);background:oklch(0.96 0.06 80);border:1px solid oklch(0.87 0.08 75);padding:3px 9px;border-radius:999px;">Not connected</span></div>
+          <p style="margin:0 0 14px;font-size:12.5px;line-height:1.55;color:oklch(0.45 0.04 285);">One-time setup. Vyora files through a licensed GST Suvidha Provider (GSP) — you file as the taxpayer, <strong>no CA required</strong>. Your data stays encrypted until the moment of filing.</p>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <div style="display:flex;align-items:center;gap:9px;font-size:12.5px;color:oklch(0.38 0.03 285);"><span style="width:18px;height:18px;flex-shrink:0;border-radius:50%;background:oklch(0.6 0.14 155);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;">✓</span>Active GSTIN registered on gst.gov.in</div>
+            <div style="display:flex;align-items:center;gap:9px;font-size:12.5px;color:oklch(0.38 0.03 285);"><span style="width:18px;height:18px;flex-shrink:0;border-radius:50%;background:oklch(0.96 0.03 285);color:oklch(0.5 0.14 285);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;">2</span>On the portal: My Profile → Manage API Access → Enable, session 30 days</div>
+            <div style="display:flex;align-items:center;gap:9px;font-size:12.5px;color:oklch(0.38 0.03 285);"><span style="width:18px;height:18px;flex-shrink:0;border-radius:50%;background:oklch(0.96 0.03 285);color:oklch(0.5 0.14 285);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;">3</span>Approve with the OTP sent to your registered mobile</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:16px;flex-wrap:wrap;">
+            <span style="font-size:11px;font-weight:600;color:oklch(0.42 0.06 285);background:#fff;border:1px solid oklch(0.9 0.035 285);padding:5px 10px;border-radius:7px;">Vyora</span><span style="color:oklch(0.6 0.05 280);font-size:13px;">→</span>
+            <span style="font-size:11px;font-weight:600;color:oklch(0.42 0.06 285);background:#fff;border:1px solid oklch(0.9 0.035 285);padding:5px 10px;border-radius:7px;">🔒 Licensed GSP partner</span><span style="color:oklch(0.6 0.05 280);font-size:13px;">→</span>
+            <span style="font-size:11px;font-weight:600;color:oklch(0.42 0.06 285);background:#fff;border:1px solid oklch(0.9 0.035 285);padding:5px 10px;border-radius:7px;">GSTN · gst.gov.in</span>
+            <span style="font-size:10.5px;color:oklch(0.55 0.04 285);">signed with EVC (OTP) or DSC</span>
+          </div>
+        </div>
+        <div style="background:#fff;border:1px solid oklch(0.9 0.02 285);border-radius:13px;padding:18px;display:flex;flex-direction:column;gap:12px;">
+          <label style="display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:oklch(0.42 0.02 280);">GSTIN<span style="font-family:'Geist Mono',monospace;font-size:12.5px;font-weight:400;color:oklch(0.3 0.02 280);padding:10px 12px;border:1px solid oklch(0.88 0.008 280);border-radius:9px;">29ABCDE1234F1Z5</span></label>
+          <label style="display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:oklch(0.42 0.02 280);">GST portal username<span style="font-size:13px;font-weight:400;color:oklch(0.3 0.02 280);padding:10px 12px;border:1px solid oklch(0.88 0.008 280);border-radius:9px;">sharma_medical</span></label>
+          <sc-if value="{{ notOtp }}" hint-placeholder-val="{{ true }}"><button onClick="{{ sendOtp }}" style="cursor:pointer;border:none;background:oklch(0.52 0.2 285);color:#fff;font-size:13px;font-weight:600;padding:11px;border-radius:10px;">Send OTP to registered mobile</button></sc-if>
+          <sc-if value="{{ otpSent }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:10px;animation:vfade .25s ease;">
+              <span style="font-size:12px;color:oklch(0.55 0.015 280);">OTP sent to +91 98765 •••10</span>
+              <div style="display:flex;gap:7px;">
+                <span style="flex:1;text-align:center;font-family:'Geist Mono',monospace;font-size:16px;font-weight:500;padding:10px 0;border:1.5px solid oklch(0.6 0.16 285);border-radius:8px;">8</span>
+                <span style="flex:1;text-align:center;font-family:'Geist Mono',monospace;font-size:16px;font-weight:500;padding:10px 0;border:1px solid oklch(0.88 0.008 280);border-radius:8px;">3</span>
+                <span style="flex:1;text-align:center;font-family:'Geist Mono',monospace;font-size:16px;font-weight:500;padding:10px 0;border:1px solid oklch(0.88 0.008 280);border-radius:8px;">1</span>
+                <span style="flex:1;text-align:center;font-family:'Geist Mono',monospace;font-size:16px;font-weight:500;padding:10px 0;border:1px solid oklch(0.88 0.008 280);border-radius:8px;">5</span>
+                <span style="flex:1;text-align:center;font-family:'Geist Mono',monospace;font-size:16px;font-weight:500;padding:10px 0;border:1px solid oklch(0.88 0.008 280);border-radius:8px;">7</span>
+                <span style="flex:1;text-align:center;font-family:'Geist Mono',monospace;font-size:16px;font-weight:500;padding:10px 0;border:1px solid oklch(0.88 0.008 280);border-radius:8px;">9</span>
+              </div>
+              <button onClick="{{ verifyOtp }}" style="cursor:pointer;border:none;background:oklch(0.52 0.2 285);color:#fff;font-size:13px;font-weight:600;padding:11px;border-radius:10px;">Verify &amp; connect</button>
+            </div>
+          </sc-if>
+          <span style="font-size:10.5px;color:oklch(0.6 0.012 280);line-height:1.5;">Session valid 30 days · revoke anytime on the portal or here.</span>
+        </div>
+      </div>
+    </sc-if>
+    <sc-if value="{{ gstConnected }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid oklch(0.86 0.07 155);border-radius:12px;background:oklch(0.97 0.03 155);padding:12px 18px;margin-bottom:16px;animation:vfade .25s ease;">
+        <span style="display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600;color:oklch(0.38 0.09 155);"><span style="width:8px;height:8px;border-radius:50%;background:oklch(0.6 0.14 155);"></span>Connected to GSTN · 29ABCDE1234F1Z5 · via licensed GSP</span>
+        <span style="display:flex;align-items:center;gap:14px;"><span style="font-size:11.5px;color:oklch(0.44 0.07 155);">API session: 27 days left</span><button onClick="{{ disconnect }}" style="cursor:pointer;background:transparent;border:none;font-size:11.5px;font-weight:600;color:oklch(0.44 0.1 155);text-decoration:underline;">Disconnect</button></span>
+      </div>
+    </sc-if>
+
+    <!-- MONTH BAR -->
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:16px;flex-wrap:wrap;">
+      <div style="display:flex;gap:8px;">
+        <span style="display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:oklch(0.44 0.1 155);background:oklch(0.95 0.05 155);border:1px solid oklch(0.86 0.07 155);padding:7px 14px;border-radius:999px;">✓ April · filed</span>
+        <span style="display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:oklch(0.44 0.1 155);background:oklch(0.95 0.05 155);border:1px solid oklch(0.86 0.07 155);padding:7px 14px;border-radius:999px;">✓ May · filed</span>
+        <span style="display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:#fff;background:oklch(0.52 0.2 285);padding:7px 14px;border-radius:999px;">● June · in progress</span>
+      </div>
+      <span style="font-size:12.5px;font-weight:600;color:oklch(0.5 0.11 70);background:oklch(0.96 0.06 80);border:1px solid oklch(0.87 0.08 75);padding:7px 14px;border-radius:999px;">GSTR-3B due 20 Jul · 4 days left</span>
+    </div>
+
+    <div style="border:1px solid oklch(0.9 0.006 280);border-radius:18px;background:#fff;box-shadow:0 16px 44px -24px rgba(40,32,90,0.3);overflow:hidden;display:flex;min-height:640px;">
+
+      <!-- STEP RAIL (CA checklist) -->
+      <div style="width:230px;flex-shrink:0;border-right:1px solid oklch(0.93 0.006 280);background:oklch(0.985 0.004 280);padding:22px 14px;display:flex;flex-direction:column;gap:6px;">
+        <span style="font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.6 0.012 280);padding:0 10px 10px;">The CA checklist</span>
+        <sc-for list="{{ steps }}" as="s" hint-placeholder-count="4">
+          <button onClick="{{ s.pick }}" style="{{ s.style }}">
+            <span style="{{ s.numStyle }}"><sc-if value="{{ s.done }}" hint-placeholder-val="{{ false }}">✓</sc-if><sc-if value="{{ s.notDone }}" hint-placeholder-val="{{ true }}">{{ s.n }}</sc-if></span>
+            <span style="display:flex;flex-direction:column;gap:1px;text-align:left;min-width:0;">
+              <span style="font-size:12.5px;font-weight:600;">{{ s.label }}</span>
+              <span style="font-size:10.5px;color:oklch(0.6 0.012 280);">{{ s.sub }}</span>
+            </span>
+          </button>
+        </sc-for>
+        <div style="margin-top:auto;padding:12px;border:1px solid oklch(0.9 0.035 285);background:oklch(0.97 0.02 285);border-radius:11px;">
+          <span style="font-size:10px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.5 0.14 285);">CA note</span>
+          <p style="margin:6px 0 0;font-size:11.5px;line-height:1.5;color:oklch(0.38 0.04 285);">{{ caNote }}</p>
+        </div>
+      </div>
+
+      <!-- CONTENT -->
+      <div style="flex:1;min-width:0;padding:26px 28px;overflow-y:auto;max-height:720px;">
+
+        <!-- STEP 1: RECONCILE -->
+        <sc-if value="{{ isRecon }}" hint-placeholder-val="{{ true }}">
+          <div style="animation:vfade .25s ease;">
+            <h2 style="margin:0 0 4px;font-size:18px;font-weight:650;">Reconcile with the GST portal</h2>
+            <p style="margin:0 0 18px;font-size:13px;color:oklch(0.55 0.015 280);">Your books vs GSTR-2B (purchases) and e-invoice records (sales). ITC you can't match, you can't claim.</p>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;">
+              <span style="font-size:12px;font-weight:500;color:oklch(0.44 0.1 155);background:oklch(0.95 0.05 155);border:1px solid oklch(0.86 0.07 155);padding:6px 12px;border-radius:8px;">✓ 128 invoices matched · ₹1.82L output verified</span>
+              <span style="{{ issuePillStyle }}">{{ issuePillLabel }}</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              <sc-for list="{{ recon }}" as="r" hint-placeholder-count="3">
+                <div style="{{ r.cardStyle }}">
+                  <div style="flex:1;min-width:0;">
+                    <div style="font-size:13.5px;font-weight:600;">{{ r.title }}</div>
+                    <div style="font-size:12px;color:oklch(0.55 0.015 280);margin-top:3px;">{{ r.desc }}</div>
+                  </div>
+                  <sc-if value="{{ r.isFixed }}" hint-placeholder-val="{{ false }}"><span style="font-size:11.5px;font-weight:600;color:oklch(0.44 0.11 155);background:oklch(0.95 0.05 155);border:1px solid oklch(0.86 0.07 155);padding:7px 13px;border-radius:9px;white-space:nowrap;">✓ Resolved</span></sc-if>
+                  <sc-if value="{{ r.notFixed }}" hint-placeholder-val="{{ true }}"><button onClick="{{ r.fix }}" style="cursor:pointer;border:none;background:oklch(0.52 0.2 285);color:#fff;font-size:11.5px;font-weight:600;padding:8px 14px;border-radius:9px;white-space:nowrap;">{{ r.action }}</button></sc-if>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display:flex;justify-content:flex-end;margin-top:20px;"><button onClick="{{ next }}" style="cursor:pointer;border:none;background:oklch(0.52 0.2 285);color:#fff;font-size:13px;font-weight:600;padding:11px 20px;border-radius:10px;">Continue to adjustments →</button></div>
+          </div>
+        </sc-if>
+
+        <!-- STEP 2: ADJUSTMENTS -->
+        <sc-if value="{{ isAdjust }}" hint-placeholder-val="{{ false }}">
+          <div style="animation:vfade .25s ease;">
+            <h2 style="margin:0 0 4px;font-size:18px;font-weight:650;">Suggested adjustments</h2>
+            <p style="margin:0 0 14px;font-size:13px;color:oklch(0.55 0.015 280);">What an experienced CA would apply before computing — each one explained with the rule it stands on. Accept or ignore; the payable updates live on the right.</p>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;"><span style="font-size:12px;font-weight:600;color:oklch(0.42 0.11 155);background:oklch(0.95 0.05 155);border:1px solid oklch(0.86 0.07 155);padding:6px 12px;border-radius:8px;">💡 {{ potentialLabel }}</span></div>
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;"><span style="width:8px;height:8px;border-radius:50%;background:oklch(0.6 0.14 155);"></span><span style="font-size:11.5px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.44 0.1 155);">Reduce your tax — money you're leaving unclaimed</span></div>
+            <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:22px;">
+              <sc-for list="{{ sugReduce }}" as="s" hint-placeholder-count="6">
+                <div style="{{ s.cardStyle }}">
+                  <div style="flex:1;min-width:0;">
+                    <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;"><span style="font-size:13.5px;font-weight:600;">{{ s.title }}</span><span style="{{ s.tagStyle }}">{{ s.tag }}</span></div>
+                    <div style="font-size:12px;line-height:1.5;color:oklch(0.55 0.015 280);margin-top:4px;">{{ s.desc }}</div>
+                    <div style="font-family:'Geist Mono',monospace;font-size:10.5px;color:oklch(0.6 0.012 280);margin-top:5px;">{{ s.rule }}</div>
+                  </div>
+                  <sc-if value="{{ s.on }}" hint-placeholder-val="{{ false }}"><button onClick="{{ s.toggle }}" style="cursor:pointer;border:1px solid oklch(0.86 0.07 155);background:oklch(0.95 0.05 155);color:oklch(0.42 0.11 155);font-size:11.5px;font-weight:600;padding:8px 14px;border-radius:9px;white-space:nowrap;">✓ Accepted · undo</button></sc-if>
+                  <sc-if value="{{ s.off }}" hint-placeholder-val="{{ true }}"><button onClick="{{ s.toggle }}" style="cursor:pointer;border:1px solid oklch(0.86 0.01 280);background:#fff;color:oklch(0.38 0.02 280);font-size:11.5px;font-weight:600;padding:8px 14px;border-radius:9px;white-space:nowrap;">Accept</button></sc-if>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;"><span style="width:8px;height:8px;border-radius:50%;background:oklch(0.72 0.14 70);"></span><span style="font-size:11.5px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.5 0.09 70);">Protect from notices — small costs now, no trouble later</span></div>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              <sc-for list="{{ sugProtect }}" as="s" hint-placeholder-count="4">
+                <div style="{{ s.cardStyle }}">
+                  <div style="flex:1;min-width:0;">
+                    <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;"><span style="font-size:13.5px;font-weight:600;">{{ s.title }}</span><span style="{{ s.tagStyle }}">{{ s.tag }}</span></div>
+                    <div style="font-size:12px;line-height:1.5;color:oklch(0.55 0.015 280);margin-top:4px;">{{ s.desc }}</div>
+                    <div style="font-family:'Geist Mono',monospace;font-size:10.5px;color:oklch(0.6 0.012 280);margin-top:5px;">{{ s.rule }}</div>
+                  </div>
+                  <sc-if value="{{ s.on }}" hint-placeholder-val="{{ false }}"><button onClick="{{ s.toggle }}" style="cursor:pointer;border:1px solid oklch(0.86 0.07 155);background:oklch(0.95 0.05 155);color:oklch(0.42 0.11 155);font-size:11.5px;font-weight:600;padding:8px 14px;border-radius:9px;white-space:nowrap;">✓ Accepted · undo</button></sc-if>
+                  <sc-if value="{{ s.off }}" hint-placeholder-val="{{ true }}"><button onClick="{{ s.toggle }}" style="cursor:pointer;border:1px solid oklch(0.86 0.01 280);background:#fff;color:oklch(0.38 0.02 280);font-size:11.5px;font-weight:600;padding:8px 14px;border-radius:9px;white-space:nowrap;">Accept</button></sc-if>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:20px;"><button onClick="{{ back }}" style="cursor:pointer;background:#fff;border:1px solid oklch(0.88 0.008 280);color:oklch(0.4 0.02 280);font-size:13px;font-weight:600;padding:11px 18px;border-radius:10px;">← Back</button><button onClick="{{ next }}" style="cursor:pointer;border:none;background:oklch(0.52 0.2 285);color:#fff;font-size:13px;font-weight:600;padding:11px 20px;border-radius:10px;">See computation →</button></div>
+          </div>
+        </sc-if>
+
+        <!-- STEP 3: COMPUTATION -->
+        <sc-if value="{{ isCompute }}" hint-placeholder-val="{{ false }}">
+          <div style="animation:vfade .25s ease;max-width:620px;">
+            <h2 style="margin:0 0 4px;font-size:18px;font-weight:650;">Tax computation · June 2026</h2>
+            <p style="margin:0 0 18px;font-size:13px;color:oklch(0.55 0.015 280);">Every line traces back to your invoices and the adjustments you accepted.</p>
+            <div style="border:1px solid oklch(0.91 0.006 280);border-radius:14px;overflow:hidden;">
+              <sc-for list="{{ compLines }}" as="l" hint-placeholder-count="6">
+                <div style="{{ l.rowStyle }}">
+                  <span style="display:flex;flex-direction:column;gap:1px;"><span style="{{ l.labelStyle }}">{{ l.label }}</span><span style="font-size:11px;color:oklch(0.6 0.012 280);">{{ l.sub }}</span></span>
+                  <span style="{{ l.valStyle }}">{{ l.val }}</span>
+                </div>
+              </sc-for>
+            </div>
+            <div style="margin-top:14px;display:flex;gap:11px;padding:13px 15px;background:oklch(0.96 0.04 155);border:1px solid oklch(0.86 0.07 155);border-radius:11px;">
+              <span style="width:5px;flex-shrink:0;border-radius:3px;background:oklch(0.55 0.14 155);"></span>
+              <p style="margin:0;font-size:12.5px;line-height:1.5;color:oklch(0.36 0.08 155);">{{ savingsNote }}</p>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:20px;"><button onClick="{{ back }}" style="cursor:pointer;background:#fff;border:1px solid oklch(0.88 0.008 280);color:oklch(0.4 0.02 280);font-size:13px;font-weight:600;padding:11px 18px;border-radius:10px;">← Adjustments</button><button onClick="{{ next }}" style="cursor:pointer;border:none;background:oklch(0.52 0.2 285);color:#fff;font-size:13px;font-weight:600;padding:11px 20px;border-radius:10px;">Review &amp; file →</button></div>
+          </div>
+        </sc-if>
+
+        <!-- STEP 4: FILE -->
+        <sc-if value="{{ isFile }}" hint-placeholder-val="{{ false }}">
+          <sc-if value="{{ notFiled }}" hint-placeholder-val="{{ true }}">
+            <div style="animation:vfade .25s ease;max-width:620px;">
+              <h2 style="margin:0 0 4px;font-size:18px;font-weight:650;">Review GSTR-3B &amp; file</h2>
+              <p style="margin:0 0 18px;font-size:13px;color:oklch(0.55 0.015 280);">Exactly what goes to the portal. Once filed, 3B cannot be revised — corrections flow into July's return.</p>
+              <div style="border:1px solid oklch(0.91 0.006 280);border-radius:14px;overflow:hidden;margin-bottom:16px;">
+                <div style="display:flex;justify-content:space-between;padding:13px 18px;border-bottom:1px solid oklch(0.95 0.005 280);"><span style="font-size:12.5px;"><span style="font-family:'Geist Mono',monospace;font-size:11px;color:oklch(0.55 0.012 280);">3.1(a)</span> · Outward taxable supplies</span><span style="font-family:'Geist Mono',monospace;font-size:12.5px;">{{ outputLabel }}</span></div>
+                <div style="display:flex;justify-content:space-between;padding:13px 18px;border-bottom:1px solid oklch(0.95 0.005 280);"><span style="font-size:12.5px;"><span style="font-family:'Geist Mono',monospace;font-size:11px;color:oklch(0.55 0.012 280);">4(A)</span> · Eligible ITC</span><span style="font-family:'Geist Mono',monospace;font-size:12.5px;color:oklch(0.44 0.1 155);">− {{ itcLabel }}</span></div>
+                <div style="display:flex;justify-content:space-between;padding:13px 18px;border-bottom:1px solid oklch(0.95 0.005 280);"><span style="font-size:12.5px;"><span style="font-family:'Geist Mono',monospace;font-size:11px;color:oklch(0.55 0.012 280);">5.1</span> · Interest &amp; late fee</span><span style="font-family:'Geist Mono',monospace;font-size:12.5px;">{{ interestLabel }}</span></div>
+                <div style="display:flex;justify-content:space-between;padding:14px 18px;background:oklch(0.98 0.015 285);"><span style="font-size:13.5px;font-weight:650;">Net payable · challan PMT-06</span><span style="font-family:'Geist Mono',monospace;font-size:15px;font-weight:600;color:oklch(0.4 0.14 285);">{{ netLabel }}</span></div>
+              </div>
+              <div style="display:flex;gap:10px;">
+                <button onClick="{{ doFile }}" style="cursor:pointer;border:none;background:oklch(0.52 0.2 285);color:#fff;font-size:13.5px;font-weight:600;padding:12px 22px;border-radius:10px;">File with EVC (OTP)</button>
+                <button onClick="{{ doFile }}" style="cursor:pointer;background:#fff;border:1px solid oklch(0.88 0.008 280);color:oklch(0.4 0.02 280);font-size:13.5px;font-weight:600;padding:12px 22px;border-radius:10px;">File with DSC</button>
+                <button onClick="{{ back }}" style="margin-left:auto;cursor:pointer;background:transparent;border:none;color:oklch(0.5 0.015 280);font-size:13px;font-weight:600;">← Back</button>
+              </div>
+            </div>
+          </sc-if>
+          <sc-if value="{{ filed }}" hint-placeholder-val="{{ false }}">
+            <div style="animation:vfade .35s ease;max-width:520px;text-align:left;">
+              <div style="width:52px;height:52px;border-radius:14px;background:oklch(0.95 0.05 155);border:1px solid oklch(0.86 0.07 155);display:flex;align-items:center;justify-content:center;color:oklch(0.5 0.14 155);font-size:24px;margin-bottom:16px;">✓</div>
+              <h2 style="margin:0 0 6px;font-size:20px;font-weight:650;">GSTR-3B filed for June 2026</h2>
+              <p style="margin:0 0 18px;font-size:13px;line-height:1.55;color:oklch(0.55 0.015 280);">Filed on 16 Jul — 4 days early, zero interest. Acknowledgement and challan saved to your records (offline too).</p>
+              <div style="border:1px solid oklch(0.91 0.006 280);border-radius:12px;padding:16px 18px;margin-bottom:16px;display:flex;flex-direction:column;gap:8px;">
+                <div style="display:flex;justify-content:space-between;font-size:12.5px;"><span style="color:oklch(0.55 0.015 280);">ARN</span><span style="font-family:'Geist Mono',monospace;">AA2906261234567K</span></div>
+                <div style="display:flex;justify-content:space-between;font-size:12.5px;"><span style="color:oklch(0.55 0.015 280);">Paid via challan</span><span style="font-family:'Geist Mono',monospace;">{{ netLabel }}</span></div>
+                <div style="display:flex;justify-content:space-between;font-size:12.5px;"><span style="color:oklch(0.55 0.015 280);">CA fee saved this month</span><span style="font-family:'Geist Mono',monospace;color:oklch(0.44 0.1 155);">≈ ₹2,500</span></div>
+              </div>
+              <span style="font-size:12.5px;color:oklch(0.5 0.015 280);">Next up: <strong>GSTR-1 for July</strong> — due 11 Aug. Vyora will pre-reconcile it as invoices come in.</span>
+            </div>
+          </sc-if>
+        </sc-if>
+
+      </div>
+
+      <!-- LIVE SUMMARY -->
+      <div style="width:280px;flex-shrink:0;border-left:1px solid oklch(0.93 0.006 280);background:oklch(0.985 0.004 280);padding:24px 20px;display:flex;flex-direction:column;gap:16px;">
+        <span style="font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.6 0.012 280);">Live computation</span>
+        <div style="display:flex;flex-direction:column;gap:9px;">
+          <div style="display:flex;justify-content:space-between;font-size:12.5px;"><span style="color:oklch(0.5 0.015 280);">Output tax</span><span style="font-family:'Geist Mono',monospace;">{{ outputLabel }}</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:12.5px;"><span style="color:oklch(0.5 0.015 280);">Eligible ITC</span><span style="font-family:'Geist Mono',monospace;color:oklch(0.44 0.1 155);">− {{ itcLabel }}</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:12.5px;"><span style="color:oklch(0.5 0.015 280);">Interest</span><span style="font-family:'Geist Mono',monospace;">{{ interestLabel }}</span></div>
+        </div>
+        <div style="border-top:1px solid oklch(0.9 0.008 280);padding-top:14px;">
+          <span style="font-size:11px;color:oklch(0.55 0.015 280);">Net payable</span>
+          <div style="font-family:'Geist Mono',monospace;font-size:26px;font-weight:600;color:oklch(0.4 0.14 285);margin-top:2px;">{{ netLabel }}</div>
+          <span style="{{ deltaStyle }}">{{ deltaLabel }}</span>
+        </div>
+        <div style="border:1px solid oklch(0.9 0.035 285);background:oklch(0.97 0.02 285);border-radius:11px;padding:12px 13px;">
+          <span style="font-size:10px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.5 0.14 285);">Why trust this?</span>
+          <p style="margin:6px 0 0;font-size:11.5px;line-height:1.5;color:oklch(0.38 0.04 285);">Every figure links to source invoices. Rules cited inline (CGST Act). Nothing files without your approval.</p>
+        </div>
+        <span style="font-size:10.5px;color:oklch(0.6 0.012 280);line-height:1.5;">Computed on-device from your books · works offline · syncs when connected.</span>
+      </div>
+
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  constructor(props){
+    super(props);
+    this.reconDef=[
+      {id:'r1',title:'3 purchase bills in GSTR-2B, missing in your books',desc:'MediCorp ₹4,100 · HealthPlus ₹1,850 · CareLine ₹850 of ITC you haven\u2019t recorded',action:'Import bills'},
+      {id:'r2',title:'Cancelled invoice still counted in sales',desc:'INV-1027 (₹19,500, tax ₹2,340) was cancelled on 28 Jun but sits in the return',action:'Remove from return'},
+      {id:'r3',title:'GSTIN mismatch on a B2B invoice',desc:'INV-1031 · S. K. Traders — GSTIN differs from portal records; their ITC would be blocked',action:'Fix GSTIN'}
+    ];
+    this.sugDef=[
+      {id:'itc2b',group:'reduce',title:'Claim ₹6,800 unclaimed ITC from GSTR-2B',tagType:'save',amt:6800,desc:'Three supplier bills appear in GSTR-2B but not in your books. Import them and this credit is yours \u2014 most owners silently lose this every month.',rule:'Sec 16(2)(aa) · matched in 2B',out:0,itc:6800,intr:0},
+      {id:'capgoods',group:'reduce',title:'Claim ₹4,320 ITC on the new display refrigerator',tagType:'save',amt:4320,desc:'The fridge bought in June is capital goods used for business \u2014 the full ITC is claimable this month itself, not spread over years.',rule:'Sec 16(3) · capital goods ITC',out:0,itc:4320,intr:0},
+      {id:'advance',group:'reduce',title:'Don\u2019t pay tax on the ₹40,000 advance',tagType:'save',amt:4800,desc:'The advance from Meena Stores is for goods \u2014 GST is due only when you invoice the supply, not on the advance. Paying now is paying early for nothing.',rule:'Notif. 66/2017-CT · advances on goods',out:-4800,itc:0,intr:0},
+      {id:'creditnote',group:'reduce',title:'Report credit note against INV-1027',tagType:'save',amt:2340,desc:'The cancelled invoice needs a credit note in the return, reducing your output tax. A CA never lets a cancelled sale get taxed.',rule:'Sec 34 · credit notes',out:-2340,itc:0,intr:0},
+      {id:'rentitc',group:'reduce',title:'Claim ₹2,160 ITC on shop rent',tagType:'save',amt:2160,desc:'Your landlord is GST-registered and charges 18% on rent \u2014 that tax is fully creditable against your output. It\u2019s sitting in your rent receipts.',rule:'Sec 16 · input services',out:0,itc:2160,intr:0},
+      {id:'bankitc',group:'reduce',title:'Claim ₹380 ITC on bank & card-machine charges',tagType:'save',amt:380,desc:'GST on current-account charges and POS machine fees is claimable ITC. It\u2019s on your bank statement \u2014 almost nobody books it.',rule:'Sec 16 · bank charges',out:0,itc:380,intr:0},
+      {id:'rule42',group:'protect',title:'Reverse ₹1,240 common-credit ITC',tagType:'protect',amt:1240,desc:'Part of your rent ITC relates to exempt sales (unbranded goods). Reversing it now avoids interest and a notice later.',rule:'Rule 42 · proportional reversal',out:0,itc:-1240,intr:0},
+      {id:'blocked',group:'protect',title:'Remove ₹560 ITC on staff meals',tagType:'protect',amt:560,desc:'ITC on food and beverages is blocked credit \u2014 claiming it invites reversal with 18% interest in an audit. Drop it now, cleanly.',rule:'Sec 17(5)(b) · blocked credit',out:0,itc:-560,intr:0},
+      {id:'rcm',group:'protect',title:'Add ₹850 reverse-charge on transport',tagType:'protect',amt:850,desc:'Freight paid to a GTA attracts GST under reverse charge. Pay it now \u2014 you can claim it back as ITC in July.',rule:'Sec 9(3) · GTA @5% RCM',out:850,itc:0,intr:0},
+      {id:'interest',group:'protect',title:'Include ₹142 interest for May\u2019s late payment',tagType:'protect',amt:142,desc:'May\u2019s challan was 2 days late. Self-declaring 18% p.a. interest now closes the matter before a demand notice.',rule:'Sec 50(1) · 18% p.a.',out:0,itc:0,intr:142}
+    ];
+    this.state={ step:0, acc:{}, fixed:{}, filed:false, gstConn:false, otp:false };
+    this.OUT_BASE=184500; this.ITC_BASE=89400;
+  }
+  inr(n){ return '₹'+Math.round(n).toLocaleString('en-IN'); }
+  setStep=(i)=>this.setState({step:i});
+  next=()=>this.setState(s=>({step:Math.min(3,s.step+1)}));
+  back=()=>this.setState(s=>({step:Math.max(0,s.step-1)}));
+  fix=(id)=>this.setState(s=>({fixed:{...s.fixed,[id]:true}}));
+  toggle=(id)=>this.setState(s=>({acc:{...s.acc,[id]:!s.acc[id]}}));
+  doFile=()=>this.setState({filed:true});
+  sendOtp=()=>this.setState({otp:true});
+  verifyOtp=()=>this.setState({gstConn:true,otp:false});
+  disconnect=()=>this.setState({gstConn:false});
+
+  renderVals(){
+    const st=this.state;
+    let out=this.OUT_BASE, itc=this.ITC_BASE, intr=0;
+    this.sugDef.forEach(s=>{ if(st.acc[s.id]){ out+=s.out; itc+=s.itc; intr+=s.intr; } });
+    const net=out-itc+intr;
+    const baseNet=this.OUT_BASE-this.ITC_BASE;
+    const delta=baseNet-net;
+    const fixedCount=this.reconDef.filter(r=>st.fixed[r.id]).length;
+    const issues=this.reconDef.length-fixedCount;
+    const accCount=this.sugDef.filter(s=>st.acc[s.id]).length;
+
+    const stepDefs=[
+      {label:'Reconcile',sub:issues>0?issues+' issues to resolve':'All matched ✓'},
+      {label:'Adjustments',sub:accCount+' of '+this.sugDef.length+' accepted'},
+      {label:'Computation',sub:'Net '+this.inr(net)},
+      {label:'Review & file',sub:st.filed?'Filed ✓':'GSTR-3B'}
+    ];
+    const steps=stepDefs.map((d,i)=>{
+      const active=st.step===i, done=(i<st.step)||(i===3&&st.filed);
+      return { n:i+1, label:d.label, sub:d.sub, done, notDone:!done, pick:()=>this.setStep(i),
+        numStyle:{width:'26px',height:'26px',flexShrink:0,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'12px',fontWeight:600,
+          background: done?'oklch(0.6 0.14 155)':(active?'oklch(0.52 0.2 285)':'#fff'),
+          color:(done||active)?'#fff':'oklch(0.6 0.012 280)',
+          border:(done||active)?'none':'1px solid oklch(0.88 0.008 280)'},
+        style:{display:'flex',alignItems:'center',gap:'11px',width:'100%',cursor:'pointer',border:'none',fontFamily:'inherit',textAlign:'left',padding:'10px 10px',borderRadius:'10px',
+          background: active?'oklch(0.96 0.025 285)':'transparent',
+          color: active?'oklch(0.34 0.1 285)':'oklch(0.34 0.02 280)'} };
+    });
+
+    const caNotes=[
+      'A CA always starts with 2B matching \u2014 unmatched purchases are ITC you legally cannot claim.',
+      'These five checks catch 90% of the errors that trigger GST notices. You decide each one.',
+      'Filing before the 20th means zero interest. Every line here traces to a source document.',
+      'GSTR-3B cannot be revised once filed \u2014 that\u2019s why the review step exists.'
+    ];
+
+    const recon=this.reconDef.map(r=>{
+      const isFixed=!!st.fixed[r.id];
+      return {...r,isFixed,notFixed:!isFixed,fix:()=>this.fix(r.id),
+        cardStyle:{display:'flex',alignItems:'center',gap:'16px',padding:'15px 17px',borderRadius:'12px',
+          background:isFixed?'oklch(0.98 0.02 155)':'#fff',
+          border:isFixed?'1px solid oklch(0.88 0.06 155)':'1px solid oklch(0.88 0.05 75)'}};
+    });
+
+    const mapSug=(s)=>{
+      const on=!!st.acc[s.id];
+      const save=s.tagType==='save';
+      return {...s,on,off:!on,toggle:()=>this.toggle(s.id),
+        tag: save?('Saves '+this.inr(s.amt)):('Adds '+this.inr(s.amt)+' · avoids notice'),
+        tagStyle:{fontSize:'10.5px',fontWeight:600,padding:'3px 9px',borderRadius:'999px',whiteSpace:'nowrap',
+          color:save?'oklch(0.42 0.11 155)':'oklch(0.5 0.1 70)',
+          background:save?'oklch(0.95 0.05 155)':'oklch(0.96 0.05 80)',
+          border:save?'1px solid oklch(0.86 0.07 155)':'1px solid oklch(0.87 0.07 75)'},
+        cardStyle:{display:'flex',alignItems:'flex-start',gap:'16px',padding:'16px 18px',borderRadius:'12px',
+          background:on?'oklch(0.985 0.012 285)':'#fff',
+          border:on?'1.5px solid oklch(0.7 0.12 285)':'1px solid oklch(0.91 0.006 280)'}};
+    };
+    const sugReduce=this.sugDef.filter(s=>s.group==='reduce').map(mapSug);
+    const sugProtect=this.sugDef.filter(s=>s.group==='protect').map(mapSug);
+    const onTable=this.sugDef.filter(s=>s.group==='reduce'&&!st.acc[s.id]).reduce((a,s)=>a+s.amt,0);
+
+    const row=(label,sub,val,opts)=>({label,sub,val,
+      rowStyle:{display:'flex',alignItems:'center',justifyContent:'space-between',gap:'14px',padding:'13px 18px',borderBottom:'1px solid oklch(0.95 0.005 280)',background:(opts&&opts.hl)?'oklch(0.98 0.015 285)':'#fff'},
+      labelStyle:{fontSize:'13px',fontWeight:(opts&&opts.hl)?650:500,color:'oklch(0.3 0.02 280)'},
+      valStyle:{fontFamily:"'Geist Mono',monospace",fontSize:(opts&&opts.hl)?'15px':'12.5px',fontWeight:(opts&&opts.hl)?600:400,color:(opts&&opts.neg)?'oklch(0.44 0.1 155)':((opts&&opts.hl)?'oklch(0.4 0.14 285)':'oklch(0.3 0.02 280)')}});
+    const compLines=[
+      row('Output tax','On sales of ~₹10.2L (incl. accepted adjustments)',this.inr(out)),
+      row('Eligible ITC','From matched purchases (after reversals)','− '+this.inr(itc),{neg:true}),
+      row('Interest & late fee','Self-declared under Sec 50',this.inr(intr)),
+      row('Net payable','Cash payment via challan PMT-06',this.inr(net),{hl:true})
+    ];
+
+    const savingsNote = delta>0
+      ? 'Your accepted adjustments reduce this month\u2019s payable by '+this.inr(delta)+' vs filing unadjusted \u2014 legitimately, with rules cited.'
+      : (delta<0 ? 'Accepted adjustments add '+this.inr(-delta)+' now \u2014 protecting you from interest and notices that would cost more later.'
+      : 'Accept adjustments in step 2 to see their effect here.');
+
+    return {
+      steps, caNote:caNotes[st.step],
+      isRecon:st.step===0, isAdjust:st.step===1, isCompute:st.step===2, isFile:st.step===3,
+      filed:st.filed, notFiled:!st.filed,
+      recon, sugReduce, sugProtect, compLines, savingsNote,
+      potentialLabel: onTable>0 ? this.inr(onTable)+' still on the table \u2014 accept below to claim' : 'All available savings claimed \u2713',
+      issuePillLabel: issues>0 ? issues+' mismatches need attention' : 'All mismatches resolved ✓',
+      issuePillStyle:{fontSize:'12px',fontWeight:500,padding:'6px 12px',borderRadius:'8px',
+        color:issues>0?'oklch(0.5 0.1 70)':'oklch(0.44 0.1 155)',
+        background:issues>0?'oklch(0.96 0.05 80)':'oklch(0.95 0.05 155)',
+        border:issues>0?'1px solid oklch(0.87 0.07 75)':'1px solid oklch(0.86 0.07 155)'},
+      outputLabel:this.inr(out), itcLabel:this.inr(itc), interestLabel:this.inr(intr), netLabel:this.inr(net),
+      deltaLabel: delta>0 ? '▼ '+this.inr(delta)+' less than unadjusted' : (delta<0 ? '▲ '+this.inr(-delta)+' added · protects you' : 'no adjustments applied'),
+      deltaStyle:{fontSize:'11px',fontWeight:600,marginTop:'4px',display:'inline-block',
+        color: delta>0?'oklch(0.44 0.11 155)':(delta<0?'oklch(0.5 0.1 70)':'oklch(0.6 0.012 280)')},
+      next:this.next, back:this.back, doFile:this.doFile,
+      gstConnected:st.gstConn, notConnected:!st.gstConn, otpSent:st.otp, notOtp:!st.otp,
+      sendOtp:this.sendOtp, verifyOtp:this.verifyOtp, disconnect:this.disconnect
+    };
+  }
+}
+</script>
+</body>
+</html>

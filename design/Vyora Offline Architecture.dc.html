@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;}
+body{margin:0;background:oklch(0.975 0.004 280);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
+a{color:oklch(0.52 0.2 285);text-decoration:none;}
+a:hover{color:oklch(0.44 0.2 285);}
+@keyframes vpulse{0%,100%{opacity:1;}50%{opacity:0.35;}}
+</style>
+</helmet>
+
+<div style="font-family:Geist,system-ui,sans-serif;color:oklch(0.24 0.02 280);padding:0 0 70px;">
+
+  <div style="background:oklch(0.22 0.03 280);color:oklch(0.98 0.005 280);padding:52px 48px 44px;">
+    <div style="max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:16px;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span style="width:30px;height:30px;border-radius:8px;background:oklch(0.6 0.2 285);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;">V</span>
+        <span style="font-size:14px;font-weight:600;">Vyora</span>
+        <span style="font-size:13px;color:oklch(0.72 0.02 280);">Offline Architecture</span>
+      </div>
+      <h1 style="margin:0;font-size:32px;font-weight:650;letter-spacing:-0.02em;line-height:1.14;">Everything works offline. Sync just catches up.</h1>
+      <p style="margin:0;font-size:14.5px;line-height:1.6;color:oklch(0.78 0.02 280);max-width:720px;">Writes land in a local SQLite database and an outbox queue. A background sync engine flushes the queue to Supabase when a connection returns, then Realtime pushes changes to the company's other devices — conflicts resolved automatically.</p>
+    </div>
+  </div>
+
+  <div style="max-width:1120px;margin:0 auto;padding:0 48px;display:flex;flex-direction:column;gap:56px;">
+
+    <!-- 01 INTERACTIVE PIPELINE -->
+    <section style="margin-top:48px;">
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:8px;"><span style="font-family:'Geist Mono',monospace;font-size:13px;color:oklch(0.55 0.14 285);">01</span><h2 style="margin:0;font-size:23px;font-weight:650;letter-spacing:-0.015em;">The write pipeline — try it</h2></div>
+      <p style="margin:0 0 24px;font-size:14px;line-height:1.55;color:oklch(0.5 0.015 280);max-width:660px;">Take Device A offline and create a few invoices — they save instantly and queue. Bring it back online and watch the outbox drain into Supabase and mirror onto Device B.</p>
+
+      <div style="border:1px solid oklch(0.9 0.006 280);border-radius:18px;background:#fff;box-shadow:0 16px 44px -24px rgba(40,32,90,0.3);padding:24px;display:grid;grid-template-columns:1fr 150px 1fr;gap:18px;align-items:stretch;">
+
+        <!-- DEVICE A -->
+        <div style="border:1px solid oklch(0.9 0.04 250);border-radius:14px;background:oklch(0.985 0.008 250);display:flex;flex-direction:column;overflow:hidden;">
+          <div style="padding:14px 16px;border-bottom:1px solid oklch(0.92 0.02 250);display:flex;align-items:center;justify-content:space-between;">
+            <span style="font-size:12.5px;font-weight:650;color:oklch(0.36 0.08 250);">Device A · Owner phone</span>
+            <button onClick="{{ toggleOnline }}" style="cursor:pointer;border:none;padding:0;background:transparent;">
+              <sc-if value="{{ online }}" hint-placeholder-val="{{ true }}"><span style="display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:oklch(0.44 0.11 155);background:oklch(0.95 0.05 155);border:1px solid oklch(0.86 0.07 155);padding:5px 11px;border-radius:999px;"><span style="width:7px;height:7px;border-radius:50%;background:oklch(0.6 0.14 155);"></span>Online</span></sc-if>
+              <sc-if value="{{ offline }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:oklch(0.5 0.02 280);background:oklch(0.95 0.005 280);border:1px solid oklch(0.88 0.008 280);padding:5px 11px;border-radius:999px;"><span style="width:7px;height:7px;border-radius:50%;background:oklch(0.7 0.01 280);"></span>Offline · tap to reconnect</span></sc-if>
+            </button>
+          </div>
+          <div style="padding:14px 16px;display:flex;gap:9px;border-bottom:1px solid oklch(0.94 0.01 250);">
+            <button onClick="{{ newInvoice }}" style="cursor:pointer;border:none;background:oklch(0.52 0.2 285);color:#fff;font-size:12.5px;font-weight:600;padding:9px 14px;border-radius:9px;">+ New invoice</button>
+            <button onClick="{{ reset }}" style="cursor:pointer;background:#fff;border:1px solid oklch(0.88 0.008 280);color:oklch(0.45 0.02 280);font-size:12.5px;font-weight:600;padding:9px 14px;border-radius:9px;">Reset</button>
+          </div>
+          <div style="padding:14px 16px;flex:1;">
+            <div style="font-size:10.5px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.55 0.04 250);margin-bottom:10px;">Local DB + Outbox · SQLite/OPFS</div>
+            <div style="display:flex;flex-direction:column;gap:7px;min-height:150px;">
+              <sc-for list="{{ queueItems }}" as="q" hint-placeholder-count="0">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 11px;background:#fff;border:1px solid oklch(0.92 0.01 250);border-radius:9px;">
+                  <span style="display:flex;flex-direction:column;gap:1px;"><span style="font-family:'Geist Mono',monospace;font-size:11.5px;color:oklch(0.34 0.02 280);">{{ q.id }}</span><span style="font-family:'Geist Mono',monospace;font-size:10.5px;color:oklch(0.58 0.012 280);">{{ q.amount }}</span></span>
+                  <span style="{{ q.badgeStyle }}">{{ q.badgeLabel }}</span>
+                </div>
+              </sc-for>
+              <sc-if value="{{ empty }}" hint-placeholder-val="{{ true }}"><div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:24px;text-align:center;"><div style="width:32px;height:32px;border-radius:9px;border:1.5px dashed oklch(0.78 0.02 250);"></div><span style="font-size:11.5px;color:oklch(0.6 0.012 280);line-height:1.5;">No invoices yet.<br>Go offline, then create some.</span></div></sc-if>
+            </div>
+          </div>
+        </div>
+
+        <!-- CLOUD MIDDLE -->
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;">
+          <span style="color:oklch(0.6 0.05 280);font-size:16px;">→</span>
+          <div style="width:100%;border:1px solid oklch(0.88 0.05 165);border-radius:12px;background:oklch(0.965 0.035 165);padding:14px 10px;text-align:center;">
+            <div style="font-size:11.5px;font-weight:650;color:oklch(0.4 0.09 165);">Supabase</div>
+            <div style="font-size:10px;color:oklch(0.46 0.06 165);margin-top:2px;">Postgres</div>
+            <div style="font-family:'Geist Mono',monospace;font-size:20px;font-weight:500;color:oklch(0.38 0.09 165);margin-top:8px;">{{ cloudCount }}</div>
+            <div style="font-size:9.5px;color:oklch(0.5 0.05 165);">rows stored</div>
+          </div>
+          <sc-if value="{{ online }}" hint-placeholder-val="{{ true }}"><span style="font-size:10px;font-weight:600;color:oklch(0.46 0.1 155);">↕ Realtime</span></sc-if>
+          <sc-if value="{{ offline }}" hint-placeholder-val="{{ false }}"><span style="font-size:10px;font-weight:600;color:oklch(0.62 0.09 70);">✕ no link</span></sc-if>
+          <span style="color:oklch(0.6 0.05 280);font-size:16px;">→</span>
+        </div>
+
+        <!-- DEVICE B -->
+        <div style="border:1px solid oklch(0.9 0.03 210);border-radius:14px;background:oklch(0.985 0.006 210);display:flex;flex-direction:column;overflow:hidden;">
+          <div style="padding:14px 16px;border-bottom:1px solid oklch(0.92 0.015 210);display:flex;align-items:center;justify-content:space-between;">
+            <span style="font-size:12.5px;font-weight:650;color:oklch(0.36 0.07 210);">Device B · Shop desktop</span>
+            <span style="display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:oklch(0.44 0.11 155);background:oklch(0.95 0.05 155);border:1px solid oklch(0.86 0.07 155);padding:5px 11px;border-radius:999px;"><span style="width:7px;height:7px;border-radius:50%;background:oklch(0.6 0.14 155);"></span>Online</span>
+          </div>
+          <div style="padding:14px 16px;flex:1;">
+            <div style="font-size:10.5px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.5 0.04 210);margin-bottom:10px;">Received via Realtime</div>
+            <div style="display:flex;flex-direction:column;gap:7px;min-height:150px;">
+              <sc-for list="{{ deviceB }}" as="d" hint-placeholder-count="0">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 11px;background:#fff;border:1px solid oklch(0.92 0.01 210);border-radius:9px;animation:vpulse 0.6s ease 1;">
+                  <span style="display:flex;flex-direction:column;gap:1px;"><span style="font-family:'Geist Mono',monospace;font-size:11.5px;color:oklch(0.34 0.02 280);">{{ d.id }}</span><span style="font-family:'Geist Mono',monospace;font-size:10.5px;color:oklch(0.58 0.012 280);">{{ d.amount }}</span></span>
+                  <span style="font-size:10.5px;font-weight:600;color:oklch(0.44 0.1 155);background:oklch(0.95 0.05 155);padding:3px 9px;border-radius:6px;">Received</span>
+                </div>
+              </sc-for>
+              <sc-if value="{{ emptyB }}" hint-placeholder-val="{{ true }}"><div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:24px;text-align:center;"><div style="width:32px;height:32px;border-radius:9px;border:1.5px dashed oklch(0.78 0.02 210);"></div><span style="font-size:11.5px;color:oklch(0.6 0.012 280);line-height:1.5;">Waiting for<br>synced records…</span></div></sc-if>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 02 STORAGE LAYERS -->
+    <section>
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:8px;"><span style="font-family:'Geist Mono',monospace;font-size:13px;color:oklch(0.55 0.14 285);">02</span><h2 style="margin:0;font-size:23px;font-weight:650;letter-spacing:-0.015em;">Local storage layers</h2></div>
+      <p style="margin:0 0 24px;font-size:14px;line-height:1.55;color:oklch(0.5 0.015 280);max-width:660px;">Three browser primitives, each with a clear job — plus a service worker so the app cold-starts with no network.</p>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px;">
+        <div style="border:1px solid oklch(0.91 0.006 280);border-radius:14px;background:#fff;padding:20px;box-shadow:0 6px 20px -16px rgba(40,32,90,0.2);"><div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;"><span style="width:22px;height:22px;border-radius:6px;background:oklch(0.955 0.03 250);"></span><h3 style="margin:0;font-size:15px;font-weight:650;">SQLite WASM</h3></div><p style="margin:0;font-size:12.5px;line-height:1.55;color:oklch(0.5 0.015 280);">The relational core — invoices, items, ledgers, stock. Full SQL with joins powers every list and report, entirely on-device.</p></div>
+        <div style="border:1px solid oklch(0.91 0.006 280);border-radius:14px;background:#fff;padding:20px;box-shadow:0 6px 20px -16px rgba(40,32,90,0.2);"><div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;"><span style="width:22px;height:22px;border-radius:6px;background:oklch(0.955 0.03 285);"></span><h3 style="margin:0;font-size:15px;font-weight:650;">OPFS</h3></div><p style="margin:0;font-size:12.5px;line-height:1.55;color:oklch(0.5 0.015 280);">Origin-private file system holds the SQLite database file and attachments (bill photos). High capacity, durable across sessions, fast synchronous access.</p></div>
+        <div style="border:1px solid oklch(0.91 0.006 280);border-radius:14px;background:#fff;padding:20px;box-shadow:0 6px 20px -16px rgba(40,32,90,0.2);"><div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;"><span style="width:22px;height:22px;border-radius:6px;background:oklch(0.955 0.03 165);"></span><h3 style="margin:0;font-size:15px;font-weight:650;">IndexedDB</h3></div><p style="margin:0;font-size:12.5px;line-height:1.55;color:oklch(0.5 0.015 280);">The sync outbox, cached metadata (business schemas), settings, and session — small async records that need quick key access.</p></div>
+        <div style="border:1px solid oklch(0.91 0.006 280);border-radius:14px;background:#fff;padding:20px;box-shadow:0 6px 20px -16px rgba(40,32,90,0.2);"><div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;"><span style="width:22px;height:22px;border-radius:6px;background:oklch(0.955 0.03 55);"></span><h3 style="margin:0;font-size:15px;font-weight:650;">Service Worker · Workbox</h3></div><p style="margin:0;font-size:12.5px;line-height:1.55;color:oklch(0.5 0.015 280);">Caches the app shell and assets so the PWA opens instantly offline, and drives the Background Sync API to flush the queue after the app is closed.</p></div>
+      </div>
+    </section>
+
+    <!-- 03 OUTBOX -->
+    <section>
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:8px;"><span style="font-family:'Geist Mono',monospace;font-size:13px;color:oklch(0.55 0.14 285);">03</span><h2 style="margin:0;font-size:23px;font-weight:650;letter-spacing:-0.015em;">Sync queue (outbox)</h2></div>
+      <p style="margin:0 0 24px;font-size:14px;line-height:1.55;color:oklch(0.5 0.015 280);max-width:660px;">Every mutation writes an encrypted, UUID-keyed change record to the outbox. It moves through a small state machine and is applied in creation order.</p>
+      <div style="display:grid;grid-template-columns:1.1fr 1fr;gap:16px;">
+        <div style="border:1px solid oklch(0.91 0.006 280);border-radius:14px;background:#fff;padding:20px;box-shadow:0 6px 20px -16px rgba(40,32,90,0.2);">
+          <div style="font-size:11px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.55 0.012 280);margin-bottom:12px;">Change record</div>
+          <pre style="margin:0;font-family:'Geist Mono',monospace;font-size:11.5px;line-height:1.6;color:oklch(0.34 0.02 280);background:oklch(0.98 0.004 280);border:1px solid oklch(0.93 0.006 280);border-radius:10px;padding:16px;overflow-x:auto;">{
+  "id": "e3b0c442-98fc-1c14…",
+  "entity": "invoice",
+  "op": "insert",
+  "payload": "‹AES-256 ciphertext›",
+  "baseVersion": 3,
+  "createdAt": 1752624000,
+  "state": "pending",
+  "attempts": 0
+}</pre>
+        </div>
+        <div style="border:1px solid oklch(0.91 0.006 280);border-radius:14px;background:#fff;padding:20px;box-shadow:0 6px 20px -16px rgba(40,32,90,0.2);display:flex;flex-direction:column;gap:14px;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.55 0.012 280);">State machine</div>
+          <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;">
+            <span style="font-size:11.5px;font-weight:600;color:oklch(0.5 0.1 70);background:oklch(0.96 0.05 80);border:1px solid oklch(0.87 0.07 75);padding:6px 12px;border-radius:8px;">pending</span>
+            <span style="color:oklch(0.6 0.05 280);">→</span>
+            <span style="font-size:11.5px;font-weight:600;color:oklch(0.42 0.13 285);background:oklch(0.96 0.03 285);border:1px solid oklch(0.9 0.04 285);padding:6px 12px;border-radius:8px;">syncing</span>
+            <span style="color:oklch(0.6 0.05 280);">→</span>
+            <span style="font-size:11.5px;font-weight:600;color:oklch(0.42 0.11 155);background:oklch(0.95 0.05 155);border:1px solid oklch(0.86 0.07 155);padding:6px 12px;border-radius:8px;">synced</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:9px;"><span style="font-size:11.5px;font-weight:600;color:oklch(0.42 0.13 285);background:oklch(0.96 0.03 285);border:1px solid oklch(0.9 0.04 285);padding:6px 12px;border-radius:8px;">syncing</span><span style="color:oklch(0.6 0.05 280);">→</span><span style="font-size:11.5px;font-weight:600;color:oklch(0.48 0.14 25);background:oklch(0.96 0.05 25);border:1px solid oklch(0.86 0.08 25);padding:6px 12px;border-radius:8px;">failed → retry</span></div>
+          <div style="display:flex;flex-direction:column;gap:7px;margin-top:2px;">
+            <span style="font-size:12px;color:oklch(0.46 0.02 280);background:oklch(0.965 0.004 280);border:1px solid oklch(0.92 0.006 280);padding:8px 11px;border-radius:8px;">Applied strictly in <strong>createdAt</strong> order per entity</span>
+            <span style="font-size:12px;color:oklch(0.46 0.02 280);background:oklch(0.965 0.004 280);border:1px solid oklch(0.92 0.006 280);padding:8px 11px;border-radius:8px;">Idempotent by UUID — safe to re-send</span>
+            <span style="font-size:12px;color:oklch(0.46 0.02 280);background:oklch(0.965 0.004 280);border:1px solid oklch(0.92 0.006 280);padding:8px 11px;border-radius:8px;">Synced records pruned after acknowledgement</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 04 TRIGGERS -->
+    <section>
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:8px;"><span style="font-family:'Geist Mono',monospace;font-size:13px;color:oklch(0.55 0.14 285);">04</span><h2 style="margin:0;font-size:23px;font-weight:650;letter-spacing:-0.015em;">Background sync triggers</h2></div>
+      <p style="margin:0 0 24px;font-size:14px;line-height:1.55;color:oklch(0.5 0.015 280);max-width:660px;">The queue flushes from several triggers and retries with backoff, so a synced state is reached without the user thinking about it.</p>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;">
+        <div style="border:1px solid oklch(0.91 0.006 280);border-radius:12px;background:#fff;padding:15px 17px;"><span style="font-size:13px;font-weight:600;">Connectivity regained</span><p style="margin:4px 0 0;font-size:12px;line-height:1.5;color:oklch(0.55 0.015 280);">The <span style="font-family:'Geist Mono',monospace;font-size:11px;">online</span> event immediately flushes pending changes.</p></div>
+        <div style="border:1px solid oklch(0.91 0.006 280);border-radius:12px;background:#fff;padding:15px 17px;"><span style="font-size:13px;font-weight:600;">Background Sync API</span><p style="margin:4px 0 0;font-size:12px;line-height:1.5;color:oklch(0.55 0.015 280);">The service worker retries even after the app is closed.</p></div>
+        <div style="border:1px solid oklch(0.91 0.006 280);border-radius:12px;background:#fff;padding:15px 17px;"><span style="font-size:13px;font-weight:600;">Periodic while open</span><p style="margin:4px 0 0;font-size:12px;line-height:1.5;color:oklch(0.55 0.015 280);">A timer reconciles every few minutes as a safety net.</p></div>
+        <div style="border:1px solid oklch(0.91 0.006 280);border-radius:12px;background:#fff;padding:15px 17px;"><span style="font-size:13px;font-weight:600;">Manual “Sync now”</span><p style="margin:4px 0 0;font-size:12px;line-height:1.5;color:oklch(0.55 0.015 280);">The owner can force a flush from the status pill.</p></div>
+      </div>
+      <div style="margin-top:14px;display:flex;gap:11px;padding:14px 16px;background:oklch(0.965 0.025 285);border:1px solid oklch(0.9 0.035 285);border-radius:11px;">
+        <span style="width:5px;flex-shrink:0;border-radius:3px;background:oklch(0.55 0.18 285);"></span>
+        <p style="margin:0;font-size:12.5px;line-height:1.5;color:oklch(0.38 0.03 285);"><strong>Retry policy:</strong> exponential backoff — 2s, 4s, 8s… capped at 5 min. After the max attempts a change surfaces as a <em>failed</em> state with a one-tap retry; it is never silently dropped.</p>
+      </div>
+    </section>
+
+    <!-- 05 CONFLICTS -->
+    <section>
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:8px;"><span style="font-family:'Geist Mono',monospace;font-size:13px;color:oklch(0.55 0.14 285);">05</span><h2 style="margin:0;font-size:23px;font-weight:650;letter-spacing:-0.015em;">Automatic conflict resolution</h2></div>
+      <p style="margin:0 0 24px;font-size:14px;line-height:1.55;color:oklch(0.5 0.015 280);max-width:660px;">Each record carries a version and <span style="font-family:'Geist Mono',monospace;font-size:12.5px;">updated_at</span>. Resolution is deterministic and needs no user prompt.</p>
+      <div style="border:1px solid oklch(0.9 0.006 280);border-radius:16px;background:#fff;overflow:hidden;box-shadow:0 6px 20px -16px rgba(40,32,90,0.2);">
+        <div style="display:grid;grid-template-columns:1fr 1.2fr;gap:16px;padding:12px 20px;background:oklch(0.98 0.004 280);border-bottom:1px solid oklch(0.92 0.006 280);"><span style="font-size:11px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;color:oklch(0.55 0.012 280);">Scenario</span><span style="font-size:11px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;color:oklch(0.55 0.012 280);">Resolution</span></div>
+        <div style="display:grid;grid-template-columns:1fr 1.2fr;gap:16px;padding:13px 20px;border-bottom:1px solid oklch(0.95 0.005 280);"><span style="font-size:12.5px;color:oklch(0.32 0.02 280);">Same field edited on two devices</span><span style="font-size:12.5px;color:oklch(0.5 0.015 280);">Last-write-wins by highest version / <span style="font-family:'Geist Mono',monospace;font-size:11.5px;">updated_at</span></span></div>
+        <div style="display:grid;grid-template-columns:1fr 1.2fr;gap:16px;padding:13px 20px;border-bottom:1px solid oklch(0.95 0.005 280);"><span style="font-size:12.5px;color:oklch(0.32 0.02 280);">Different fields edited</span><span style="font-size:12.5px;color:oklch(0.5 0.015 280);">Field-level merge — both changes kept</span></div>
+        <div style="display:grid;grid-template-columns:1fr 1.2fr;gap:16px;padding:13px 20px;border-bottom:1px solid oklch(0.95 0.005 280);"><span style="font-size:12.5px;color:oklch(0.32 0.02 280);">Deleted on A, edited on B</span><span style="font-size:12.5px;color:oklch(0.5 0.015 280);">Tombstone wins; edit discarded with an audit note</span></div>
+        <div style="display:grid;grid-template-columns:1fr 1.2fr;gap:16px;padding:13px 20px;border-bottom:1px solid oklch(0.95 0.005 280);"><span style="font-size:12.5px;color:oklch(0.32 0.02 280);">Stock count changed on both</span><span style="font-size:12.5px;color:oklch(0.5 0.015 280);">Additive CRDT merge — deltas summed, not overwritten</span></div>
+        <div style="display:grid;grid-template-columns:1fr 1.2fr;gap:16px;padding:13px 20px;border-bottom:1px solid oklch(0.95 0.005 280);"><span style="font-size:12.5px;color:oklch(0.32 0.02 280);">New records inserted offline</span><span style="font-size:12.5px;color:oklch(0.5 0.015 280);">Never conflict — client-generated UUID primary keys</span></div>
+        <div style="display:grid;grid-template-columns:1fr 1.2fr;gap:16px;padding:13px 20px;"><span style="font-size:12.5px;color:oklch(0.32 0.02 280);">Invoice-number collision</span><span style="font-size:12.5px;color:oklch(0.5 0.015 280);">Server reassigns the display sequence; UUID stays stable</span></div>
+      </div>
+    </section>
+
+    <!-- 06 GUARANTEES -->
+    <section>
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:8px;"><span style="font-family:'Geist Mono',monospace;font-size:13px;color:oklch(0.55 0.14 285);">06</span><h2 style="margin:0;font-size:23px;font-weight:650;letter-spacing:-0.015em;">Guarantees</h2></div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+        <div style="border:1px solid oklch(0.86 0.07 155);border-radius:12px;background:oklch(0.97 0.03 155);padding:16px 18px;"><span style="font-size:13px;font-weight:650;color:oklch(0.38 0.09 155);">Never blocks</span><p style="margin:5px 0 0;font-size:12px;line-height:1.5;color:oklch(0.42 0.06 155);">Every action completes locally in milliseconds, connected or not.</p></div>
+        <div style="border:1px solid oklch(0.86 0.07 155);border-radius:12px;background:oklch(0.97 0.03 155);padding:16px 18px;"><span style="font-size:13px;font-weight:650;color:oklch(0.38 0.09 155);">Never loses data</span><p style="margin:5px 0 0;font-size:12px;line-height:1.5;color:oklch(0.42 0.06 155);">Durable in OPFS; the outbox survives reloads, crashes, and restarts.</p></div>
+        <div style="border:1px solid oklch(0.86 0.07 155);border-radius:12px;background:oklch(0.97 0.03 155);padding:16px 18px;"><span style="font-size:13px;font-weight:650;color:oklch(0.38 0.09 155);">Encrypted throughout</span><p style="margin:5px 0 0;font-size:12px;line-height:1.5;color:oklch(0.42 0.06 155);">Payloads are AES-256 encrypted before they enter the queue or the cloud.</p></div>
+      </div>
+      <p style="margin:20px 0 0;font-size:12px;color:oklch(0.6 0.012 280);">Next phase: security &amp; encryption in depth, or the first high-fidelity module screens.</p>
+    </section>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  constructor(props){
+    super(props);
+    this.state = { online:false, invoices:[], cloud:[], deviceB:[], counter:1 };
+    this._busy=false;
+    this._amounts=['₹ 2,450','₹ 12,400','₹ 860','₹ 5,900','₹ 18,750','₹ 3,120','₹ 9,300','₹ 640','₹ 27,000','₹ 1,480'];
+  }
+
+  processQueue = () => {
+    if(this._busy) return;
+    const st=this.state;
+    if(!st.online) return;
+    const next = st.invoices.find(i=>i.state==='pending');
+    if(!next) return;
+    this._busy=true;
+    this.setState({ invoices: st.invoices.map(i=> i.id===next.id ? {...i,state:'syncing'} : i) });
+    setTimeout(()=>{
+      this.setState(s=>({
+        invoices: s.invoices.map(i=> i.id===next.id ? {...i,state:'synced'} : i),
+        cloud:[...s.cloud, {id:next.id,amount:next.amount}],
+        deviceB:[...s.deviceB, {id:next.id,amount:next.amount}]
+      }), ()=>{ this._busy=false; this.processQueue(); });
+    }, 780);
+  };
+
+  newInvoice = () => {
+    this.setState(s=>{
+      const amount=this._amounts[(s.counter-1)%this._amounts.length];
+      return { counter:s.counter+1, invoices:[...s.invoices, {id:'INV-'+(1041+s.counter), amount, state:'pending'}] };
+    }, ()=>this.processQueue());
+  };
+
+  toggleOnline = () => this.setState(s=>({online:!s.online}), ()=>this.processQueue());
+
+  reset = () => { this._busy=false; this.setState({ invoices:[], cloud:[], deviceB:[], counter:1 }); };
+
+  renderVals(){
+    const st=this.state;
+    const badge=(state)=>{
+      if(state==='pending') return {style:{fontSize:'10.5px',fontWeight:600,color:'oklch(0.5 0.1 70)',background:'oklch(0.96 0.05 80)',border:'1px solid oklch(0.87 0.07 75)',padding:'3px 9px',borderRadius:'6px'},label:'Queued'};
+      if(state==='syncing') return {style:{fontSize:'10.5px',fontWeight:600,color:'oklch(0.42 0.13 285)',background:'oklch(0.96 0.03 285)',border:'1px solid oklch(0.9 0.04 285)',padding:'3px 9px',borderRadius:'6px',animation:'vpulse 1s ease infinite'},label:'Syncing…'};
+      return {style:{fontSize:'10.5px',fontWeight:600,color:'oklch(0.44 0.1 155)',background:'oklch(0.95 0.05 155)',border:'1px solid oklch(0.86 0.07 155)',padding:'3px 9px',borderRadius:'6px'},label:'Synced'};
+    };
+    const queueItems=st.invoices.map(i=>{ const b=badge(i.state); return {...i, badgeStyle:b.style, badgeLabel:b.label}; });
+    return {
+      online:st.online, offline:!st.online,
+      toggleOnline:this.toggleOnline, newInvoice:this.newInvoice, reset:this.reset,
+      queueItems, empty:st.invoices.length===0,
+      deviceB:st.deviceB, emptyB:st.deviceB.length===0,
+      cloudCount:st.cloud.length
+    };
+  }
+}
+</script>
+</body>
+</html>

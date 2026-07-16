@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;}
+body{margin:0;background:oklch(0.975 0.004 280);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
+a{color:oklch(0.52 0.2 285);text-decoration:none;}
+a:hover{color:oklch(0.44 0.2 285);}
+</style>
+</helmet>
+
+<div style="font-family:Geist,system-ui,sans-serif;color:oklch(0.24 0.02 280);padding:0 0 70px;">
+
+  <div style="background:oklch(0.22 0.03 280);color:oklch(0.98 0.005 280);padding:52px 48px 44px;">
+    <div style="max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:16px;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span style="width:30px;height:30px;border-radius:8px;background:oklch(0.6 0.2 285);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;">V</span>
+        <span style="font-size:14px;font-weight:600;">Vyora</span>
+        <span style="font-size:13px;color:oklch(0.72 0.02 280);">API Specification · Doc 06</span>
+      </div>
+      <h1 style="margin:0;font-size:32px;font-weight:650;letter-spacing:-0.02em;line-height:1.14;">A thin sync API over an encrypted, offline-first client</h1>
+      <p style="margin:0;font-size:14.5px;line-height:1.6;color:oklch(0.78 0.02 280);max-width:760px;">The client is the source of truth; the API exists to move <strong>encrypted record envelopes</strong> between devices, run privileged server-only jobs (GST filing, OCR, AI, messaging), and manage identity. The server never sees plaintext business data — only routing metadata.</p>
+    </div>
+  </div>
+
+  <div style="max-width:1120px;margin:0 auto;padding:0 48px;display:flex;flex-direction:column;gap:52px;">
+
+    <!-- CONVENTIONS -->
+    <section style="margin-top:48px;">
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:18px;"><span style="font-family:'Geist Mono',monospace;font-size:13px;color:oklch(0.55 0.14 285);">01</span><h2 style="margin:0;font-size:23px;font-weight:650;letter-spacing:-0.015em;">Conventions</h2></div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;">
+        <div style="border:1px solid oklch(0.91 0.006 280);border-radius:13px;background:#fff;padding:18px;"><span style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:oklch(0.55 0.012 280);">Base URL</span><div style="font-family:'Geist Mono',monospace;font-size:12px;margin-top:8px;color:oklch(0.34 0.02 280);">api.vyora.app/v1</div></div>
+        <div style="border:1px solid oklch(0.91 0.006 280);border-radius:13px;background:#fff;padding:18px;"><span style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:oklch(0.55 0.012 280);">Transport</span><div style="font-family:'Geist Mono',monospace;font-size:12px;margin-top:8px;color:oklch(0.34 0.02 280);">HTTPS · JSON · TLS 1.3</div></div>
+        <div style="border:1px solid oklch(0.91 0.006 280);border-radius:13px;background:#fff;padding:18px;"><span style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:oklch(0.55 0.012 280);">Auth</span><div style="font-family:'Geist Mono',monospace;font-size:12px;margin-top:8px;color:oklch(0.34 0.02 280);">Bearer JWT · org_id claim</div></div>
+        <div style="border:1px solid oklch(0.91 0.006 280);border-radius:13px;background:#fff;padding:18px;"><span style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:oklch(0.55 0.012 280);">Idempotency</span><div style="font-family:'Geist Mono',monospace;font-size:12px;margin-top:8px;color:oklch(0.34 0.02 280);">Idempotency-Key hdr</div></div>
+      </div>
+      <div style="margin-top:14px;border:1px solid oklch(0.9 0.035 285);border-radius:13px;background:oklch(0.985 0.012 285);padding:16px 20px;display:flex;gap:14px;align-items:flex-start;">
+        <span style="width:5px;align-self:stretch;border-radius:3px;background:oklch(0.55 0.18 285);flex-shrink:0;"></span>
+        <p style="margin:0;font-size:13px;line-height:1.55;color:oklch(0.36 0.04 285);">Every mutating request carries an <code style="font-family:'Geist Mono',monospace;background:oklch(0.96 0.02 285);padding:1px 6px;border-radius:5px;">Idempotency-Key</code> (the client-generated record UUID) so a retried sync never double-writes. Every response echoes a <code style="font-family:'Geist Mono',monospace;background:oklch(0.96 0.02 285);padding:1px 6px;border-radius:5px;">request_id</code> for tracing.</p>
+      </div>
+    </section>
+
+    <!-- RECORD ENVELOPE -->
+    <section>
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:18px;"><span style="font-family:'Geist Mono',monospace;font-size:13px;color:oklch(0.55 0.14 285);">02</span><h2 style="margin:0;font-size:23px;font-weight:650;letter-spacing:-0.015em;">The encrypted record envelope</h2></div>
+      <p style="margin:0 0 16px;font-size:14px;line-height:1.55;color:oklch(0.5 0.015 280);max-width:720px;">Every business record — invoice, product, customer — travels as an envelope. Only the outer fields are readable by the server; <code style="font-family:'Geist Mono',monospace;background:oklch(0.95 0.005 280);padding:1px 6px;border-radius:5px;">body_enc</code> is AES-256-GCM ciphertext.</p>
+      <div style="border:1px solid oklch(0.9 0.006 280);border-radius:14px;background:oklch(0.19 0.02 280);overflow:hidden;box-shadow:0 12px 34px -22px rgba(40,32,90,0.4);">
+        <div style="padding:10px 18px;border-bottom:1px solid oklch(0.3 0.02 280);display:flex;gap:8px;align-items:center;"><span style="width:11px;height:11px;border-radius:50%;background:oklch(0.6 0.15 25);"></span><span style="width:11px;height:11px;border-radius:50%;background:oklch(0.78 0.13 85);"></span><span style="width:11px;height:11px;border-radius:50%;background:oklch(0.7 0.14 145);"></span><span style="font-family:'Geist Mono',monospace;font-size:11px;color:oklch(0.6 0.02 280);margin-left:8px;">record_envelope.json</span></div>
+        <pre style="margin:0;padding:20px 22px;font-family:'Geist Mono',monospace;font-size:12.5px;line-height:1.7;color:oklch(0.85 0.02 280);overflow-x:auto;"><span style="color:oklch(0.6 0.02 280);">{</span>
+  <span style="color:oklch(0.75 0.12 285);">"id"</span>: <span style="color:oklch(0.8 0.1 145);">"inv_9f2c…a41"</span>,        <span style="color:oklch(0.55 0.02 280);">// client UUID = idempotency key</span>
+  <span style="color:oklch(0.75 0.12 285);">"org_id"</span>: <span style="color:oklch(0.8 0.1 145);">"org_7712"</span>,        <span style="color:oklch(0.55 0.02 280);">// tenant · enforced by RLS</span>
+  <span style="color:oklch(0.75 0.12 285);">"type"</span>: <span style="color:oklch(0.8 0.1 145);">"invoice"</span>,
+  <span style="color:oklch(0.75 0.12 285);">"version"</span>: <span style="color:oklch(0.82 0.13 60);">7</span>,               <span style="color:oklch(0.55 0.02 280);">// server-incremented, for conflicts</span>
+  <span style="color:oklch(0.75 0.12 285);">"updated_at"</span>: <span style="color:oklch(0.8 0.1 145);">"2026-07-16T09:12:04Z"</span>,
+  <span style="color:oklch(0.75 0.12 285);">"deleted"</span>: <span style="color:oklch(0.82 0.13 60);">false</span>,          <span style="color:oklch(0.55 0.02 280);">// tombstone flag</span>
+  <span style="color:oklch(0.75 0.12 285);">"body_enc"</span>: <span style="color:oklch(0.8 0.1 145);">"base64(AES-256-GCM ciphertext)"</span>,
+  <span style="color:oklch(0.75 0.12 285);">"nonce"</span>: <span style="color:oklch(0.8 0.1 145);">"base64(96-bit IV)"</span>
+<span style="color:oklch(0.6 0.02 280);">}</span></pre>
+      </div>
+    </section>
+
+    <!-- ENDPOINTS -->
+    <section>
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:18px;"><span style="font-family:'Geist Mono',monospace;font-size:13px;color:oklch(0.55 0.14 285);">03</span><h2 style="margin:0;font-size:23px;font-weight:650;letter-spacing:-0.015em;">Endpoints</h2></div>
+      <sc-for list="{{ groups }}" as="g" hint-placeholder-count="6">
+        <div style="margin-bottom:24px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;"><span style="font-size:13px;font-weight:650;">{{ g.name }}</span><span style="font-size:12px;color:oklch(0.58 0.012 280);">{{ g.desc }}</span></div>
+          <div style="border:1px solid oklch(0.91 0.006 280);border-radius:14px;background:#fff;overflow:hidden;">
+            <sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="4">
+              <div style="display:grid;grid-template-columns:82px 1.4fr 2fr;gap:16px;padding:13px 18px;border-bottom:1px solid oklch(0.96 0.004 280);align-items:center;">
+                <span style="{{ r.mStyle }}">{{ r.method }}</span>
+                <span style="font-family:'Geist Mono',monospace;font-size:12px;color:oklch(0.32 0.02 280);">{{ r.path }}</span>
+                <span style="font-size:12.5px;color:oklch(0.5 0.015 280);line-height:1.45;">{{ r.desc }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-for>
+    </section>
+
+    <!-- ERRORS -->
+    <section>
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:18px;"><span style="font-family:'Geist Mono',monospace;font-size:13px;color:oklch(0.55 0.14 285);">04</span><h2 style="margin:0;font-size:23px;font-weight:650;letter-spacing:-0.015em;">Error model &amp; rate limits</h2></div>
+      <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:18px;align-items:start;">
+        <div style="border:1px solid oklch(0.91 0.006 280);border-radius:14px;background:#fff;overflow:hidden;">
+          <sc-for list="{{ errors }}" as="e" hint-placeholder-count="6">
+            <div style="display:grid;grid-template-columns:64px 1.3fr;gap:14px;padding:12px 18px;border-bottom:1px solid oklch(0.96 0.004 280);align-items:center;">
+              <span style="{{ e.style }}">{{ e.code }}</span>
+              <span style="font-size:12.5px;color:oklch(0.42 0.02 280);"><strong style="font-family:'Geist Mono',monospace;font-weight:500;color:oklch(0.32 0.02 280);">{{ e.slug }}</strong> — {{ e.desc }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="border:1px solid oklch(0.9 0.035 285);border-radius:14px;background:oklch(0.985 0.012 285);padding:20px;">
+          <h3 style="margin:0 0 10px;font-size:13.5px;font-weight:650;color:oklch(0.34 0.06 285);">Rate limits</h3>
+          <div style="display:flex;flex-direction:column;gap:9px;font-size:12.5px;color:oklch(0.4 0.03 285);">
+            <div style="display:flex;justify-content:space-between;"><span>Sync push/pull</span><span style="font-family:'Geist Mono',monospace;">120 / min / device</span></div>
+            <div style="display:flex;justify-content:space-between;"><span>AI copilot</span><span style="font-family:'Geist Mono',monospace;">plan-metered credits</span></div>
+            <div style="display:flex;justify-content:space-between;"><span>OCR jobs</span><span style="font-family:'Geist Mono',monospace;">30 / min / org</span></div>
+            <div style="display:flex;justify-content:space-between;"><span>GST filing</span><span style="font-family:'Geist Mono',monospace;">GSP-bound</span></div>
+          </div>
+          <p style="margin:14px 0 0;font-size:11.5px;line-height:1.5;color:oklch(0.5 0.03 285);">429 responses include <code style="font-family:'Geist Mono',monospace;">Retry-After</code>; the sync engine honours it with exponential backoff.</p>
+        </div>
+      </div>
+      <p style="margin:22px 2px 0;font-size:12px;color:oklch(0.6 0.012 280);">Related: <a href="Vyora Offline Architecture.dc.html">Offline Architecture</a> · <a href="Vyora Sync Engine.dc.html">Sync Engine</a> · <a href="Vyora Authentication.dc.html">Authentication</a> · <a href="Vyora Index.dc.html">Project index</a></p>
+    </section>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  constructor(props){
+    super(props);
+    const m=(method)=>{
+      const c={GET:['oklch(0.44 0.11 235)','oklch(0.95 0.04 235)','oklch(0.88 0.05 235)'],POST:['oklch(0.42 0.11 155)','oklch(0.95 0.05 155)','oklch(0.86 0.07 155)'],PATCH:['oklch(0.5 0.1 70)','oklch(0.96 0.06 80)','oklch(0.87 0.08 75)'],DELETE:['oklch(0.48 0.14 25)','oklch(0.96 0.05 25)','oklch(0.88 0.06 25)']}[method];
+      return {fontFamily:"'Geist Mono',monospace",fontSize:'10.5px',fontWeight:600,textAlign:'center',color:c[0],background:c[1],border:'1px solid '+c[2],padding:'4px 0',borderRadius:'6px'};
+    };
+    this.mk=(method,path,desc)=>({method,path,desc,mStyle:m(method)});
+  }
+  renderVals(){
+    const g=(name,desc,rows)=>({name,desc,rows});
+    const groups=[
+      g('Auth & identity','OTP login, token lifecycle, devices',[
+        this.mk('POST','/auth/otp/request','Send OTP to a phone number'),
+        this.mk('POST','/auth/otp/verify','Verify OTP → access + refresh tokens'),
+        this.mk('POST','/auth/refresh','Rotate refresh token'),
+        this.mk('GET','/auth/devices','List the org\u2019s trusted devices'),
+        this.mk('DELETE','/auth/devices/:id','Revoke a device session')
+      ]),
+      g('Organizations','Tenant setup & business config',[
+        this.mk('POST','/orgs','Create an organization (first run)'),
+        this.mk('GET','/orgs/:id','Fetch org profile + business_type config'),
+        this.mk('PATCH','/orgs/:id','Update profile, GSTIN, business type')
+      ]),
+      g('Sync','The heart — encrypted envelope exchange',[
+        this.mk('POST','/sync/push','Upload a batch of record envelopes'),
+        this.mk('GET','/sync/pull','Pull changes since a cursor (delta sync)'),
+        this.mk('GET','/sync/cursor','Current server sync cursor for the device')
+      ]),
+      g('Documents & OCR','Upload scans for structured extraction',[
+        this.mk('POST','/ocr/jobs','Submit a document image for OCR'),
+        this.mk('GET','/ocr/jobs/:id','Poll job status + extracted fields')
+      ]),
+      g('GST filing','Server-only, via licensed GSP',[
+        this.mk('POST','/gst/reconcile','Reconcile books against GSTR-2B'),
+        this.mk('POST','/gst/compute','Compute GSTR-1 / 3B with adjustments'),
+        this.mk('POST','/gst/file','File the return via GSP (OTP-signed)')
+      ]),
+      g('AI copilot','Grounded in the org\u2019s decrypted data (client-side keys)',[
+        this.mk('POST','/ai/chat','Streamed copilot response'),
+        this.mk('POST','/ai/actions/confirm','Commit a reviewed AI-drafted action')
+      ]),
+      g('Marketing','Multi-channel campaigns',[
+        this.mk('POST','/campaigns','Create a campaign'),
+        this.mk('POST','/campaigns/:id/send','Dispatch via WhatsApp/SMS/email'),
+        this.mk('GET','/campaigns/:id/stats','Delivery & engagement metrics')
+      ]),
+      g('Billing','Subscriptions & licenses',[
+        this.mk('GET','/billing/subscription','Current plan, seats, cycle'),
+        this.mk('POST','/billing/checkout','Start a plan purchase / renewal')
+      ])
+    ];
+    const es=(code,slug,desc,kind)=>{
+      const c={cli:['oklch(0.5 0.1 70)','oklch(0.96 0.06 80)','oklch(0.87 0.08 75)'],err:['oklch(0.48 0.14 25)','oklch(0.96 0.05 25)','oklch(0.88 0.06 25)']}[kind];
+      return {code,slug,desc,style:{fontFamily:"'Geist Mono',monospace",fontSize:'11px',fontWeight:600,textAlign:'center',color:c[0],background:c[1],border:'1px solid '+c[2],padding:'4px 0',borderRadius:'6px'}};
+    };
+    const errors=[
+      es('400','invalid_request','Malformed body or missing envelope field','cli'),
+      es('401','unauthenticated','Missing/expired access token','cli'),
+      es('403','tenant_forbidden','org_id mismatch — blocked by RLS','cli'),
+      es('409','version_conflict','Stale version; pull & re-resolve','cli'),
+      es('429','rate_limited','Slow down; honour Retry-After','cli'),
+      es('503','sync_unavailable','Transient; client keeps queueing offline','err')
+    ];
+    return { groups, errors };
+  }
+}
+</script>
+</body>
+</html>
