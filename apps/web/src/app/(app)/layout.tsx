@@ -1,17 +1,34 @@
+import { redirect } from "next/navigation";
+
 import { BottomNav } from "~/components/bottom-nav";
 import { Sidebar } from "~/components/sidebar";
 import { SyncPill } from "~/components/sync-pill";
+import { UserMenu } from "~/components/auth/user-menu";
+import { getTenantSession } from "~/lib/auth/session";
 
 /**
  * The app shell: a fixed frame around a scrolling content area, so the nav and
  * sync pill survive navigation and the shell can be precached for offline use.
  *
- * Phase 3 adds the auth gate here. Phase 4 replaces this structural styling
- * with the real design-system components.
+ * Also the auth gate. Middleware already redirects anonymous requests, but this
+ * re-checks rather than trusting it: middleware is routing, not authorisation,
+ * and a matcher change should not silently expose the whole app.
  */
-export default function AppLayout({
+export default async function AppLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const session = await getTenantSession();
+
+  if (!session) {
+    redirect("/login");
+  }
+
+  // Signed in but no workspace yet — nothing here can render, because every
+  // tenant query would return empty via RLS.
+  if (!session.orgId) {
+    redirect("/welcome");
+  }
+
   return (
     <div className="flex h-dvh flex-col overflow-hidden">
       <header className="flex h-14 shrink-0 items-center justify-between gap-4 bg-band px-4 text-white">
@@ -24,7 +41,10 @@ export default function AppLayout({
           </span>
           <span className="text-body font-semibold">Vyora</span>
         </div>
-        <SyncPill />
+        <div className="flex items-center gap-3">
+          <SyncPill />
+          <UserMenu email={session.email} role={session.orgRole} />
+        </div>
       </header>
 
       <div className="flex min-h-0 flex-1">

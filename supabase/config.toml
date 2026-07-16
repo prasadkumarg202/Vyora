@@ -245,6 +245,19 @@ otp_expiry = 3600
 # sender_name = "Admin"
 
 # Uncomment to customize email template
+# The OTP flow needs the code, not a link. Supabase's stock templates send
+# {{ `{{ .ConfirmationURL }}` }}, so an unconfigured project mails
+# "Confirm your email address" and the login form waits for a code that never
+# arrives. Both of these templates matter: `confirmation` is used for an address
+# Supabase has not seen before, `magic_link` once the account exists.
+[auth.email.template.confirmation]
+subject = "Your Vyora sign-in code"
+content_path = "./supabase/templates/otp.html"
+
+[auth.email.template.magic_link]
+subject = "Your Vyora sign-in code"
+content_path = "./supabase/templates/otp.html"
+
 # [auth.email.template.invite]
 # subject = "You have been invited"
 # content_path = "./supabase/templates/invite.html"

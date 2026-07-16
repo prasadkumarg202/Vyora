@@ -11,6 +11,8 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
+    "@supabase/ssr": "^0.12.3",
+    "@supabase/supabase-js": "^2.110.6",
     "@vyora/core": "workspace:*",
     "@vyora/ui": "workspace:*",
     "next": "15.5.20",
