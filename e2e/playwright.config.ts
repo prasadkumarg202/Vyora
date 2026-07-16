@@ -1,4 +1,10 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
 import { defineConfig, devices } from "@playwright/test";
+
+const here = path.dirname(fileURLToPath(import.meta.url));
+const STORAGE_STATE = path.join(here, ".auth/tenant.json");
 
 // Deliberately not 3000: these run against a production build, and colliding
 // with a dev server on 3000 would silently test the wrong thing — a dev server
@@ -22,8 +28,29 @@ export default defineConfig({
     trace: "on-first-retry",
   },
   projects: [
-    { name: "chromium", use: { ...devices["Desktop Chrome"] } },
-    { name: "mobile", use: { ...devices["Pixel 7"] } },
+    // Signs in once; the shell suite reuses the state.
+    {
+      name: "setup",
+      testMatch: /auth\.setup\.ts/,
+    },
+    {
+      name: "chromium",
+      use: { ...devices["Desktop Chrome"], storageState: STORAGE_STATE },
+      dependencies: ["setup"],
+      testIgnore: /auth\.(setup|spec)\.ts/,
+    },
+    {
+      name: "mobile",
+      use: { ...devices["Pixel 7"], storageState: STORAGE_STATE },
+      dependencies: ["setup"],
+      testIgnore: /auth\.(setup|spec)\.ts/,
+    },
+    // Auth drives sign-in itself, so it must start signed out.
+    {
+      name: "auth",
+      use: { ...devices["Desktop Chrome"], storageState: { cookies: [], origins: [] } },
+      testMatch: /auth\.spec\.ts/,
+    },
   ],
   webServer: {
     // Serwist is disabled in dev, so the service worker only exists in a

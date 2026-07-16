@@ -25,6 +25,8 @@ apps/web/public/swe-worker-*.js
 coverage/
 playwright-report/
 test-results/
+# Saved signed-in browser state — contains real session tokens.
+e2e/.auth/
 
 # editor / os
 .DS_Store

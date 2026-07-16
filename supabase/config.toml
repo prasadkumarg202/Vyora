@@ -250,13 +250,21 @@ otp_expiry = 3600
 # "Confirm your email address" and the login form waits for a code that never
 # arrives. Both of these templates matter: `confirmation` is used for an address
 # Supabase has not seen before, `magic_link` once the account exists.
-[auth.email.template.confirmation]
-subject = "Your Vyora sign-in code"
-content_path = "./supabase/templates/otp.html"
+# BLOCKED on the free tier: "Email template modification is not available for
+# free tier projects using the default email provider. Please upgrade your plan
+# or configure a custom SMTP provider."
+#
+# Until a custom SMTP provider is configured, Supabase mails its stock
+# {{ `{{ .ConfirmationURL }}` }} magic link and the OTP code never arrives.
+# Uncomment both blocks the moment SMTP is set up — the template is already
+# written and reviewed.
+# [auth.email.template.confirmation]
+# subject = "Your Vyora sign-in code"
+# content_path = "./supabase/templates/otp.html"
 
-[auth.email.template.magic_link]
-subject = "Your Vyora sign-in code"
-content_path = "./supabase/templates/otp.html"
+# [auth.email.template.magic_link]
+# subject = "Your Vyora sign-in code"
+# content_path = "./supabase/templates/otp.html"
 
 # [auth.email.template.invite]
 # subject = "You have been invited"
@@ -269,10 +277,13 @@ content_path = "./supabase/templates/otp.html"
 # content_path = "./templates/password_changed_notification.html"
 
 [auth.sms]
-# Phone + OTP is the primary (and only) login path for the tenant app.
-enable_signup = true
+# Phone + OTP is the intended production login path, but Supabase sends no SMS
+# without a paid provider (Twilio et al.), so it stays off until one is wired
+# up. Email carries the same code through the same flow in the meantime.
+# To enable for production: configure a provider below, then flip both to true.
+enable_signup = false
 # If enabled, users need to confirm their phone number before signing in.
-enable_confirmations = true
+enable_confirmations = false
 # Template for sending OTP to users
 template = "{{ `{{ .Code }}` }} is your Vyora verification code. Valid for 5 minutes."
 # Controls the minimum amount of time that must pass before sending another sms otp.
