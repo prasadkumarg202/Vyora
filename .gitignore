@@ -11,6 +11,11 @@ out/
 # turbo
 .turbo/
 
+# Service worker — generated into public/ by Serwist on every build.
+apps/web/public/sw.js
+apps/web/public/sw.js.map
+apps/web/public/swe-worker-*.js
+
 # env — secrets live in env only, never in the repo
 .env
 .env.*

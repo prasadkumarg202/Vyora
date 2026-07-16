@@ -1,0 +1,19 @@
+{
+  "name": "@vyora/crypto",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "AES-256-GCM and key management",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "check-types": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@vyora/config": "workspace:*",
+    "eslint": "^9.17.0",
+    "typescript": "^5.7.2"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "extends": "@vyora/config/typescript/base.json",
+  "compilerOptions": {
+    // page.evaluate callbacks are typechecked as browser code, so these specs
+    // need DOM types even though the runner itself is Node.
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": ["node"],
+    "noEmit": true,
+    "declaration": false,
+    "declarationMap": false
+  },
+  "include": ["**/*.ts"],
+  "exclude": ["node_modules"]
+}
