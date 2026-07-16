@@ -6,8 +6,12 @@
 --   Database Schema       -> using (org_id = auth.org_id())
 --   Security Architecture -> using (org_id = auth.jwt()->>'org_id')
 -- The second is literally wrong in Postgres: org_id is uuid and ->> yields
--- text, so it fails with "operator does not exist: uuid = text". auth.org_id()
--- below is the first form, doing the cast in one audited place.
+-- text, so it fails with "operator does not exist: uuid = text".
+--
+-- We use the first form but in the `public` schema, not `auth`: Supabase revokes
+-- CREATE on the auth schema, so `create function auth.org_id()` fails with
+-- "permission denied for schema auth". Calling auth.uid() is still fine — that
+-- is reading, not creating. The cast lives in one audited place either way.
 --
 -- IMPORTANT: permissive policies are OR'd together. A broad `for all` policy on
 -- a table therefore *defeats* any narrower policy added beside it. Tables that
@@ -20,7 +24,7 @@
 
 -- STABLE (not VOLATILE) so the planner hoists it out of the row loop and can
 -- still use the org_id indexes. Without this, RLS costs a function call per row.
-create or replace function auth.org_id()
+create or replace function public.org_id()
 returns uuid
 language sql
 stable
@@ -34,7 +38,7 @@ as $$
   )::uuid;
 $$;
 
-create or replace function auth.user_role()
+create or replace function public.user_role()
 returns vyora_role
 language sql
 stable
@@ -48,7 +52,7 @@ as $$
   )::vyora_role;
 $$;
 
-create or replace function auth.device_id()
+create or replace function public.device_id()
 returns uuid
 language sql
 stable
@@ -62,7 +66,7 @@ as $$
   )::uuid;
 $$;
 
-comment on function auth.org_id() is
+comment on function public.org_id() is
   'The tenant key from the access token. Null when the claim is absent, which
    makes every tenant policy fail closed rather than matching a null org_id.';
 
@@ -96,8 +100,8 @@ begin
       'create policy tenant_isolation on %I
          for all
          to authenticated
-         using (org_id = auth.org_id())
-         with check (org_id = auth.org_id())',
+         using (org_id = public.org_id())
+         with check (org_id = public.org_id())',
       t
     );
   end loop;
@@ -116,7 +120,7 @@ alter table org_members force row level security;
 create policy members_read on org_members
   for select
   to authenticated
-  using (org_id = auth.org_id());
+  using (org_id = public.org_id());
 
 -- "Manage users & devices" is owner-only in the Authentication RBAC matrix.
 -- Split per command; a `for all` policy here would re-open select to everyone
@@ -124,18 +128,18 @@ create policy members_read on org_members
 create policy members_insert on org_members
   for insert
   to authenticated
-  with check (org_id = auth.org_id() and auth.user_role() = 'owner');
+  with check (org_id = public.org_id() and public.user_role() = 'owner');
 
 create policy members_update on org_members
   for update
   to authenticated
-  using (org_id = auth.org_id() and auth.user_role() = 'owner')
-  with check (org_id = auth.org_id() and auth.user_role() = 'owner');
+  using (org_id = public.org_id() and public.user_role() = 'owner')
+  with check (org_id = public.org_id() and public.user_role() = 'owner');
 
 create policy members_delete on org_members
   for delete
   to authenticated
-  using (org_id = auth.org_id() and auth.user_role() = 'owner');
+  using (org_id = public.org_id() and public.user_role() = 'owner');
 
 -- ---------------------------------------------------------------------------
 -- devices — you see your own; the owner sees and revokes all
@@ -148,27 +152,27 @@ create policy devices_read on devices
   for select
   to authenticated
   using (
-    org_id = auth.org_id()
-    and (user_id = (select auth.uid()) or auth.user_role() = 'owner')
+    org_id = public.org_id()
+    and (user_id = (select auth.uid()) or public.user_role() = 'owner')
   );
 
 -- Registering the device you are currently signing in on.
 create policy devices_insert on devices
   for insert
   to authenticated
-  with check (org_id = auth.org_id() and user_id = (select auth.uid()));
+  with check (org_id = public.org_id() and user_id = (select auth.uid()));
 
 -- Revocation. A member may revoke their own device; the owner may revoke any.
 create policy devices_update on devices
   for update
   to authenticated
   using (
-    org_id = auth.org_id()
-    and (user_id = (select auth.uid()) or auth.user_role() = 'owner')
+    org_id = public.org_id()
+    and (user_id = (select auth.uid()) or public.user_role() = 'owner')
   )
   with check (
-    org_id = auth.org_id()
-    and (user_id = (select auth.uid()) or auth.user_role() = 'owner')
+    org_id = public.org_id()
+    and (user_id = (select auth.uid()) or public.user_role() = 'owner')
   );
 
 -- No delete policy: revoking sets status, it does not erase history.
@@ -183,12 +187,12 @@ alter table audit_logs force row level security;
 create policy audit_read on audit_logs
   for select
   to authenticated
-  using (org_id = auth.org_id() and auth.user_role() in ('owner', 'accountant'));
+  using (org_id = public.org_id() and public.user_role() in ('owner', 'accountant'));
 
 create policy audit_insert on audit_logs
   for insert
   to authenticated
-  with check (org_id = auth.org_id());
+  with check (org_id = public.org_id());
 
 -- Deliberately no update or delete policy. RLS denies by default, so the log is
 -- append-only for every client. A tamper-evident log you can edit is not a log.
@@ -205,13 +209,13 @@ alter table organizations force row level security;
 create policy own_organization on organizations
   for select
   to authenticated
-  using (id = auth.org_id());
+  using (id = public.org_id());
 
 create policy owner_updates_organization on organizations
   for update
   to authenticated
-  using (id = auth.org_id() and auth.user_role() = 'owner')
-  with check (id = auth.org_id() and auth.user_role() = 'owner');
+  using (id = public.org_id() and public.user_role() = 'owner')
+  with check (id = public.org_id() and public.user_role() = 'owner');
 
 -- ---------------------------------------------------------------------------
 -- users
@@ -226,6 +230,15 @@ create policy own_profile on users
   for select
   to authenticated
   using (id = (select auth.uid()));
+
+-- The profile row is created by the app right after OTP verification, because
+-- Supabase forbids the usual `on auth.users` trigger (no CREATE on the auth
+-- schema). `with check` pins the row to the caller: you may create your own
+-- profile and nobody else's.
+create policy insert_own_profile on users
+  for insert
+  to authenticated
+  with check (id = (select auth.uid()));
 
 create policy update_own_profile on users
   for update
@@ -242,7 +255,7 @@ create policy org_colleagues on users
       select 1
       from org_members m
       where m.user_id = users.id
-        and m.org_id = auth.org_id()
+        and m.org_id = public.org_id()
     )
   );
 

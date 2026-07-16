@@ -1,5 +1,5 @@
--- Auth wiring: mirror new sign-ups into public.users, and stamp the tenant
--- claims onto every access token so RLS has something to read.
+-- Auth wiring: stamp the tenant claims onto every access token so RLS has
+-- something to read.
 --
 -- The claim set is fixed by design/Vyora Authentication.dc.html:
 --   { "sub", "org_id", "role", "device_id", "exp" }
@@ -7,35 +7,19 @@
 -- ---------------------------------------------------------------------------
 -- Profile mirror
 -- ---------------------------------------------------------------------------
-
+--
 -- Supabase Auth owns identity; public.users holds Vyora's profile fields and is
--- what the rest of the schema foreign-keys to. Without this trigger, the first
--- insert referencing users(id) after an OTP sign-up fails.
-create or replace function public.handle_new_user()
-returns trigger
-language plpgsql
-security definer
--- Empty search_path: this runs as definer, so an attacker-controlled
--- search_path could otherwise resolve `users` to a table of their choosing.
-set search_path = ''
-as $$
-begin
-  insert into public.users (id, phone, email, name)
-  values (
-    new.id,
-    new.phone,
-    new.email,
-    coalesce(new.raw_user_meta_data ->> 'name', '')
-  )
-  on conflict (id) do nothing;
-  return new;
-end;
-$$;
-
-create trigger on_auth_user_created
-  after insert on auth.users
-  for each row
-  execute function public.handle_new_user();
+-- what the rest of the schema foreign-keys to.
+--
+-- The usual pattern is a trigger on auth.users. Supabase revokes CREATE on the
+-- auth schema, so that fails with "permission denied for schema auth". Instead
+-- the app upserts its own profile row immediately after OTP verification,
+-- guarded by the insert_own_profile policy (with check id = auth.uid()), which
+-- means a client can only ever create the row for itself.
+--
+-- Trade-off worth naming: a trigger is unskippable, whereas app-side creation
+-- can be forgotten on a new sign-in path. ensureProfile() in the auth callback
+-- is the single choke point, and Phase 8 tests that a fresh sign-up lands a row.
 
 -- ---------------------------------------------------------------------------
 -- Custom access token hook
@@ -55,7 +39,7 @@ begin
   claims := event -> 'claims';
 
   -- A user with no active membership (invited but not accepted, or mid
-  -- onboarding) gets a token with null tenant claims. auth.org_id() then
+  -- onboarding) gets a token with null tenant claims. public.org_id() then
   -- returns null and every tenant policy fails closed — which is the correct
   -- outcome, not an error.
   --
