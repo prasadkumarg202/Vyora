@@ -1,0 +1,33 @@
+node_modules/
+.pnpm-store/
+
+# builds
+dist/
+build/
+.next/
+out/
+*.tsbuildinfo
+
+# turbo
+.turbo/
+
+# env — secrets live in env only, never in the repo
+.env
+.env.*
+!.env.example
+
+# test artifacts
+coverage/
+playwright-report/
+test-results/
+
+# editor / os
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# supabase local
+supabase/.branches/
+supabase/.temp/

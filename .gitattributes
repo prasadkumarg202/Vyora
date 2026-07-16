@@ -1,0 +1,11 @@
+# Normalize to LF in the repo so Windows/macOS/Linux and CI agree.
+* text=auto eol=lf
+
+# Design references are read-only — keep byte-for-byte as delivered.
+design/** -text -diff
+
+pnpm-lock.yaml -diff linguist-generated
+*.png binary
+*.jpg binary
+*.ico binary
+*.woff2 binary
