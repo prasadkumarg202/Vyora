@@ -65,4 +65,4 @@ domain.
 | Trigger on `auth.users` for profiles | app-side + `create_workspace()` | Same auth-schema lockdown. A trigger is unskippable; app code is not — hence one choke point and a test. |
 | "6-digit code" | 6 (SMS) / 8 (email) | Length is a per-project setting and differs per channel. Nothing should hardcode it. |
 | 20 tables | 21 | `devices` added: the auth spec needs revocable device-bound sessions and the schema doc omits it. |
-| Roles: owner/manager/cashier + ? | union of 6 | Authentication says *accountant*, Security says *viewer*, IA says *inventory + viewer*. Unresolved — adding a role later is one statement, removing one is a rewrite. |
+| Roles: owner/manager/cashier + ? | union of 6 — **confirmed correct** | The docs looked contradictory (Authentication lists 4, IA lists 5) because both show abridged tables. The Security Architecture's full RBAC matrix has all six: Owner, Manager, Cashier, Account(ant), Invent(ory), Viewer — exactly the `vyora_role` enum. Not a deviation after all. |
