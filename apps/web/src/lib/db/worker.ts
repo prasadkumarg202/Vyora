@@ -14,11 +14,20 @@ import { createOpfsDriver } from "@vyora/db/opfs";
  * not jank the till while a cashier is typing.
  */
 
+interface Statement {
+  sql: string;
+  params?: SqlValue[];
+}
+
 type Request =
   | { id: number; kind: "open" }
   | { id: number; kind: "all"; sql: string; params?: SqlValue[] }
   | { id: number; kind: "get"; sql: string; params?: SqlValue[] }
   | { id: number; kind: "run"; sql: string; params?: SqlValue[] }
+  // A batch of statements applied atomically. An invoice and its lines must
+  // land together or not at all — otherwise a reader can catch a half-write, or
+  // a foreign key fails because the parent is not there yet.
+  | { id: number; kind: "batch"; statements: Statement[] }
   | { id: number; kind: "close" };
 
 type Response =
@@ -60,6 +69,14 @@ self.onmessage = async (event: MessageEvent<Request>) => {
         require_().run(req.sql, req.params ?? []);
         reply({ id: req.id, ok: true, result: null });
         break;
+      case "batch": {
+        const db2 = require_();
+        db2.transaction(() => {
+          for (const s of req.statements) db2.run(s.sql, s.params ?? []);
+        });
+        reply({ id: req.id, ok: true, result: null });
+        break;
+      }
       case "close":
         db?.close();
         db = null;

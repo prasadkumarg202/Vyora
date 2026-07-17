@@ -76,6 +76,10 @@ export const get = <T>(sql: string, params: SqlValue[] = []) =>
 export const run = (sql: string, params: SqlValue[] = []) =>
   call<null>({ kind: "run", sql, params });
 
+/** Apply several statements in one transaction — all land, or none do. */
+export const batch = (statements: { sql: string; params?: SqlValue[] }[]) =>
+  call<null>({ kind: "batch", statements });
+
 export async function closeDatabase(): Promise<void> {
   if (!worker) return;
   await call({ kind: "close" });
