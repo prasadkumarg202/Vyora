@@ -143,6 +143,106 @@ export async function pendingCount(orgId: string): Promise<number> {
   return row?.n ?? 0;
 }
 
+// --- Reports -----------------------------------------------------------------
+
+export interface ReportsSummary {
+  salesPaise: number;
+  salesCount: number;
+  purchasesPaise: number;
+  purchaseCount: number;
+  /** Money actually collected in the period (payments in). */
+  collectedPaise: number;
+  /** All-time unpaid balance across invoices, regardless of period. */
+  outstandingPaise: number;
+}
+
+export interface LowStockRow {
+  id: string;
+  name: string;
+  on_hand_milli: number;
+}
+
+/**
+ * The headline numbers for a period plus the all-time outstanding.
+ *
+ * Sales and purchases sum their stored grand totals; collected sums payments in;
+ * outstanding is total minus paid across every unsettled invoice. All from data
+ * the transactional modules already wrote — Reports computes nothing new, it
+ * just totals what is there.
+ */
+export async function reportsSummary(
+  orgId: string,
+  fromDate: string,
+  toDate: string,
+): Promise<ReportsSummary> {
+  await ready();
+
+  const sales = await get<{ total: number; n: number }>(
+    `SELECT COALESCE(SUM(total_paise),0) AS total, COUNT(*) AS n
+     FROM invoices
+     WHERE org_id = ? AND deleted_at IS NULL AND date >= ? AND date <= ?`,
+    [orgId, fromDate, toDate],
+  );
+  const purchases = await get<{ total: number; n: number }>(
+    `SELECT COALESCE(SUM(total_paise),0) AS total, COUNT(*) AS n
+     FROM purchases
+     WHERE org_id = ? AND deleted_at IS NULL AND date >= ? AND date <= ?`,
+    [orgId, fromDate, toDate],
+  );
+  const collected = await get<{ total: number }>(
+    `SELECT COALESCE(SUM(amount_paise),0) AS total
+     FROM payments
+     WHERE org_id = ? AND deleted_at IS NULL AND direction = 'in'
+       AND date >= ? AND date <= ?`,
+    [orgId, fromDate, toDate],
+  );
+  const outstanding = await get<{ total: number }>(
+    `SELECT COALESCE(SUM(total_paise - amount_paid_paise),0) AS total
+     FROM invoices
+     WHERE org_id = ? AND deleted_at IS NULL AND amount_paid_paise < total_paise`,
+    [orgId],
+  );
+
+  return {
+    salesPaise: sales?.total ?? 0,
+    salesCount: sales?.n ?? 0,
+    purchasesPaise: purchases?.total ?? 0,
+    purchaseCount: purchases?.n ?? 0,
+    collectedPaise: collected?.total ?? 0,
+    outstandingPaise: outstanding?.total ?? 0,
+  };
+}
+
+/**
+ * Products at or below a stock threshold, lowest first.
+ *
+ * On-hand is summed from the movement ledger, same as Inventory, so a shop that
+ * bought stock in Purchase and never sold it sees the true level here — the two
+ * screens read the same source.
+ */
+export function lowStock(
+  orgId: string,
+  thresholdMilli: number,
+  limit = 20,
+): Promise<LowStockRow[]> {
+  return ready().then(() =>
+    all<LowStockRow>(
+      `SELECT p.id, p.name,
+              COALESCE((
+                SELECT SUM(m.qty_milli) FROM stock_movements m
+                WHERE m.product_id = p.id AND m.deleted_at IS NULL
+              ), 0) AS on_hand_milli
+       FROM products p
+       WHERE p.org_id = ? AND p.deleted_at IS NULL
+       GROUP BY p.id
+       HAVING on_hand_milli <= ?
+       ORDER BY on_hand_milli ASC
+       LIMIT ?`,
+      [orgId, thresholdMilli, limit],
+    ),
+  );
+}
+
 // --- GST summary -------------------------------------------------------------
 
 export interface GstSummary {
