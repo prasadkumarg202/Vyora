@@ -5,15 +5,27 @@
   "type": "module",
   "description": "SQLite WASM schema and migrations",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./opfs": "./src/drivers/opfs.ts",
+    "./node": "./src/drivers/node.ts"
   },
   "scripts": {
     "lint": "eslint .",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage"
   },
   "devDependencies": {
+    "@types/node": "^22.20.1",
+    "@vitest/coverage-v8": "^4.1.10",
     "@vyora/config": "workspace:*",
     "eslint": "^9.17.0",
-    "typescript": "^5.7.2"
+    "fake-indexeddb": "^6.2.5",
+    "typescript": "^5.7.2",
+    "vitest": "^4.1.10"
+  },
+  "dependencies": {
+    "@sqlite.org/sqlite-wasm": "3.53.0-build1",
+    "idb": "^8.0.3"
   }
 }
