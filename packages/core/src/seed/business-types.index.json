@@ -1,0 +1,128 @@
+[
+  {
+    "id": "pharmacy",
+    "label": "Pharmacy",
+    "sector": "Chemist & medical",
+    "letter": "Rx",
+    "hue": 150
+  },
+  {
+    "id": "medical",
+    "label": "Medical Store",
+    "sector": "Retail chemist",
+    "letter": "Ms",
+    "hue": 158
+  },
+  {
+    "id": "grocery",
+    "label": "Grocery",
+    "sector": "Daily needs",
+    "letter": "Gr",
+    "hue": 130
+  },
+  {
+    "id": "kirana",
+    "label": "Kirana",
+    "sector": "Neighbourhood store",
+    "letter": "Kr",
+    "hue": 120
+  },
+  {
+    "id": "electronics",
+    "label": "Electronics",
+    "sector": "Appliances & gadgets",
+    "letter": "El",
+    "hue": 245
+  },
+  {
+    "id": "mobile",
+    "label": "Mobile Shop",
+    "sector": "Phones & accessories",
+    "letter": "Mb",
+    "hue": 265
+  },
+  {
+    "id": "restaurant",
+    "label": "Restaurant",
+    "sector": "Dine-in & delivery",
+    "letter": "Rt",
+    "hue": 35
+  },
+  {
+    "id": "hotel",
+    "label": "Hotel",
+    "sector": "Rooms & hospitality",
+    "letter": "Ht",
+    "hue": 210
+  },
+  {
+    "id": "catering",
+    "label": "Catering",
+    "sector": "Events & bulk food",
+    "letter": "Ct",
+    "hue": 50
+  },
+  {
+    "id": "manufacturing",
+    "label": "Manufacturing",
+    "sector": "Production & assembly",
+    "letter": "Mf",
+    "hue": 200
+  },
+  {
+    "id": "automobile",
+    "label": "Automobile",
+    "sector": "Vehicles & service",
+    "letter": "Au",
+    "hue": 20
+  },
+  {
+    "id": "jewellery",
+    "label": "Jewellery",
+    "sector": "Gold & silver",
+    "letter": "Jw",
+    "hue": 85
+  },
+  {
+    "id": "garments",
+    "label": "Garments",
+    "sector": "Apparel & textile",
+    "letter": "Ga",
+    "hue": 350
+  },
+  {
+    "id": "furniture",
+    "label": "Furniture",
+    "sector": "Home & office",
+    "letter": "Fu",
+    "hue": 60
+  },
+  {
+    "id": "hardware",
+    "label": "Hardware",
+    "sector": "Tools & building",
+    "letter": "Hw",
+    "hue": 215
+  },
+  {
+    "id": "wholesale",
+    "label": "Wholesale",
+    "sector": "Bulk B2B trade",
+    "letter": "Wh",
+    "hue": 190
+  },
+  {
+    "id": "retail",
+    "label": "Retail",
+    "sector": "General store / POS",
+    "letter": "Rl",
+    "hue": 280
+  },
+  {
+    "id": "distributor",
+    "label": "Distributor",
+    "sector": "Supply & route sales",
+    "letter": "Ds",
+    "hue": 170
+  }
+]
