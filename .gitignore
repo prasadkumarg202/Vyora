@@ -11,6 +11,10 @@ out/
 # turbo
 .turbo/
 
+# Copied from node_modules by prebuild; never edit or commit these. A vendored
+# copy would silently drift from the version in package.json.
+apps/web/public/sqlite/
+
 # Service worker — generated into public/ by Serwist on every build.
 apps/web/public/sw.js
 apps/web/public/sw.js.map

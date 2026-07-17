@@ -8,12 +8,19 @@
     "build": "next build",
     "start": "next start --port 3000",
     "lint": "eslint .",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "copy-sqlite": "node scripts/copy-sqlite-wasm.mjs",
+    "prebuild": "node scripts/copy-sqlite-wasm.mjs",
+    "predev": "node scripts/copy-sqlite-wasm.mjs"
   },
   "dependencies": {
+    "@sqlite.org/sqlite-wasm": "3.53.0-build1",
     "@supabase/ssr": "^0.12.3",
     "@supabase/supabase-js": "^2.110.6",
     "@vyora/core": "workspace:*",
+    "@vyora/crypto": "workspace:*",
+    "@vyora/db": "workspace:*",
+    "@vyora/sync": "workspace:*",
     "@vyora/ui": "workspace:*",
     "lucide-react": "^1.24.0",
     "next": "15.5.20",

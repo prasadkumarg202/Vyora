@@ -32,14 +32,23 @@ interface OoDb {
 
 let sqlitePromise: Promise<SqliteApi> | null = null;
 
+/**
+ * Where the sqlite-wasm assets are served from, unbundled.
+ *
+ * They are copied to public/sqlite/ and loaded from that URL rather than
+ * imported through the bundler. This is not a preference — it is required.
+ * sqlite-wasm's OPFS VFS spawns its own proxy worker as
+ * `sqlite3-opfs-async-proxy.js?vfs=opfs`, and webpack rewrites that worker URL
+ * and drops the query string, so the proxy boots without its argument and
+ * throws "Expecting vfs=opfs|opfs-wl URL argument for this worker". Loading
+ * from a static path keeps sqlite-wasm's own relative resolution intact.
+ */
+const SQLITE_URL = "/sqlite/index.mjs";
+
 async function loadSqlite(): Promise<SqliteApi> {
-  // Dynamic import: keeps the ~1MB wasm out of the main bundle and off the
-  // critical path for users who never go offline in a given session.
-  sqlitePromise ??= import("@sqlite.org/sqlite-wasm").then((m) =>
-    (m.default as unknown as (opts?: unknown) => Promise<SqliteApi>)({
-      print: () => {},
-      printErr: () => {},
-    }),
+  sqlitePromise ??= import(/* webpackIgnore: true */ SQLITE_URL).then(
+    (m: { default: (opts?: unknown) => Promise<SqliteApi> }) =>
+      m.default({ print: () => {}, printErr: () => {} }),
   );
   return sqlitePromise;
 }

@@ -66,6 +66,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@sqlite.org/sqlite-wasm':
+        specifier: 3.53.0-build1
+        version: 3.53.0-build1
       '@supabase/ssr':
         specifier: ^0.12.3
         version: 0.12.3(@supabase/supabase-js@2.110.6)
@@ -75,6 +78,15 @@ importers:
       '@vyora/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@vyora/crypto':
+        specifier: workspace:*
+        version: link:../../packages/crypto
+      '@vyora/db':
+        specifier: workspace:*
+        version: link:../../packages/db
+      '@vyora/sync':
+        specifier: workspace:*
+        version: link:../../packages/sync
       '@vyora/ui':
         specifier: workspace:*
         version: link:../../packages/ui
