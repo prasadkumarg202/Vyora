@@ -224,8 +224,32 @@ CREATE INDEX IF NOT EXISTS invoices_dirty_idx   ON invoices(dirty) WHERE dirty =
 CREATE INDEX IF NOT EXISTS customers_dirty_idx  ON customers(dirty) WHERE dirty = 1;
 `;
 
+/**
+ * Migration 2 — marketing campaigns.
+ *
+ * Added after v1 shipped, so it lives in its own migration rather than editing
+ * MIGRATION_1: a device already at v1 runs only this, a fresh install runs both.
+ * Segment and stats are jsonb-as-text, like custom_fields elsewhere.
+ */
+const MIGRATION_2 = `
+CREATE TABLE IF NOT EXISTS marketing_campaigns (
+  id            TEXT PRIMARY KEY,
+  name          TEXT NOT NULL,
+  channel       TEXT NOT NULL,
+  message       TEXT,
+  segment       TEXT NOT NULL DEFAULT '{}',
+  status        TEXT NOT NULL DEFAULT 'draft',
+  scheduled_at  TEXT,
+  stats         TEXT NOT NULL DEFAULT '{}',
+  created_by    TEXT,
+  ${SYNC_COLUMNS}
+);
+
+CREATE INDEX IF NOT EXISTS campaigns_org_idx ON marketing_campaigns(org_id, deleted_at);
+`;
+
 /** Append-only. Index = version - 1. */
-export const MIGRATIONS: readonly string[] = [MIGRATION_1];
+export const MIGRATIONS: readonly string[] = [MIGRATION_1, MIGRATION_2];
 
 /** Tables that sync. sync_state is local-only and deliberately absent. */
 export const SYNCED_TABLES = [
@@ -241,6 +265,7 @@ export const SYNCED_TABLES = [
   "purchases",
   "purchase_items",
   "expenses",
+  "marketing_campaigns",
 ] as const;
 
 export type SyncedTable = (typeof SYNCED_TABLES)[number];
