@@ -143,6 +143,72 @@ export async function pendingCount(orgId: string): Promise<number> {
   return row?.n ?? 0;
 }
 
+// --- GST summary -------------------------------------------------------------
+
+export interface GstSummary {
+  /** Tax collected on sales in the period (output GST, from GSTR-1 supplies). */
+  outputTaxPaise: number;
+  outputTaxablePaise: number;
+  invoiceCount: number;
+  /** Tax paid on purchases in the period (input tax credit). */
+  inputTaxPaise: number;
+  inputTaxablePaise: number;
+  purchaseCount: number;
+  /** Output minus input — what is actually payable (or a credit, if negative). */
+  netPayablePaise: number;
+}
+
+/**
+ * The monthly GST position: output tax minus input credit.
+ *
+ * This is the shape of a GSTR-3B summary — the number a shop pays each month —
+ * built entirely from tax already computed by the engine and stored on each
+ * invoice and purchase. Nothing is recomputed here; a total shown is a total
+ * that was money-exact when the document was saved.
+ *
+ * Dates are inclusive `YYYY-MM-DD` bounds, matching the stored date column.
+ */
+export async function gstSummary(
+  orgId: string,
+  fromDate: string,
+  toDate: string,
+): Promise<GstSummary> {
+  await ready();
+
+  const out = await get<{ tax: number; taxable: number; n: number }>(
+    `SELECT COALESCE(SUM(tax_paise),0) AS tax,
+            COALESCE(SUM(subtotal_paise),0) AS taxable,
+            COUNT(*) AS n
+     FROM invoices
+     WHERE org_id = ? AND deleted_at IS NULL
+       AND date >= ? AND date <= ?`,
+    [orgId, fromDate, toDate],
+  );
+
+  const inp = await get<{ tax: number; taxable: number; n: number }>(
+    `SELECT COALESCE(SUM(tax_paise),0) AS tax,
+            COALESCE(SUM(subtotal_paise),0) AS taxable,
+            COUNT(*) AS n
+     FROM purchases
+     WHERE org_id = ? AND deleted_at IS NULL
+       AND date >= ? AND date <= ?`,
+    [orgId, fromDate, toDate],
+  );
+
+  const outputTaxPaise = out?.tax ?? 0;
+  const inputTaxPaise = inp?.tax ?? 0;
+
+  return {
+    outputTaxPaise,
+    outputTaxablePaise: out?.taxable ?? 0,
+    invoiceCount: out?.n ?? 0,
+    inputTaxPaise,
+    inputTaxablePaise: inp?.taxable ?? 0,
+    purchaseCount: inp?.n ?? 0,
+    netPayablePaise: outputTaxPaise - inputTaxPaise,
+  };
+}
+
 // --- Payments ----------------------------------------------------------------
 
 export interface OutstandingInvoiceRow {
