@@ -1,8 +1,13 @@
-import { ModulePlaceholder } from "~/components/module-placeholder";
-import { moduleMetadata } from "~/lib/module-metadata";
+import { redirect } from "next/navigation";
 
-export const metadata = moduleMetadata("/crm");
+import { CrmModule } from "~/components/crm/crm-module";
+import { loadTenantContext } from "~/lib/tenant-config";
 
-export default function Page() {
-  return <ModulePlaceholder href="/crm" />;
+export const metadata = { title: "Customers" };
+
+export default async function CrmPage() {
+  const ctx = await loadTenantContext();
+  if (!ctx) redirect("/welcome");
+
+  return <CrmModule orgId={ctx.orgId} />;
 }

@@ -1,8 +1,13 @@
-import { ModulePlaceholder } from "~/components/module-placeholder";
-import { moduleMetadata } from "~/lib/module-metadata";
+import { redirect } from "next/navigation";
 
-export const metadata = moduleMetadata("/marketing");
+import { MarketingModule } from "~/components/marketing/marketing-module";
+import { loadTenantContext } from "~/lib/tenant-config";
 
-export default function Page() {
-  return <ModulePlaceholder href="/marketing" />;
+export const metadata = { title: "Marketing" };
+
+export default async function MarketingPage() {
+  const ctx = await loadTenantContext();
+  if (!ctx) redirect("/welcome");
+
+  return <MarketingModule orgId={ctx.orgId} userId={ctx.userId} />;
 }

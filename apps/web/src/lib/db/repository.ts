@@ -419,6 +419,155 @@ export function listPayments(orgId: string, limit = 50): Promise<PaymentRow[]> {
   );
 }
 
+// --- Marketing ---------------------------------------------------------------
+
+export interface CampaignRow {
+  id: string;
+  name: string;
+  channel: string;
+  message: string | null;
+  status: string;
+  updated_at: string;
+  dirty: number;
+}
+
+/**
+ * Persist a marketing campaign as a draft, marked dirty.
+ *
+ * Like every local write, dirty = 1 and version = 0 say "created on this device,
+ * not yet acknowledged by the server" — the sync engine keys off exactly those
+ * columns. No message is actually delivered here; this is a local record only.
+ */
+export async function saveCampaign(args: {
+  id: string;
+  orgId: string;
+  name: string;
+  channel: string;
+  message?: string;
+  createdBy?: string;
+}): Promise<void> {
+  await ready();
+  const now = new Date().toISOString();
+
+  await batch([
+    {
+      sql: `INSERT INTO marketing_campaigns
+              (id, name, channel, message, status, created_by, org_id, updated_at, version, dirty)
+            VALUES (?,?,?,?,?,?,?,?,0,1)`,
+      params: [
+        args.id,
+        args.name,
+        args.channel,
+        args.message ?? null,
+        "draft",
+        args.createdBy ?? null,
+        args.orgId,
+        now,
+      ] as (string | number | null)[],
+    },
+  ]);
+}
+
+/** Campaigns for an org, newest first, tombstones hidden. */
+export function listCampaigns(orgId: string, limit = 50): Promise<CampaignRow[]> {
+  return ready().then(() =>
+    all<CampaignRow>(
+      `SELECT id, name, channel, message, status, updated_at, dirty
+       FROM marketing_campaigns
+       WHERE org_id = ? AND deleted_at IS NULL
+       ORDER BY updated_at DESC
+       LIMIT ?`,
+      [orgId, limit],
+    ),
+  );
+}
+
+/**
+ * Flip a draft campaign to 'sent' — a local update only, no message is sent.
+ *
+ * Sets dirty = 1 and bumps updated_at, scoped by org_id and id, so the sync
+ * engine picks up the change like recordInvoicePayment's UPDATE.
+ */
+export async function markCampaignSent(args: {
+  orgId: string;
+  campaignId: string;
+}): Promise<void> {
+  await ready();
+  const now = new Date().toISOString();
+
+  await batch([
+    {
+      sql: `UPDATE marketing_campaigns
+            SET status = 'sent',
+                dirty = 1,
+                updated_at = ?
+            WHERE id = ? AND org_id = ?`,
+      params: [now, args.campaignId, args.orgId],
+    },
+  ]);
+}
+
+// --- Customers ---------------------------------------------------------------
+
+export interface CustomerRow {
+  id: string;
+  name: string;
+  phone: string | null;
+  gstin: string | null;
+  updated_at: string;
+  version: number;
+  dirty: number;
+}
+
+/**
+ * Persist a customer, marked dirty.
+ *
+ * dirty = 1 and version = 0 say "created locally, not yet acknowledged by the
+ * server", exactly like every other local write; balance_paise, loyalty_points
+ * and custom_fields keep their schema defaults. Optional phone/gstin are stored
+ * as NULL when blank rather than an empty string.
+ */
+export async function saveCustomer(customer: {
+  id: string;
+  orgId: string;
+  name: string;
+  phone?: string;
+  gstin?: string;
+}): Promise<void> {
+  await ready();
+  const now = new Date().toISOString();
+
+  await batch([
+    {
+      sql: `INSERT INTO customers
+              (id, name, phone, gstin, org_id, updated_at, version, dirty)
+            VALUES (?,?,?,?,?,?,0,1)`,
+      params: [
+        customer.id,
+        customer.name,
+        customer.phone ?? null,
+        customer.gstin ?? null,
+        customer.orgId,
+        now,
+      ] as (string | number | null)[],
+    },
+  ]);
+}
+
+/** Customers for an org, newest first, tombstones hidden. */
+export function listCustomers(orgId: string, limit = 100): Promise<CustomerRow[]> {
+  return ready().then(() =>
+    all<CustomerRow>(
+      `SELECT id, name, phone, gstin, updated_at, version, dirty
+       FROM customers
+       WHERE org_id = ? AND deleted_at IS NULL
+       ORDER BY updated_at DESC
+       LIMIT ?`,
+      [orgId, limit],
+    ),
+  );
+}
+
 // --- Catalog & stock ---------------------------------------------------------
 
 export interface ProductRow {

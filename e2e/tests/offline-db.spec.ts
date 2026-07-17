@@ -53,7 +53,8 @@ test.describe("on-device database", () => {
     await expect(status).toHaveText("Ready", { timeout: 30_000 });
     await expect(page.getByTestId("offline-error")).toHaveCount(0);
     // Schema v1 means the migration actually ran against a real database.
-    await expect(page.getByTestId("schema-version")).toHaveText("1");
+    // Schema is at v2 since the marketing_campaigns migration.
+    await expect(page.getByTestId("schema-version")).toHaveText("2");
   });
 
   test("writes survive a full reload — the 'never loses data' promise", async ({ page }) => {
