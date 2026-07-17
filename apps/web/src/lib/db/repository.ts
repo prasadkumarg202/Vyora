@@ -143,6 +143,116 @@ export async function pendingCount(orgId: string): Promise<number> {
   return row?.n ?? 0;
 }
 
+// --- Payments ----------------------------------------------------------------
+
+export interface OutstandingInvoiceRow {
+  id: string;
+  number: string | null;
+  date: string;
+  total_paise: number;
+  amount_paid_paise: number;
+  status: string;
+}
+
+export interface PaymentRow {
+  id: string;
+  direction: string;
+  invoice_id: string | null;
+  amount_paise: number;
+  method: string;
+  date: string;
+  dirty: number;
+}
+
+/**
+ * Record a customer payment against an invoice.
+ *
+ * Two writes, one transaction: the payment row, and the invoice's running
+ * amount_paid plus a derived status. Deriving the status here (not trusting a
+ * client to send it) keeps "paid" honest: it is paid only when the money adds
+ * up to the total.
+ *
+ * amount_paid is bumped by `amount_paid_paise + ?` in SQL rather than read-then-
+ * written in JS, so two payments recorded close together cannot lose one to a
+ * stale read.
+ */
+export async function recordInvoicePayment(args: {
+  orgId: string;
+  invoiceId: string;
+  amountPaise: Paise;
+  method: string;
+  createdBy?: string;
+}): Promise<void> {
+  await ready();
+  const now = new Date().toISOString();
+
+  await batch([
+    {
+      sql: `INSERT INTO payments
+              (id, direction, party_type, invoice_id, amount_paise, method, date,
+               created_by, org_id, updated_at, dirty)
+            VALUES (?,?,?,?,?,?,?,?,?,?,1)`,
+      params: [
+        crypto.randomUUID(),
+        "in",
+        "customer",
+        args.invoiceId,
+        args.amountPaise,
+        args.method,
+        now.slice(0, 10),
+        args.createdBy ?? null,
+        args.orgId,
+        now,
+      ] as (string | number | null)[],
+    },
+    {
+      // Status is recomputed from the numbers, not passed in: paid when the
+      // running total covers the invoice, else partial.
+      sql: `UPDATE invoices
+            SET amount_paid_paise = amount_paid_paise + ?,
+                status = CASE
+                  WHEN amount_paid_paise + ? >= total_paise THEN 'paid'
+                  ELSE 'partial'
+                END,
+                dirty = 1,
+                updated_at = ?
+            WHERE id = ? AND org_id = ?`,
+      params: [args.amountPaise, args.amountPaise, now, args.invoiceId, args.orgId],
+    },
+  ]);
+}
+
+/** Invoices that are not fully paid, oldest first (chase the oldest debt). */
+export function listOutstandingInvoices(
+  orgId: string,
+  limit = 50,
+): Promise<OutstandingInvoiceRow[]> {
+  return ready().then(() =>
+    all<OutstandingInvoiceRow>(
+      `SELECT id, number, date, total_paise, amount_paid_paise, status
+       FROM invoices
+       WHERE org_id = ? AND deleted_at IS NULL
+         AND amount_paid_paise < total_paise
+       ORDER BY date ASC, updated_at ASC
+       LIMIT ?`,
+      [orgId, limit],
+    ),
+  );
+}
+
+export function listPayments(orgId: string, limit = 50): Promise<PaymentRow[]> {
+  return ready().then(() =>
+    all<PaymentRow>(
+      `SELECT id, direction, invoice_id, amount_paise, method, date, dirty
+       FROM payments
+       WHERE org_id = ? AND deleted_at IS NULL
+       ORDER BY date DESC, updated_at DESC
+       LIMIT ?`,
+      [orgId, limit],
+    ),
+  );
+}
+
 // --- Catalog & stock ---------------------------------------------------------
 
 export interface ProductRow {

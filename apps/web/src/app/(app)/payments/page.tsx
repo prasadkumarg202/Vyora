@@ -1,8 +1,13 @@
-import { ModulePlaceholder } from "~/components/module-placeholder";
-import { moduleMetadata } from "~/lib/module-metadata";
+import { redirect } from "next/navigation";
 
-export const metadata = moduleMetadata("/payments");
+import { PaymentsModule } from "~/components/payments/payments-module";
+import { loadTenantContext } from "~/lib/tenant-config";
 
-export default function Page() {
-  return <ModulePlaceholder href="/payments" />;
+export const metadata = { title: "Payments" };
+
+export default async function PaymentsPage() {
+  const ctx = await loadTenantContext();
+  if (!ctx) redirect("/welcome");
+
+  return <PaymentsModule orgId={ctx.orgId} userId={ctx.userId} />;
 }
