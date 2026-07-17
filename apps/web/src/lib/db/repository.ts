@@ -143,6 +143,133 @@ export async function pendingCount(orgId: string): Promise<number> {
   return row?.n ?? 0;
 }
 
+// --- Catalog & stock ---------------------------------------------------------
+
+export interface ProductRow {
+  id: string;
+  name: string;
+  sku: string | null;
+  price_paise: number | null;
+  tax_bps: number | null;
+  hsn: string | null;
+  /** On-hand, in milli-units, summed from stock_movements (the CRDT counter). */
+  on_hand_milli: number;
+  dirty: number;
+}
+
+export interface NewProduct {
+  id: string;
+  orgId: string;
+  name: string;
+  sku?: string;
+  pricePaise: Paise;
+  taxBps: number;
+  hsn?: string;
+  /** Opening stock in milli-units; recorded as the first movement, not a column. */
+  openingMilli: number;
+}
+
+/**
+ * Create a product and, if it opens with stock, its first movement — atomically.
+ *
+ * Stock is never a column on the product: it is the running sum of
+ * stock_movements, so that concurrent sales on two devices both count (the CRDT
+ * rule). Opening stock is just the first such movement.
+ */
+export async function saveProduct(product: NewProduct): Promise<void> {
+  await ready();
+  const now = new Date().toISOString();
+
+  const statements = [
+    {
+      sql: `INSERT INTO products
+              (id, name, sku, price_paise, tax_bps, hsn, org_id, updated_at, version, dirty)
+            VALUES (?,?,?,?,?,?,?,?,0,1)`,
+      params: [
+        product.id,
+        product.name,
+        product.sku ?? null,
+        product.pricePaise,
+        product.taxBps,
+        product.hsn ?? null,
+        product.orgId,
+        now,
+      ] as (string | number | null)[],
+    },
+  ];
+
+  if (product.openingMilli !== 0) {
+    statements.push({
+      sql: `INSERT INTO stock_movements
+              (id, product_id, type, qty_milli, ref_type, created_at, org_id, updated_at, dirty)
+            VALUES (?,?,?,?,?,?,?,?,1)`,
+      params: [
+        crypto.randomUUID(),
+        product.id,
+        "opening",
+        product.openingMilli,
+        "opening",
+        now,
+        product.orgId,
+        now,
+      ],
+    });
+  }
+
+  await batch(statements);
+}
+
+/** Record a stock movement — a signed delta, per the CRDT-counter rule. */
+export async function recordMovement(args: {
+  orgId: string;
+  productId: string;
+  type: string;
+  qtyMilli: number;
+}): Promise<void> {
+  await ready();
+  const now = new Date().toISOString();
+  await batch([
+    {
+      sql: `INSERT INTO stock_movements
+              (id, product_id, type, qty_milli, created_at, org_id, updated_at, dirty)
+            VALUES (?,?,?,?,?,?,?,1)`,
+      params: [
+        crypto.randomUUID(),
+        args.productId,
+        args.type,
+        args.qtyMilli,
+        now,
+        args.orgId,
+        now,
+      ],
+    },
+  ]);
+}
+
+/**
+ * Products with their on-hand level.
+ *
+ * The level is SUM(stock_movements.qty_milli), not a stored count — so it is
+ * always the truth even after two devices sold concurrently and their deltas
+ * merged.
+ */
+export function listProducts(orgId: string, limit = 100): Promise<ProductRow[]> {
+  return ready().then(() =>
+    all<ProductRow>(
+      `SELECT p.id, p.name, p.sku, p.price_paise, p.tax_bps, p.hsn, p.dirty,
+              COALESCE((
+                SELECT SUM(m.qty_milli) FROM stock_movements m
+                WHERE m.product_id = p.id AND m.deleted_at IS NULL
+              ), 0) AS on_hand_milli
+       FROM products p
+       WHERE p.org_id = ? AND p.deleted_at IS NULL
+       ORDER BY p.name
+       LIMIT ?`,
+      [orgId, limit],
+    ),
+  );
+}
+
 /**
  * The next invoice number for an org.
  *

@@ -1,8 +1,13 @@
-import { ModulePlaceholder } from "~/components/module-placeholder";
-import { moduleMetadata } from "~/lib/module-metadata";
+import { redirect } from "next/navigation";
 
-export const metadata = moduleMetadata("/inventory");
+import { InventoryModule } from "~/components/inventory/inventory-module";
+import { loadTenantContext } from "~/lib/tenant-config";
 
-export default function Page() {
-  return <ModulePlaceholder href="/inventory" />;
+export const metadata = { title: "Inventory" };
+
+export default async function InventoryPage() {
+  const ctx = await loadTenantContext();
+  if (!ctx) redirect("/welcome");
+
+  return <InventoryModule orgId={ctx.orgId} config={ctx.config} />;
 }
