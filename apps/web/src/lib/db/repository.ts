@@ -219,6 +219,146 @@ export async function saveProduct(product: NewProduct): Promise<void> {
   await batch(statements);
 }
 
+// --- Purchases ---------------------------------------------------------------
+
+export interface PurchaseRow {
+  id: string;
+  number: string | null;
+  date: string;
+  status: string;
+  subtotal_paise: number;
+  tax_paise: number;
+  total_paise: number;
+  updated_at: string;
+  dirty: number;
+}
+
+export interface PurchaseItemInput {
+  /** When set, receiving this line adds to that product's stock. */
+  productId?: string;
+  description: string;
+  qtyMilli: number;
+  ratePaise: Paise;
+  taxBps: number;
+  amountPaise: Paise;
+}
+
+export interface NewPurchase {
+  id: string;
+  orgId: string;
+  number: string;
+  date: string;
+  supplierId?: string;
+  subtotalPaise: Paise;
+  taxPaise: Paise;
+  totalPaise: Paise;
+  items: PurchaseItemInput[];
+}
+
+/**
+ * Persist a purchase, its lines, and the stock it brings in — atomically.
+ *
+ * Each line tied to a product records a positive stock movement (ref_type
+ * 'purchase'), so receiving goods flows into the very same movement ledger the
+ * Inventory screen sums. Buying stock and selling stock are just opposite signs
+ * on the same counter, which is why the two modules never disagree.
+ *
+ * Order matters under foreign keys: the purchase first (its items reference
+ * it), then items and movements (which reference products that already exist).
+ */
+export async function savePurchase(purchase: NewPurchase): Promise<void> {
+  await ready();
+  const now = new Date().toISOString();
+
+  const statements: { sql: string; params: (string | number | null)[] }[] = [
+    {
+      sql: `INSERT INTO purchases
+              (id, number, supplier_id, date, status, subtotal_paise, tax_paise,
+               total_paise, org_id, updated_at, version, dirty)
+            VALUES (?,?,?,?,?,?,?,?,?,?,0,1)`,
+      params: [
+        purchase.id,
+        purchase.number,
+        purchase.supplierId ?? null,
+        purchase.date,
+        "received",
+        purchase.subtotalPaise,
+        purchase.taxPaise,
+        purchase.totalPaise,
+        purchase.orgId,
+        now,
+      ],
+    },
+  ];
+
+  for (const item of purchase.items) {
+    const itemId = crypto.randomUUID();
+    statements.push({
+      sql: `INSERT INTO purchase_items
+              (id, purchase_id, product_id, qty_milli, rate_paise, tax_bps,
+               amount_paise, org_id, updated_at, dirty)
+            VALUES (?,?,?,?,?,?,?,?,?,1)`,
+      params: [
+        itemId,
+        purchase.id,
+        item.productId ?? null,
+        item.qtyMilli,
+        item.ratePaise,
+        item.taxBps,
+        item.amountPaise,
+        purchase.orgId,
+        now,
+      ],
+    });
+
+    if (item.productId) {
+      statements.push({
+        sql: `INSERT INTO stock_movements
+                (id, product_id, type, qty_milli, ref_type, ref_id, created_at,
+                 org_id, updated_at, dirty)
+              VALUES (?,?,?,?,?,?,?,?,?,1)`,
+        params: [
+          crypto.randomUUID(),
+          item.productId,
+          "purchase",
+          item.qtyMilli, // positive: stock in
+          "purchase",
+          purchase.id,
+          now,
+          purchase.orgId,
+          now,
+        ],
+      });
+    }
+  }
+
+  await batch(statements);
+}
+
+/** Recent purchases for an org, newest first. */
+export function listPurchases(orgId: string, limit = 50): Promise<PurchaseRow[]> {
+  return ready().then(() =>
+    all<PurchaseRow>(
+      `SELECT id, number, date, status, subtotal_paise, tax_paise, total_paise,
+              updated_at, dirty
+       FROM purchases
+       WHERE org_id = ? AND deleted_at IS NULL
+       ORDER BY date DESC, updated_at DESC
+       LIMIT ?`,
+      [orgId, limit],
+    ),
+  );
+}
+
+export async function nextPurchaseNumber(orgId: string): Promise<string> {
+  await ready();
+  const row = await get<{ n: number }>(
+    `SELECT COUNT(*) AS n FROM purchases WHERE org_id = ?`,
+    [orgId],
+  );
+  return `PUR-${String((row?.n ?? 0) + 1).padStart(4, "0")}`;
+}
+
 /** Record a stock movement — a signed delta, per the CRDT-counter rule. */
 export async function recordMovement(args: {
   orgId: string;
