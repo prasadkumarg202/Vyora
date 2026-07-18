@@ -234,37 +234,33 @@ otp_length = 6
 # Number of seconds before the email OTP expires (defaults to 1 hour).
 otp_expiry = 3600
 
-# Use a production-ready SMTP server
-# [auth.email.smtp]
-# enabled = true
-# host = "smtp.sendgrid.net"
-# port = 587
-# user = "apikey"
-# pass = "env(SENDGRID_API_KEY)"
-# admin_email = "admin@email.com"
-# sender_name = "Admin"
-
-# Uncomment to customize email template
-# The OTP flow needs the code, not a link. Supabase's stock templates send
-# {{ `{{ .ConfirmationURL }}` }}, so an unconfigured project mails
-# "Confirm your email address" and the login form waits for a code that never
-# arrives. Both of these templates matter: `confirmation` is used for an address
-# Supabase has not seen before, `magic_link` once the account exists.
-# BLOCKED on the free tier: "Email template modification is not available for
-# free tier projects using the default email provider. Please upgrade your plan
-# or configure a custom SMTP provider."
+# Deliberately NOT configuring [auth.email.smtp] here. This file drives the
+# LOCAL stack, where [local_smtp] above catches every message in Inbucket —
+# which is what you want in development. Pointing local at the real relay would
+# send real mail and burn the provider's daily quota on test sign-ins.
 #
-# Until a custom SMTP provider is configured, Supabase mails its stock
-# {{ `{{ .ConfirmationURL }}` }} magic link and the OTP code never arrives.
-# Uncomment both blocks the moment SMTP is set up — the template is already
-# written and reviewed.
-# [auth.email.template.confirmation]
-# subject = "Your Vyora sign-in code"
-# content_path = "./supabase/templates/otp.html"
+# The hosted project is a separate setting, configured in the dashboard under
+# Project Settings -> Authentication -> SMTP Settings (currently Brevo,
+# smtp-relay.brevo.com:587). Credentials live there, never in this file.
 
-# [auth.email.template.magic_link]
-# subject = "Your Vyora sign-in code"
-# content_path = "./supabase/templates/otp.html"
+# The OTP flow needs the code, not a link. Supabase's stock templates send
+# {{ `{{ .ConfirmationURL }}` }}, so a project on the stock template mails
+# "Confirm your email address" and the login form waits for a code that never
+# arrives. Both of these matter: `confirmation` is used for an address Supabase
+# has not seen before, `magic_link` once the account exists.
+#
+# Template overrides are rejected on the free tier while a project uses the
+# default email provider ("Email template modification is not available...
+# Please upgrade your plan or configure a custom SMTP provider") — configuring
+# custom SMTP is what lifts that. These two blocks cover the local stack; the
+# hosted project needs the same otp.html pasted into its dashboard templates.
+[auth.email.template.confirmation]
+subject = "Your Vyora sign-in code"
+content_path = "./supabase/templates/otp.html"
+
+[auth.email.template.magic_link]
+subject = "Your Vyora sign-in code"
+content_path = "./supabase/templates/otp.html"
 
 # [auth.email.template.invite]
 # subject = "You have been invited"
