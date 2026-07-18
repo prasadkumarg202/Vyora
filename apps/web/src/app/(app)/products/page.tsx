@@ -1,8 +1,13 @@
-import { ModulePlaceholder } from "~/components/module-placeholder";
-import { moduleMetadata } from "~/lib/module-metadata";
+import { redirect } from "next/navigation";
 
-export const metadata = moduleMetadata("/products");
+import { ProductsModule } from "~/components/products/products-module";
+import { loadTenantContext } from "~/lib/tenant-config";
 
-export default function Page() {
-  return <ModulePlaceholder href="/products" />;
+export const metadata = { title: "Products" };
+
+export default async function ProductsPage() {
+  const ctx = await loadTenantContext();
+  if (!ctx) redirect("/welcome");
+
+  return <ProductsModule orgId={ctx.orgId} config={ctx.config} />;
 }
