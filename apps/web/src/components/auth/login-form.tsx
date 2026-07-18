@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 
 import { sendOtp, verifyOtp } from "~/lib/auth/actions";
+import { safeNext } from "~/lib/auth/safe-next";
 
 type Step = "identify" | "verify";
 
@@ -37,13 +38,22 @@ interface Pending {
 export function LoginForm() {
   const router = useRouter();
   const params = useSearchParams();
-  const next = params.get("next") ?? "/dashboard";
+  // router.push() follows an absolute URL straight off-site, so the same
+  // open-redirect guard the callback route uses applies here too.
+  const next = safeNext(params.get("next"));
+  const urlError = params.get("error");
 
   const [step, setStep] = useState<Step>("identify");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+
+  useEffect(() => {
+    if (urlError) {
+      setError(urlError);
+    }
+  }, [urlError]);
 
   // A code has already been sent and the user reloads, or switches back to the
   // tab after fetching it. Losing their place would make them request a second
@@ -75,12 +85,19 @@ export function LoginForm() {
     e.preventDefault();
     setError(null);
     startTransition(async () => {
-      const result = await sendOtp(email);
-      if (result.ok) {
-        setStep("verify");
-        remember({ step: "verify", email: email.trim().toLowerCase() });
-      } else {
-        setError(result.error ?? "Could not send the code.");
+      try {
+        const result = await sendOtp(email);
+        if (result.ok) {
+          setStep("verify");
+          remember({ step: "verify", email: email.trim().toLowerCase() });
+        } else {
+          setError(result.error ?? "Could not send the code.");
+        }
+      } catch {
+        // The action itself failed to reach the server — offline, or a dropped
+        // request. Its internals are not useful to the user; the action returns
+        // anything actionable via result.error above.
+        setError("Could not reach the server. Check your connection.");
       }
     });
   }
@@ -89,15 +106,19 @@ export function LoginForm() {
     e.preventDefault();
     setError(null);
     startTransition(async () => {
-      const result = await verifyOtp(email, code);
-      if (result.ok) {
-        remember(null);
-        // refresh() so middleware re-runs with the new session cookies before
-        // the destination renders; push() alone can race the cookie write.
-        router.refresh();
-        router.push(next as never);
-      } else {
-        setError(result.error ?? "Could not verify the code.");
+      try {
+        const result = await verifyOtp(email, code);
+        if (result.ok) {
+          remember(null);
+          // refresh() so middleware re-runs with the new session cookies before
+          // the destination renders; push() alone can race the cookie write.
+          router.refresh();
+          router.push(next as never);
+        } else {
+          setError(result.error ?? "Could not verify the code.");
+        }
+      } catch {
+        setError("Could not reach the server. Check your connection.");
       }
     });
   }

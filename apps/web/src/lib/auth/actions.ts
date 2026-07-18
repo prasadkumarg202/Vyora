@@ -26,14 +26,21 @@ export async function sendOtp(email: string): Promise<ActionResult> {
   }
 
   const supabase = await createClient();
+  const requestHeaders = await headers();
+  const origin = requestHeaders.get("origin");
+  const emailRedirectTo = origin ? `${origin}/auth/callback` : undefined;
+
   const { error } = await supabase.auth.signInWithOtp({
     email: address,
-    options: { shouldCreateUser: true },
+    options: {
+      shouldCreateUser: true,
+      ...(emailRedirectTo ? { emailRedirectTo } : {}),
+    },
   });
 
   if (error) {
     // Rate limits are the common case here and the message is user-facing.
-    return { ok: false, error: error.message };
+    return { ok: false, error: error.message || "Could not send the code." };
   }
 
   return { ok: true };
@@ -69,7 +76,7 @@ export async function verifyOtp(
   });
 
   if (error) {
-    return { ok: false, error: error.message };
+    return { ok: false, error: error.message || "Could not verify the code." };
   }
 
   const user = data.user;
