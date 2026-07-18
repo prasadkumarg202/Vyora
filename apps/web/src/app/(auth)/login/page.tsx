@@ -19,7 +19,10 @@ export default function LoginPage() {
           <div className="flex flex-col gap-1">
             <h1 className="text-h2">Sign in to Vyora</h1>
             <p className="text-body text-content-muted">
-              We&apos;ll send you a 6-digit code. No password to remember.
+              {/* Not "6-digit": that is the SMS length, and development signs
+                  in by email, where Supabase issues 8. Both are per-project
+                  settings, so the copy stays length-agnostic. */}
+              We&apos;ll send you a one-time code. No password to remember.
             </p>
           </div>
         </div>

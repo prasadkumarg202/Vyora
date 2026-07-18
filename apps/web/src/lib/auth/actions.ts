@@ -1,5 +1,6 @@
 "use server";
 
+import type { AuthError } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
@@ -39,11 +40,50 @@ export async function sendOtp(email: string): Promise<ActionResult> {
   });
 
   if (error) {
-    // Rate limits are the common case here and the message is user-facing.
-    return { ok: false, error: error.message || "Could not send the code." };
+    logAuthError("sendOtp", error);
+    return { ok: false, error: describeSendFailure(error) };
   }
 
   return { ok: true };
+}
+
+/**
+ * Turn a Supabase AuthError into something a person can act on.
+ *
+ * The delivery failures are the ones worth naming. When the mail provider
+ * rejects the message Supabase reports a bare 500 with an empty `message`, so
+ * without this the user gets a blank error box and no idea what went wrong —
+ * which is exactly how a whole evening disappeared into a working auth flow.
+ */
+function describeSendFailure(error: AuthError): string {
+  if (error.code === "over_email_send_rate_limit" || error.status === 429) {
+    return "Too many codes requested. Wait a few minutes and try again.";
+  }
+
+  // 500 + unexpected_failure is what a rejected SMTP send looks like from here.
+  if (error.status === 500) {
+    return "We couldn't send the code — email delivery isn't set up for this address yet.";
+  }
+
+  return error.message || "Could not send the code.";
+}
+
+/**
+ * Errors from the auth server are diagnosed from the server log, not from
+ * whatever reaches the browser — the user-facing string is deliberately vague
+ * and an AuthError's own fields are non-enumerable, so JSON.stringify() of one
+ * is the string "{}" and tells you nothing. Read the named fields instead.
+ */
+function logAuthError(where: string, error: AuthError): void {
+  console.error(
+    `[auth] ${where} failed:`,
+    JSON.stringify({
+      name: error.name,
+      status: error.status,
+      code: error.code,
+      message: error.message,
+    }),
+  );
 }
 
 /**
@@ -76,6 +116,7 @@ export async function verifyOtp(
   });
 
   if (error) {
+    logAuthError("verifyOtp", error);
     return { ok: false, error: error.message || "Could not verify the code." };
   }
 
