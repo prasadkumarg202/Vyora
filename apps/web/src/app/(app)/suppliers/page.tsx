@@ -1,8 +1,13 @@
-import { ModulePlaceholder } from "~/components/module-placeholder";
-import { moduleMetadata } from "~/lib/module-metadata";
+import { redirect } from "next/navigation";
 
-export const metadata = moduleMetadata("/suppliers");
+import { SuppliersModule } from "~/components/suppliers/suppliers-module";
+import { loadTenantContext } from "~/lib/tenant-config";
 
-export default function Page() {
-  return <ModulePlaceholder href="/suppliers" />;
+export const metadata = { title: "Suppliers" };
+
+export default async function SuppliersPage() {
+  const ctx = await loadTenantContext();
+  if (!ctx) redirect("/welcome");
+
+  return <SuppliersModule orgId={ctx.orgId} config={ctx.config} />;
 }

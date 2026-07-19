@@ -1,18 +1,18 @@
-import { ModulePlaceholder } from "~/components/module-placeholder";
+import { redirect } from "next/navigation";
+
+import { AdministrationModule } from "~/components/administration/administration-module";
 import { OfflineCheck } from "~/components/offline-check";
-import { moduleMetadata } from "~/lib/module-metadata";
+import { loadTenantContext } from "~/lib/tenant-config";
 
-export const metadata = moduleMetadata("/administration");
+export const metadata = { title: "Administration" };
 
-export default function Page() {
+export default async function AdministrationPage() {
+  const ctx = await loadTenantContext();
+  if (!ctx) redirect("/welcome");
+
   return (
     <div className="flex flex-col gap-6">
-      <ModulePlaceholder href="/administration" />
-      {/*
-        Administration owns devices and encryption keys per the IA, so this
-        device's offline readiness belongs here — it is the first thing to check
-        when a shop reports "it lost my invoices".
-      */}
+      <AdministrationModule orgId={ctx.orgId} config={ctx.config} />
       <OfflineCheck />
     </div>
   );

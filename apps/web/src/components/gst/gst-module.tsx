@@ -1,10 +1,31 @@
 "use client";
 
-import { formatPaise, type Paise } from "@vyora/core";
+import {
+  formatPaise,
+  type BusinessTypeConfig,
+  type GstRate,
+  type Paise,
+} from "@vyora/core";
 import { Badge, Card } from "@vyora/ui";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { gstSummary, type GstSummary } from "~/lib/db/repository";
+
+/** A GstRate variant → the short label a shopkeeper reads. */
+function rateLabel(rate: GstRate): string {
+  switch (rate.kind) {
+    case "fixed":
+      return `${rate.bps / 100}%`;
+    case "range":
+      return `${rate.minBps / 100}–${rate.maxBps / 100}%`;
+    case "hsn":
+      return "As per HSN";
+    case "igst":
+      return "IGST";
+    case "none":
+      return "—";
+  }
+}
 
 /**
  * The GST summary — the monthly position a shop files.
@@ -43,7 +64,13 @@ function recentPeriods(now: Date): Period[] {
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
-export function GstModule({ orgId }: { orgId: string }) {
+export function GstModule({
+  orgId,
+  config,
+}: {
+  orgId: string;
+  config: BusinessTypeConfig | null;
+}) {
   // Computed once from an injected "now" would be cleaner, but the summary is a
   // point-in-time view and re-deriving on mount is cheap.
   const periods = useMemo(() => recentPeriods(new Date()), []);
@@ -69,7 +96,10 @@ export function GstModule({ orgId }: { orgId: string }) {
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-baseline justify-between gap-4">
         <div className="flex flex-col gap-1">
-          <h1 className="text-h1">GST</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-h1">GST</h1>
+            {config ? <Badge tone="primary">{config.label}</Badge> : null}
+          </div>
           <p className="text-body text-content-muted">
             Your monthly position — collected, credited, and payable.
           </p>
@@ -152,6 +182,40 @@ export function GstModule({ orgId }: { orgId: string }) {
           the GST portal is a separate step.
         </p>
       </Card>
+
+      {config ? (
+        <Card className="flex flex-col gap-3 p-5" data-testid="gst-profile">
+          <div className="flex items-baseline justify-between gap-3">
+            <h2 className="text-h3">GST profile · {config.label}</h2>
+            <Badge tone="neutral">Default {config.gst.defaultLabel}</Badge>
+          </div>
+          <p className="text-body text-content-muted">
+            The rate posture the engine applies for your trade. Every saved
+            invoice is taxed by these rules, not a hardcoded rate.
+          </p>
+          <div className="flex flex-col divide-y divide-border">
+            {config.gst.slabs.map((slab, i) => (
+              <div
+                key={i}
+                className="flex items-center justify-between gap-4 py-2"
+                data-testid="gst-slab"
+              >
+                <span className="text-body">{slab.applies}</span>
+                <div className="flex items-center gap-2">
+                  {slab.itcBlocked ? <Badge tone="warning">No ITC</Badge> : null}
+                  <span className="font-mono text-body">{rateLabel(slab.rate)}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+          {config.gst.composition ? (
+            <p className="text-caption normal-case text-content-muted">
+              Composition dealer at {config.gst.composition.rateBps / 100}% —
+              bills are a Bill of Supply with no tax breakup.
+            </p>
+          ) : null}
+        </Card>
+      ) : null}
     </div>
   );
 }

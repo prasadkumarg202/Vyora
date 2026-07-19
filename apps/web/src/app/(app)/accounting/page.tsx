@@ -1,8 +1,13 @@
-import { ModulePlaceholder } from "~/components/module-placeholder";
-import { moduleMetadata } from "~/lib/module-metadata";
+import { redirect } from "next/navigation";
 
-export const metadata = moduleMetadata("/accounting");
+import { AccountingModule } from "~/components/accounting/accounting-module";
+import { loadTenantContext } from "~/lib/tenant-config";
 
-export default function Page() {
-  return <ModulePlaceholder href="/accounting" />;
+export const metadata = { title: "Accounting" };
+
+export default async function AccountingPage() {
+  const ctx = await loadTenantContext();
+  if (!ctx) redirect("/welcome");
+
+  return <AccountingModule orgId={ctx.orgId} config={ctx.config} />;
 }

@@ -1,8 +1,19 @@
-import { ModulePlaceholder } from "~/components/module-placeholder";
-import { moduleMetadata } from "~/lib/module-metadata";
+import { redirect } from "next/navigation";
 
-export const metadata = moduleMetadata("/settings");
+import { SettingsModule } from "~/components/settings/settings-module";
+import { loadTenantContext } from "~/lib/tenant-config";
 
-export default function Page() {
-  return <ModulePlaceholder href="/settings" />;
+export const metadata = { title: "Settings" };
+
+export default async function SettingsPage() {
+  const ctx = await loadTenantContext();
+  if (!ctx) redirect("/welcome");
+
+  return (
+    <SettingsModule
+      orgId={ctx.orgId}
+      config={ctx.config}
+      supplierStateCode={ctx.supplierStateCode}
+    />
+  );
 }

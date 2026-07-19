@@ -1,8 +1,13 @@
-import { ModulePlaceholder } from "~/components/module-placeholder";
-import { moduleMetadata } from "~/lib/module-metadata";
+import { redirect } from "next/navigation";
 
-export const metadata = moduleMetadata("/assistant");
+import { AssistantModule } from "~/components/assistant/assistant-module";
+import { loadTenantContext } from "~/lib/tenant-config";
 
-export default function Page() {
-  return <ModulePlaceholder href="/assistant" />;
+export const metadata = { title: "AI Assistant" };
+
+export default async function AssistantPage() {
+  const ctx = await loadTenantContext();
+  if (!ctx) redirect("/welcome");
+
+  return <AssistantModule orgId={ctx.orgId} config={ctx.config} />;
 }

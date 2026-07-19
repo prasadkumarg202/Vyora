@@ -9,5 +9,5 @@ export default async function ReportsPage() {
   const ctx = await loadTenantContext();
   if (!ctx) redirect("/welcome");
 
-  return <ReportsModule orgId={ctx.orgId} />;
+  return <ReportsModule orgId={ctx.orgId} config={ctx.config} />;
 }

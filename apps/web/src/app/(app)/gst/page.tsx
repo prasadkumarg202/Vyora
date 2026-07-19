@@ -9,5 +9,5 @@ export default async function GstPage() {
   const ctx = await loadTenantContext();
   if (!ctx) redirect("/welcome");
 
-  return <GstModule orgId={ctx.orgId} />;
+  return <GstModule orgId={ctx.orgId} config={ctx.config} />;
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import type { Paise } from "@vyora/core";
+import type { JsonValue, Paise } from "@vyora/core";
 
 import { all, batch, get, openDatabase } from "./client";
 
@@ -36,6 +36,14 @@ export interface InvoiceItemInput {
   ratePaise: Paise;
   taxBps: number;
   amountPaise: Paise;
+  /**
+   * The vertical's captured fields for this line, coerced to canonical types by
+   * the metadata engine (batch/expiry/MRP/schedule for a chemist, HUID/purity
+   * for a jeweller, …). Stored as JSON in invoice_items.meta so reports like
+   * "Expiry alerts" and "Salt-wise sales" can read them back. Empty for the
+   * generic (no business-type) path.
+   */
+  meta?: Record<string, JsonValue>;
 }
 
 export interface NewInvoice {
@@ -98,8 +106,8 @@ export async function saveInvoice(invoice: NewInvoice): Promise<void> {
     ...invoice.items.map((item) => ({
       sql: `INSERT INTO invoice_items
               (id, invoice_id, product_id, description, qty_milli, rate_paise,
-               tax_bps, amount_paise, org_id, updated_at, dirty)
-            VALUES (?,?,?,?,?,?,?,?,?,?,1)`,
+               tax_bps, amount_paise, meta, org_id, updated_at, dirty)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,1)`,
       params: [
         crypto.randomUUID(),
         invoice.id,
@@ -109,6 +117,7 @@ export async function saveInvoice(invoice: NewInvoice): Promise<void> {
         item.ratePaise,
         item.taxBps,
         item.amountPaise,
+        JSON.stringify(item.meta ?? {}),
         invoice.orgId,
         now,
       ],
@@ -850,4 +859,182 @@ export async function nextInvoiceNumber(orgId: string): Promise<string> {
     [orgId],
   );
   return `INV-${String((row?.n ?? 0) + 1).padStart(4, "0")}`;
+}
+
+// --- Suppliers ---------------------------------------------------------------
+
+export interface SupplierRow {
+  id: string;
+  name: string;
+  phone: string | null;
+  gstin: string | null;
+  /**
+   * What you still owe this supplier, in paise: everything purchased from them
+   * minus everything paid to them. Derived, never stored — the same rule the
+   * customer/outstanding numbers follow, so Suppliers, Purchase and Payments
+   * can never disagree.
+   */
+  payable_paise: number;
+  updated_at: string;
+  version: number;
+  dirty: number;
+}
+
+/**
+ * Persist a supplier, marked dirty.
+ *
+ * dirty = 1 and version = 0 say "created locally, not yet acknowledged by the
+ * server", exactly like saveCustomer; address, balance_paise and custom_fields
+ * keep their schema defaults. Optional phone/gstin are stored as NULL when blank
+ * rather than an empty string.
+ */
+export async function saveSupplier(supplier: {
+  id: string;
+  orgId: string;
+  name: string;
+  phone?: string;
+  gstin?: string;
+}): Promise<void> {
+  await ready();
+  const now = new Date().toISOString();
+
+  await batch([
+    {
+      sql: `INSERT INTO suppliers
+              (id, name, phone, gstin, org_id, updated_at, version, dirty)
+            VALUES (?,?,?,?,?,?,0,1)`,
+      params: [
+        supplier.id,
+        supplier.name,
+        supplier.phone ?? null,
+        supplier.gstin ?? null,
+        supplier.orgId,
+        now,
+      ] as (string | number | null)[],
+    },
+  ]);
+}
+
+/**
+ * Suppliers for an org, newest first, tombstones hidden.
+ *
+ * Each row carries its live payable: purchases billed to the supplier minus
+ * payments made out to them. Both sums read data the Purchase and Payments
+ * modules already wrote, so the figure is exact and needs no network.
+ */
+export function listSuppliers(orgId: string, limit = 100): Promise<SupplierRow[]> {
+  return ready().then(() =>
+    all<SupplierRow>(
+      `SELECT s.id, s.name, s.phone, s.gstin, s.updated_at, s.version, s.dirty,
+              COALESCE((
+                SELECT SUM(p.total_paise) FROM purchases p
+                WHERE p.supplier_id = s.id AND p.deleted_at IS NULL
+              ), 0)
+              -
+              COALESCE((
+                SELECT SUM(pay.amount_paise) FROM payments pay
+                WHERE pay.party_type = 'supplier' AND pay.party_id = s.id
+                  AND pay.direction = 'out' AND pay.deleted_at IS NULL
+              ), 0) AS payable_paise
+       FROM suppliers s
+       WHERE s.org_id = ? AND s.deleted_at IS NULL
+       ORDER BY s.updated_at DESC
+       LIMIT ?`,
+      [orgId, limit],
+    ),
+  );
+}
+
+// --- Expenses ----------------------------------------------------------------
+
+export interface ExpenseRow {
+  id: string;
+  category: string | null;
+  amount_paise: number;
+  date: string;
+  note: string | null;
+  recurring: number;
+  updated_at: string;
+  dirty: number;
+}
+
+export interface NewExpense {
+  id: string;
+  orgId: string;
+  category?: string;
+  amountPaise: Paise;
+  date: string;
+  note?: string;
+  recurring?: boolean;
+  createdBy?: string;
+}
+
+/**
+ * Record an expense, marked dirty.
+ *
+ * Money is integer paise like everywhere else; category and note are free text
+ * (the metadata engine can constrain categories per vertical later). recurring
+ * is stored 0/1 — SQLite has no boolean. A blank category/note becomes NULL.
+ */
+export async function saveExpense(expense: NewExpense): Promise<void> {
+  await ready();
+  const now = new Date().toISOString();
+
+  await batch([
+    {
+      sql: `INSERT INTO expenses
+              (id, category, amount_paise, date, note, recurring, created_by,
+               org_id, updated_at, version, dirty)
+            VALUES (?,?,?,?,?,?,?,?,?,0,1)`,
+      params: [
+        expense.id,
+        expense.category ?? null,
+        expense.amountPaise,
+        expense.date,
+        expense.note ?? null,
+        expense.recurring ? 1 : 0,
+        expense.createdBy ?? null,
+        expense.orgId,
+        now,
+      ] as (string | number | null)[],
+    },
+  ]);
+}
+
+/** Recent expenses for an org, newest first, tombstones hidden. */
+export function listExpenses(orgId: string, limit = 100): Promise<ExpenseRow[]> {
+  return ready().then(() =>
+    all<ExpenseRow>(
+      `SELECT id, category, amount_paise, date, note, recurring, updated_at, dirty
+       FROM expenses
+       WHERE org_id = ? AND deleted_at IS NULL
+       ORDER BY date DESC, updated_at DESC
+       LIMIT ?`,
+      [orgId, limit],
+    ),
+  );
+}
+
+export interface ExpensesSummary {
+  totalPaise: number;
+  count: number;
+}
+
+/**
+ * Total spend across a date window (inclusive `YYYY-MM-DD` bounds) — the number
+ * the Expenses header shows and that a P&L will subtract from gross margin.
+ */
+export async function expensesSummary(
+  orgId: string,
+  fromDate: string,
+  toDate: string,
+): Promise<ExpensesSummary> {
+  await ready();
+  const row = await get<{ total: number; n: number }>(
+    `SELECT COALESCE(SUM(amount_paise),0) AS total, COUNT(*) AS n
+     FROM expenses
+     WHERE org_id = ? AND deleted_at IS NULL AND date >= ? AND date <= ?`,
+    [orgId, fromDate, toDate],
+  );
+  return { totalPaise: row?.total ?? 0, count: row?.n ?? 0 };
 }

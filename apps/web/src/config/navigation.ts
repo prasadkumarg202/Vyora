@@ -195,6 +195,12 @@ export const NAV_ZONES: readonly NavZone[] = [
         summary: "Permissions, devices, encryption keys, audit log, export.",
         phase: "Phase 7",
       },
+      {
+        label: "Help & Support",
+        href: "/support",
+        summary: "Chat, WhatsApp & Instagram support, FAQs, raise a ticket.",
+        phase: "Phase 7",
+      },
     ],
   },
 ] as const;

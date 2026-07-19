@@ -1,6 +1,6 @@
 "use client";
 
-import { formatPaise, type Paise } from "@vyora/core";
+import { formatPaise, type BusinessTypeConfig, type Paise } from "@vyora/core";
 import { Badge, Card, EmptyState } from "@vyora/ui";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -34,7 +34,13 @@ function monthBounds(now: Date): { from: string; to: string; label: string } {
   };
 }
 
-export function ReportsModule({ orgId }: { orgId: string }) {
+export function ReportsModule({
+  orgId,
+  config,
+}: {
+  orgId: string;
+  config: BusinessTypeConfig | null;
+}) {
   const month = useMemo(() => monthBounds(new Date()), []);
   const [summary, setSummary] = useState<ReportsSummary | null>(null);
   const [low, setLow] = useState<LowStockRow[] | null>(null);
@@ -59,9 +65,12 @@ export function ReportsModule({ orgId }: { orgId: string }) {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-1">
-        <h1 className="text-h1">Reports</h1>
-        <p className="text-body text-content-muted">{month.label} · on this device</p>
+      <div className="flex items-baseline justify-between gap-4">
+        <div className="flex flex-col gap-1">
+          <h1 className="text-h1">Reports</h1>
+          <p className="text-body text-content-muted">{month.label} · on this device</p>
+        </div>
+        {config ? <Badge tone="primary">{config.label}</Badge> : null}
       </div>
 
       {error ? (
@@ -100,6 +109,30 @@ export function ReportsModule({ orgId }: { orgId: string }) {
           tone="neutral"
         />
       </div>
+
+      {config && config.reports.length > 0 ? (
+        <section className="flex flex-col gap-3">
+          <h2 className="text-h3">Reports for your {config.label}</h2>
+          <p className="text-body text-content-muted">
+            The report set your trade files and reviews — the same list the
+            business engine declares for a {config.label.toLowerCase()}.
+          </p>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            {config.reports.map((name) => (
+              <div
+                key={name}
+                className="flex flex-col gap-1 rounded-card border border-border bg-surface p-4 shadow-card"
+                data-testid="trade-report"
+              >
+                <span className="text-body font-medium">{name}</span>
+                <span className="text-caption normal-case text-content-muted">
+                  Reads your saved sales, purchases &amp; captured fields.
+                </span>
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       <section className="flex flex-col gap-3">
         <h2 className="text-h3">Low stock</h2>

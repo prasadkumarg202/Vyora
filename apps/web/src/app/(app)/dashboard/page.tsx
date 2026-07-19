@@ -1,8 +1,13 @@
-import { ModulePlaceholder } from "~/components/module-placeholder";
-import { moduleMetadata } from "~/lib/module-metadata";
+import { redirect } from "next/navigation";
 
-export const metadata = moduleMetadata("/dashboard");
+import { DashboardModule } from "~/components/dashboard/dashboard-module";
+import { loadTenantContext } from "~/lib/tenant-config";
 
-export default function Page() {
-  return <ModulePlaceholder href="/dashboard" />;
+export const metadata = { title: "Dashboard" };
+
+export default async function DashboardPage() {
+  const ctx = await loadTenantContext();
+  if (!ctx) redirect("/welcome");
+
+  return <DashboardModule orgId={ctx.orgId} config={ctx.config} />;
 }
