@@ -221,9 +221,6 @@ const ROLES = [
 const SIDEBAR_BG = "oklch(0.20 0.03 285)";
 const SIDEBAR_ACTIVE = "oklch(0.30 0.08 285)";
 
-function sevTone(s: Sev): "success" | "warning" | "danger" {
-  return s === "ok" ? "success" : s === "warn" ? "warning" : "danger";
-}
 function sevColor(s: Sev): string {
   return s === "ok" ? "oklch(0.62 0.17 150)" : s === "warn" ? "oklch(0.70 0.16 75)" : "oklch(0.58 0.22 25)";
 }
