@@ -1,0 +1,37 @@
+# electron-builder config for the Vyora desktop shell.
+# Docs: https://www.electron.build/configuration
+
+appId: in.vyora.desktop
+productName: Vyora
+copyright: "Copyright © 2026 Vyora"
+
+directories:
+  output: dist
+  buildResources: build
+
+files:
+  - electron/**
+  - package.json
+
+win:
+  icon: build/icon.ico
+  target:
+    - target: nsis
+      arch:
+        - x64
+
+nsis:
+  # Stable file name so the website can always link
+  # .../releases/latest/download/Vyora-Setup.exe
+  artifactName: Vyora-Setup.${ext}
+  oneClick: true
+  perMachine: false
+  deleteAppDataOnUninstall: false
+  shortcutName: Vyora
+
+# `electron-builder --publish always` uploads the installer to a GitHub
+# Release for the current tag (needs GH_TOKEN in the environment).
+publish:
+  provider: github
+  owner: prasadkumarg202
+  repo: Vyora

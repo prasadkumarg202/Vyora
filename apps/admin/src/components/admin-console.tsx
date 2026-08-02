@@ -192,30 +192,6 @@ const TICKETS: { id: string; org: string; subject: string; ch: string; prio: Tic
   { id: "#4813", org: "AutoCare Motors", subject: "Refund for double charge", ch: "Email", prio: "High", stage: "virtual", s: "resolved", sla: "breached" },
   { id: "#4812", org: "Kiran Mobiles", subject: "Trial extension request", ch: "Email", prio: "Low", stage: "ai", s: "resolved", sla: "ok" },
 ];
-const TICKET_STATS = {
-  open: 23, inProgress: 9, resolvedToday: 41, resolved30d: 612,
-  slaMet: 94, slaBreached: 6, avgResolution: "3.4h", firstResponse: "40s",
-  csat: "4.6 / 5", resolvedByAI: 68, backlog: 32,
-};
-const TICKET_CHANNELS = [
-  { name: "In-app chat", pct: 46 }, { name: "WhatsApp", pct: 38 },
-  { name: "Email", pct: 12 }, { name: "Phone", pct: 4 },
-];
-const TICKET_PRIOS: { name: TicPrio; count: number; tone: "danger" | "warning" | "neutral" }[] = [
-  { name: "High", count: 6, tone: "danger" },
-  { name: "Medium", count: 11, tone: "warning" },
-  { name: "Low", count: 15, tone: "neutral" },
-];
-const RESOLVE_TREND = [
-  { l: "Mon", h: 62 }, { l: "Tue", h: 78 }, { l: "Wed", h: 54 }, { l: "Thu", h: 88 },
-  { l: "Fri", h: 100 }, { l: "Sat", h: 46 }, { l: "Sun", h: 33 },
-];
-const SUPPORT_OPTIONS = [
-  { name: "AI chatbot", detail: "In-app + WhatsApp · 24/7 · resolves 68%", channel: "Automated", tone: "success" as const },
-  { name: "WhatsApp support", detail: "+91 80471 0xxxx · chat with a human", channel: "Human", tone: "info" as const },
-  { name: "Call / screen-share", detail: "Virtual assistant · 9am–9pm", channel: "Human", tone: "info" as const },
-  { name: "On-site visit", detail: "Hardware & setup · metro cities", channel: "Field", tone: "warning" as const },
-];
 const BROADCASTS: { title: string; ch: string; aud: string; s: "scheduled" | "sent" }[] = [
   { title: "Scheduled maintenance · 20 Jul, 2–3 AM IST", ch: "Push · In-app", aud: "All customers", s: "scheduled" },
   { title: "Diwali offer — 20% off annual plans", ch: "Push · WhatsApp", aud: "Trials + monthly plans", s: "sent" },
@@ -727,126 +703,7 @@ function renderPage(
       );
 
     case "support":
-      return (
-        <>
-          {/* Status summary */}
-          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-            <Tile label="Open" value={String(TICKET_STATS.open)} />
-            <Tile label="In progress" value={String(TICKET_STATS.inProgress)} />
-            <Tile label="Resolved today" value={String(TICKET_STATS.resolvedToday)} />
-            <div className="flex min-w-40 flex-col gap-1 rounded-card border border-border bg-surface p-5 shadow-card">
-              <span className="text-caption font-semibold uppercase text-content-muted">SLA missed · 30d</span>
-              <span className="font-mono text-h2 text-danger">{TICKET_STATS.slaBreached}%</span>
-              <span className="text-caption normal-case text-content-muted">{TICKET_STATS.slaMet}% met</span>
-            </div>
-          </div>
-
-          {/* Analytics */}
-          <div className="grid gap-4 lg:grid-cols-3">
-            <Card className="flex flex-col gap-3 p-5">
-              <h2 className="text-h3">Resolved · last 7 days</h2>
-              <div className="flex h-36 items-end gap-2">
-                {RESOLVE_TREND.map((b) => (
-                  <div key={b.l} className="flex flex-1 flex-col items-center gap-2">
-                    <div className="w-full" style={{ height: `${b.h}%`, borderRadius: "5px 5px 0 0", backgroundColor: b.h === 100 ? "oklch(0.55 0.2 285)" : "oklch(0.72 0.12 285)" }} />
-                    <span className="text-caption text-content-muted">{b.l}</span>
-                  </div>
-                ))}
-              </div>
-            </Card>
-            <Card className="flex flex-col gap-3 p-5">
-              <h2 className="text-h3">By channel</h2>
-              {TICKET_CHANNELS.map((c) => (
-                <div key={c.name} className="flex flex-col gap-1">
-                  <div className="flex items-baseline justify-between text-body">
-                    <span className="text-content-muted">{c.name}</span>
-                    <span className="font-mono">{c.pct}%</span>
-                  </div>
-                  <Bar pct={c.pct} />
-                </div>
-              ))}
-            </Card>
-            <Card className="flex flex-col gap-3 p-5">
-              <h2 className="text-h3">Health</h2>
-              <div className="grid grid-cols-2 gap-3">
-                <MiniStat label="Avg resolution" value={TICKET_STATS.avgResolution} />
-                <MiniStat label="First response" value={TICKET_STATS.firstResponse} />
-                <MiniStat label="CSAT" value={TICKET_STATS.csat} tone="success" />
-                <MiniStat label="Resolved by AI" value={`${TICKET_STATS.resolvedByAI}%`} />
-              </div>
-              <div className="flex flex-wrap gap-2 pt-1">
-                {TICKET_PRIOS.map((p) => (
-                  <Badge key={p.name} tone={p.tone}>{p.name} · {p.count}</Badge>
-                ))}
-              </div>
-            </Card>
-          </div>
-
-          {/* Customer support options + escalation */}
-          <div className="grid gap-4 lg:grid-cols-2">
-            <Card className="flex flex-col gap-3 p-5">
-              <h2 className="text-h3">Customer support channels</h2>
-              <p className="text-caption normal-case text-content-muted">
-                What a shop owner can reach when they need help.
-              </p>
-              <div className="flex flex-col divide-y divide-border">
-                {SUPPORT_OPTIONS.map((o) => (
-                  <div key={o.name} className="flex items-center justify-between gap-3 py-2.5">
-                    <div className="flex flex-col">
-                      <span className="text-body font-medium">{o.name}</span>
-                      <span className="text-caption normal-case text-content-muted">{o.detail}</span>
-                    </div>
-                    <Badge tone={o.tone}>{o.channel}</Badge>
-                  </div>
-                ))}
-              </div>
-            </Card>
-            <Card className="flex flex-col gap-3 p-5">
-              <h2 className="text-h3">Escalation ladder</h2>
-              <p className="text-caption normal-case text-content-muted">Automatic when the previous step can&apos;t resolve.</p>
-              <div className="flex flex-col gap-2">
-                <Escala n="1" title="AI chatbot" detail="in-app + WhatsApp · resolves 68%" />
-                <Escala n="2" title="Virtual assistant (human)" detail="call / screen-share · 29%" />
-                <Escala n="3" title="Physical assistant" detail="on-site visit · hardware & setup · 3%" />
-              </div>
-            </Card>
-          </div>
-
-          {/* Ticket queue */}
-          <Section title="Ticket queue">
-            <Card className="p-0">
-              <div className="grid grid-cols-12 gap-3 border-b border-border px-4 py-2.5 text-caption font-semibold uppercase text-content-muted">
-                <span className="col-span-1">ID</span>
-                <span className="col-span-3">Tenant</span>
-                <span className="col-span-3">Subject</span>
-                <span className="col-span-2">Channel</span>
-                <span className="col-span-1">Prio</span>
-                <span className="col-span-1">SLA</span>
-                <span className="col-span-1 text-right">Status</span>
-              </div>
-              <div className="divide-y divide-border">
-                {TICKETS.map((t) => (
-                  <div key={t.id} className="grid grid-cols-12 items-center gap-3 px-4 py-3">
-                    <span className="col-span-1 font-mono text-caption text-content-muted">{t.id}</span>
-                    <span className="col-span-3 text-body">{t.org}</span>
-                    <span className="col-span-3 truncate text-body text-content-muted">{t.subject}</span>
-                    <span className="col-span-2 text-caption normal-case text-content-muted">{t.ch}</span>
-                    <span className="col-span-1">
-                      <Badge tone={t.prio === "High" ? "danger" : t.prio === "Medium" ? "warning" : "neutral"}>{t.prio}</Badge>
-                    </span>
-                    <span className="col-span-1">
-                      <span className="size-2.5 rounded-pill inline-block" title={t.sla} style={{ backgroundColor: t.sla === "ok" ? "oklch(0.62 0.17 150)" : t.sla === "risk" ? "oklch(0.70 0.16 75)" : "oklch(0.58 0.22 25)" }} />
-                    </span>
-                    <span className="col-span-1 text-right">
-                      <Badge tone={t.s === "open" ? "warning" : t.s === "pending" ? "info" : "success"}>{t.s === "resolved" ? "done" : t.s}</Badge>
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </Card>
-          </Section>
-        </>
-      );
+      return <SupportWorkspace />;
 
     case "broadcasts":
       return <BroadcastsPage />;
@@ -1106,6 +963,281 @@ function BroadcastsPage() {
   );
 }
 
+// ---------------------------------------------------------------------------
+// Support workspace — resolve user issues
+// ---------------------------------------------------------------------------
+
+type WStatus = "open" | "pending" | "resolved";
+interface ThreadMsg { from: "customer" | "agent" | "system"; text: string; time: string; }
+interface WTicket {
+  id: string; org: string; subject: string; ch: string;
+  prio: TicPrio; sla: "ok" | "risk" | "breached"; status: WStatus; thread: ThreadMsg[];
+}
+
+const statusLabel = (s: WStatus) => (s === "pending" ? "In progress" : s === "open" ? "Open" : "Resolved");
+
+const SEED_TICKETS: WTicket[] = TICKETS.map((t, i) => ({
+  id: t.id, org: t.org, subject: t.subject, ch: t.ch, prio: t.prio, sla: t.sla, status: t.s,
+  thread: [
+    { from: "customer", text: `${t.subject}. Can you help?`, time: `${i + 1}h ago` },
+    ...(t.stage !== "ai" ? [{ from: "agent" as const, text: "Thanks for reaching out — looking into this now.", time: `${i}h ago` }] : []),
+  ],
+}));
+
+function SupportWorkspace() {
+  const [tickets, setTickets] = useState<WTicket[]>(SEED_TICKETS);
+  const [selId, setSelId] = useState<string>(SEED_TICKETS[0]?.id ?? "");
+  const [reply, setReply] = useState("");
+  const [filter, setFilter] = useState<"all" | WStatus>("all");
+  const [pushOpen, setPushOpen] = useState(false);
+  const [pushTitle, setPushTitle] = useState("");
+  const [pushMsg, setPushMsg] = useState("");
+  const [flash, setFlash] = useState<string | null>(null);
+  const [tool, setTool] = useState({ provider: "Chatwoot", url: "", token: "", connected: false });
+  const [intOpen, setIntOpen] = useState(false);
+
+  const sel = tickets.find((t) => t.id === selId) ?? tickets[0];
+  const visible = tickets.filter((t) => filter === "all" || t.status === filter);
+  const counts = {
+    open: tickets.filter((t) => t.status === "open").length,
+    pending: tickets.filter((t) => t.status === "pending").length,
+    resolved: tickets.filter((t) => t.status === "resolved").length,
+    sla: tickets.filter((t) => t.sla === "breached").length,
+  };
+
+  function addMsg(id: string, m: ThreadMsg) {
+    setTickets((ts) => ts.map((t) => (t.id === id ? { ...t, thread: [...t.thread, m] } : t)));
+  }
+  function toast(msg: string) {
+    setFlash(msg);
+    window.setTimeout(() => setFlash(null), 2600);
+  }
+  function sendReply() {
+    if (!sel || !reply.trim()) return;
+    addMsg(sel.id, { from: "agent", text: reply.trim(), time: "now" });
+    setReply("");
+  }
+  function setStatus(s: WStatus) {
+    if (!sel) return;
+    setTickets((ts) => ts.map((t) => (t.id === sel.id ? { ...t, status: s } : t)));
+    addMsg(sel.id, { from: "system", text: `Status changed to “${statusLabel(s)}”.`, time: "now" });
+    if (s === "resolved") toast(`${sel.id} marked resolved`);
+  }
+  function escalate(step: string) {
+    if (!sel) return;
+    addMsg(sel.id, { from: "system", text: `Escalated to ${step}.`, time: "now" });
+    toast(`Escalated to ${step}`);
+  }
+  function sendPush() {
+    if (!sel) return;
+    addMsg(sel.id, { from: "system", text: `🔔 Push sent to ${sel.org}: “${pushTitle || "Update on your ticket"}” — ${pushMsg || "We're on it."}`, time: "now" });
+    setPushOpen(false); setPushTitle(""); setPushMsg("");
+    toast(`Push notification sent to ${sel.org}`);
+  }
+  async function pushToTool(t: WTicket) {
+    // Push goes through our server proxy (/api/ticketing/push): it sidesteps CORS
+    // and, when TICKETING_URL/TICKETING_TOKEN are set in server env, the token
+    // never touches the browser. The url/token typed here are a fallback the
+    // server uses only if no env is configured.
+    const ticket = { id: t.id, org: t.org, subject: t.subject, priority: t.prio, status: t.status, sla: t.sla, channel: t.ch, messages: t.thread };
+    try {
+      const r = await fetch("/api/ticketing/push", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ url: tool.url, token: tool.token, provider: tool.provider, ticket }),
+      });
+      const data = (await r.json().catch(() => ({}))) as { error?: string };
+      if (!r.ok) {
+        if (r.status === 400 && !tool.url) { setIntOpen(true); toast("Connect a ticketing tool first"); return; }
+        toast(data.error || `Push failed — check the URL / token`);
+        return;
+      }
+      addMsg(t.id, { from: "system", text: `↗ Synced to ${tool.provider}.`, time: "now" });
+      toast(`Pushed ${t.id} to ${tool.provider}`);
+    } catch {
+      toast(`Couldn't reach ${tool.provider} — check the URL`);
+    }
+  }
+
+  const total = tickets.length;
+  const donePct = total ? Math.round((counts.resolved / total) * 100) : 0;
+
+  return (
+    <>
+      <div className="flex flex-col gap-3">
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <Tile label="Pending" value={String(counts.open)} />
+          <Tile label="In progress" value={String(counts.pending)} />
+          <div className="flex min-w-40 flex-col gap-1 rounded-card border border-border bg-surface p-5 shadow-card">
+            <span className="text-caption font-semibold uppercase text-content-muted">Completed</span>
+            <span className="font-mono text-h2 text-success">{counts.resolved}</span>
+          </div>
+          <div className="flex min-w-40 flex-col gap-1 rounded-card border border-border bg-surface p-5 shadow-card">
+            <span className="text-caption font-semibold uppercase text-content-muted">SLA breached</span>
+            <span className="font-mono text-h2 text-danger">{counts.sla}</span>
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="h-2 flex-1 overflow-hidden rounded-pill bg-canvas">
+            <div className="h-full rounded-pill" style={{ width: `${donePct}%`, backgroundColor: "oklch(0.62 0.17 150)" }} />
+          </div>
+          <span className="text-caption normal-case text-content-muted">{counts.resolved}/{total} completed · {donePct}%</span>
+        </div>
+      </div>
+
+      {/* Ticketing-tool integration */}
+      <Card className="flex flex-col gap-3 p-4">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <h2 className="text-h3">Ticketing tool</h2>
+            {tool.connected ? <Badge tone="success" dot>Connected · {tool.provider}</Badge> : <Badge tone="neutral">Not connected</Badge>}
+          </div>
+          <button onClick={() => setIntOpen((v) => !v)} className="text-caption font-medium text-primary hover:underline">{intOpen ? "Hide" : "Connect a tool"}</button>
+        </div>
+        {intOpen ? (
+          <div className="flex flex-col gap-2">
+            <p className="text-caption normal-case text-content-muted">
+              Link a free / open-source helpdesk. Pushing a ticket POSTs its JSON (id, subject, priority, status, conversation) through our server to the tool&apos;s API or an inbound webhook — so CORS never blocks it. For production, set <code className="rounded bg-canvas px-1 font-mono">TICKETING_URL</code> / <code className="rounded bg-canvas px-1 font-mono">TICKETING_TOKEN</code> in server env and leave the token below blank so it never touches the browser.
+            </p>
+            <div className="grid gap-2 sm:grid-cols-3">
+              <select value={tool.provider} onChange={(e) => setTool((t) => ({ ...t, provider: e.target.value }))}
+                className="min-h-touch rounded-input border border-border bg-surface px-3 text-body">
+                {["Chatwoot", "FreeScout", "osTicket", "Zammad", "Freshdesk (free)", "Webhook (Zapier/n8n)"].map((p) => <option key={p}>{p}</option>)}
+              </select>
+              <Input value={tool.url} onChange={(e) => setTool((t) => ({ ...t, url: e.target.value }))} placeholder="API / webhook URL" className="font-mono" />
+              <Input value={tool.token} onChange={(e) => setTool((t) => ({ ...t, token: e.target.value }))} placeholder="API token (optional)" className="font-mono" />
+            </div>
+            <div className="flex items-center gap-2">
+              <Button size="sm" onClick={() => { setTool((t) => ({ ...t, connected: !!t.url })); toast(tool.url ? `Connected to ${tool.provider}` : "Enter a URL first"); }}>Connect</Button>
+              <span className="text-caption normal-case text-content-muted">Chatwoot, FreeScout, osTicket & Zammad are open-source and self-hostable; Freshdesk has a free tier.</span>
+            </div>
+          </div>
+        ) : null}
+      </Card>
+
+      {flash ? (
+        <div className="rounded-control border border-success-border bg-success-tonal px-3 py-2 text-body text-success">{flash}</div>
+      ) : null}
+
+      <div className="grid gap-4 lg:grid-cols-3">
+        {/* Ticket list */}
+        <Card className="flex flex-col gap-3 p-4 lg:col-span-1">
+          <div className="flex flex-wrap gap-1">
+            {(["all", "open", "pending", "resolved"] as const).map((f) => {
+              const on = f === filter;
+              return (
+                <button key={f} onClick={() => setFilter(f)} className="rounded-pill border px-2.5 py-1 text-caption transition-colors"
+                  style={{ borderColor: on ? "transparent" : "oklch(0.9 0.01 285)", backgroundColor: on ? "oklch(0.55 0.2 285)" : "transparent", color: on ? "white" : "inherit" }}>
+                  {f === "all" ? "All" : statusLabel(f)}
+                </button>
+              );
+            })}
+          </div>
+          <div className="flex flex-col divide-y divide-border">
+            {visible.map((t) => {
+              const on = t.id === sel?.id;
+              return (
+                <button key={t.id} onClick={() => setSelId(t.id)} className="flex flex-col gap-1 py-2.5 text-left" style={on ? { backgroundColor: "oklch(0.96 0.02 285)" } : undefined}>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-mono text-caption text-content-muted">{t.id}</span>
+                    <span className="size-2 rounded-pill" style={{ backgroundColor: t.sla === "ok" ? "oklch(0.62 0.17 150)" : t.sla === "risk" ? "oklch(0.70 0.16 75)" : "oklch(0.58 0.22 25)" }} />
+                  </div>
+                  <span className="text-body font-medium">{t.org}</span>
+                  <span className="truncate text-caption normal-case text-content-muted">{t.subject}</span>
+                  <div className="flex gap-1">
+                    <Badge tone={t.prio === "High" ? "danger" : t.prio === "Medium" ? "warning" : "neutral"}>{t.prio}</Badge>
+                    <Badge tone={t.status === "open" ? "warning" : t.status === "pending" ? "info" : "success"}>{statusLabel(t.status)}</Badge>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </Card>
+
+        {/* Detail / resolution */}
+        {sel ? (
+          <Card className="flex flex-col gap-4 p-5 lg:col-span-2">
+            <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border pb-3">
+              <div className="flex flex-col gap-1">
+                <span className="font-mono text-caption text-content-muted">{sel.id} · {sel.ch}</span>
+                <h2 className="text-h3">{sel.subject}</h2>
+                <span className="text-caption normal-case text-content-muted">{sel.org}</span>
+              </div>
+              <div className="flex gap-1">
+                <Badge tone={sel.prio === "High" ? "danger" : sel.prio === "Medium" ? "warning" : "neutral"}>{sel.prio}</Badge>
+                <Badge tone={sel.status === "open" ? "warning" : sel.status === "pending" ? "info" : "success"}>{statusLabel(sel.status)}</Badge>
+              </div>
+            </div>
+
+            <p className="rounded-control border border-border bg-canvas px-3 py-2 text-caption normal-case text-content-muted">
+              🔒 Customer records are encrypted. You can see plan, seats and sync health; opening their data needs an owner-approved OTP grant.
+            </p>
+
+            {/* Conversation */}
+            <div className="flex max-h-72 flex-col gap-2 overflow-y-auto">
+              {sel.thread.map((m, i) => (
+                <div key={i} className={m.from === "agent" ? "flex justify-end" : m.from === "system" ? "flex justify-center" : "flex justify-start"}>
+                  {m.from === "system" ? (
+                    <span className="rounded-pill bg-canvas px-3 py-1 text-caption normal-case text-content-muted">{m.text} · {m.time}</span>
+                  ) : (
+                    <span className={"max-w-[80%] rounded-card px-3 py-2 text-body " + (m.from === "agent" ? "bg-primary text-white" : "border border-border bg-canvas")}>
+                      {m.text}
+                      <span className={"mt-0.5 block text-caption " + (m.from === "agent" ? "text-white/70" : "text-content-muted")}>{m.from === "agent" ? "You" : sel.org} · {m.time}</span>
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Reply */}
+            <div className="flex gap-2">
+              <Input value={reply} onChange={(e) => setReply(e.target.value)} placeholder="Reply to the customer…" />
+              <Button onClick={sendReply} disabled={!reply.trim()}>Send</Button>
+            </div>
+
+            {/* Actions */}
+            <div className="flex flex-col gap-3 border-t border-border pt-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-caption font-medium uppercase text-content-muted">Status</span>
+                {(["open", "pending", "resolved"] as WStatus[]).map((s) => (
+                  <button key={s} onClick={() => setStatus(s)} className="rounded-pill border px-3 py-1 text-caption transition-colors"
+                    style={{ borderColor: sel.status === s ? "transparent" : "oklch(0.9 0.01 285)", backgroundColor: sel.status === s ? "oklch(0.55 0.2 285)" : "transparent", color: sel.status === s ? "white" : "inherit" }}>
+                    {statusLabel(s)}
+                  </button>
+                ))}
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-caption font-medium uppercase text-content-muted">Escalate</span>
+                {["AI bot", "Virtual assistant", "On-site visit"].map((e) => (
+                  <button key={e} onClick={() => escalate(e)} className="rounded-pill border border-border px-3 py-1 text-caption hover:border-primary hover:text-primary">{e}</button>
+                ))}
+                <button onClick={() => sel && pushToTool(sel)} className="ml-auto rounded-pill border border-border px-3 py-1 text-caption hover:border-primary hover:text-primary">↗ Push to {tool.connected ? tool.provider : "ticketing tool"}</button>
+                <button onClick={() => setPushOpen((v) => !v)} className="rounded-control bg-primary px-3 py-1.5 text-caption font-medium text-white">🔔 Notify customer</button>
+              </div>
+
+              {pushOpen ? (
+                <div className="flex flex-col gap-2 rounded-card border border-border bg-canvas p-3">
+                  <span className="text-caption font-medium uppercase text-content-muted">Push notification → {sel.org}</span>
+                  <Input value={pushTitle} onChange={(e) => setPushTitle(e.target.value)} placeholder="Title (e.g. Update on your ticket)" />
+                  <Input value={pushMsg} onChange={(e) => setPushMsg(e.target.value)} placeholder="Message (e.g. Your sync issue is fixed — please reopen the app)" />
+                  <div className="flex items-center gap-2">
+                    <Button size="sm" onClick={sendPush}>Send push</Button>
+                    <span className="text-caption normal-case text-content-muted">Delivered via PWA push + WhatsApp.</span>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          </Card>
+        ) : (
+          <Card className="flex items-center justify-center p-8 lg:col-span-2">
+            <span className="text-body text-content-muted">Select a ticket to resolve it.</span>
+          </Card>
+        )}
+      </div>
+    </>
+  );
+}
+
 function HealthCard({ title, rows }: { title: string; rows: { l: string; v: string; s: Sev }[] }) {
   return (
     <Card className="flex flex-col gap-3 p-5">
@@ -1146,31 +1278,3 @@ function FormField({ label, hint }: { label: string; hint: string }) {
   );
 }
 
-function MiniStat({
-  label,
-  value,
-  tone = "default",
-}: {
-  label: string;
-  value: string;
-  tone?: "default" | "success" | "warning" | "danger";
-}) {
-  const color =
-    tone === "success" ? "text-success" : tone === "warning" ? "text-warning" : tone === "danger" ? "text-danger" : "";
-  return (
-    <div className="flex flex-col gap-1 rounded-card border border-border bg-canvas p-4">
-      <span className="text-caption normal-case text-content-muted">{label}</span>
-      <span className={"font-mono text-body-lg " + color}>{value}</span>
-    </div>
-  );
-}
-
-function Escala({ n, title, detail }: { n: string; title: string; detail: string }) {
-  return (
-    <div className="flex items-center gap-3 rounded-control border border-border bg-canvas px-3 py-2.5">
-      <span className="flex size-6 shrink-0 items-center justify-center rounded-pill font-mono text-caption font-semibold text-white" style={{ backgroundColor: "oklch(0.55 0.2 285)" }}>{n}</span>
-      <span className="text-body font-medium">{title}</span>
-      <span className="text-caption normal-case text-content-muted">{detail}</span>
-    </div>
-  );
-}

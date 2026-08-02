@@ -100,3 +100,21 @@ export { computeTax } from "./gst/compute";
 // --- Invoice & reports ------------------------------------------------------
 
 export { isBillOfSupply, resolveInvoice, resolveReports } from "./invoice";
+
+// --- Reconciliation (UPI / bank statement auto-match) -----------------------
+
+export { buildMatches, cellToPaise, extractReference, parseStatement } from "./reconcile/match";
+export type {
+  BuildMatchesInput,
+  Match,
+  MatchConfidence,
+  ReconcileInvoice,
+  ReconcileResult,
+  StatementTxn,
+} from "./reconcile/match";
+export {
+  gatewayPaymentsToTxns,
+  normalizeCashfreePayment,
+  normalizeRazorpayPayment,
+} from "./reconcile/gateway";
+export type { GatewayPayment } from "./reconcile/gateway";

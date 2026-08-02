@@ -248,8 +248,23 @@ CREATE TABLE IF NOT EXISTS marketing_campaigns (
 CREATE INDEX IF NOT EXISTS campaigns_org_idx ON marketing_campaigns(org_id, deleted_at);
 `;
 
+/**
+ * Migration 3 — payment bank reference (UPI/bank reconciliation idempotency).
+ *
+ * `reference` is the bank UTR/RRN pulled off the statement note. Storing it lets
+ * the reconcile flow refuse to apply the same credit twice when an overlapping
+ * statement is re-imported. Additive and nullable, so v2 devices upgrade with
+ * no data movement, and the encrypted generic sync carries the new column with
+ * no server-side migration.
+ */
+const MIGRATION_3 = `
+ALTER TABLE payments ADD COLUMN reference TEXT;
+CREATE INDEX IF NOT EXISTS payments_reference_idx
+  ON payments(org_id, reference) WHERE reference IS NOT NULL;
+`;
+
 /** Append-only. Index = version - 1. */
-export const MIGRATIONS: readonly string[] = [MIGRATION_1, MIGRATION_2];
+export const MIGRATIONS: readonly string[] = [MIGRATION_1, MIGRATION_2, MIGRATION_3];
 
 /** Tables that sync. sync_state is local-only and deliberately absent. */
 export const SYNCED_TABLES = [

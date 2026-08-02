@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Suspense } from "react";
 
 import { LoginForm } from "~/components/auth/login-form";
@@ -35,6 +36,13 @@ export default function LoginPage() {
         <Suspense fallback={<FormSkeleton />}>
           <LoginForm />
         </Suspense>
+
+        <p className="text-center text-caption normal-case text-content-muted">
+          <Link href="/download" className="font-medium text-primary hover:underline">
+            Install Vyora on your device
+          </Link>{" "}
+          — Windows, Mac, Android &amp; iPhone, works offline.
+        </p>
       </div>
     </main>
   );

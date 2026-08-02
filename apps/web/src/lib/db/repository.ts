@@ -2,7 +2,7 @@
 
 import type { JsonValue, Paise } from "@vyora/core";
 
-import { all, batch, get, openDatabase } from "./client";
+import { all, batch, get, openDatabase, run } from "./client";
 
 /**
  * Typed access to the local database.
@@ -65,6 +65,32 @@ let opened: Promise<unknown> | null = null;
 export function ready(): Promise<unknown> {
   opened ??= openDatabase();
   return opened;
+}
+
+// --- Device settings (local KV, e.g. UPI id, shop name) ----------------------
+
+/**
+ * Read a local setting from the `sync_state` KV table. Device-local by design
+ * (that table never syncs), which is right for things like the collection UPI
+ * id and shop name that a phone owns until a synced business profile lands.
+ */
+export async function getSetting(key: string): Promise<string | null> {
+  await ready();
+  const row = await get<{ value: string }>(
+    `SELECT value FROM sync_state WHERE key = ?`,
+    [key],
+  );
+  return row?.value ?? null;
+}
+
+/** Write a local setting (upsert). */
+export async function setSetting(key: string, value: string): Promise<void> {
+  await ready();
+  await run(
+    `INSERT INTO sync_state (key, value) VALUES (?, ?)
+     ON CONFLICT(key) DO UPDATE SET value = excluded.value`,
+    [key, value],
+  );
 }
 
 /**
@@ -357,6 +383,8 @@ export async function recordInvoicePayment(args: {
   amountPaise: Paise;
   method: string;
   createdBy?: string;
+  /** Bank UTR/RRN, when reconciling a statement — makes the write idempotent. */
+  reference?: string | null;
 }): Promise<void> {
   await ready();
   const now = new Date().toISOString();
@@ -365,8 +393,8 @@ export async function recordInvoicePayment(args: {
     {
       sql: `INSERT INTO payments
               (id, direction, party_type, invoice_id, amount_paise, method, date,
-               created_by, org_id, updated_at, dirty)
-            VALUES (?,?,?,?,?,?,?,?,?,?,1)`,
+               created_by, reference, org_id, updated_at, dirty)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,1)`,
       params: [
         crypto.randomUUID(),
         "in",
@@ -376,6 +404,7 @@ export async function recordInvoicePayment(args: {
         args.method,
         now.slice(0, 10),
         args.createdBy ?? null,
+        args.reference ?? null,
         args.orgId,
         now,
       ] as (string | number | null)[],
@@ -413,6 +442,20 @@ export function listOutstandingInvoices(
       [orgId, limit],
     ),
   );
+}
+
+/**
+ * Bank references already applied for this org — the reconcile flow's dedupe
+ * set, so re-importing an overlapping statement never double-records a credit.
+ */
+export async function listReconciledReferences(orgId: string): Promise<Set<string>> {
+  await ready();
+  const rows = await all<{ reference: string }>(
+    `SELECT DISTINCT reference FROM payments
+     WHERE org_id = ? AND reference IS NOT NULL AND deleted_at IS NULL`,
+    [orgId],
+  );
+  return new Set(rows.map((r) => r.reference));
 }
 
 export function listPayments(orgId: string, limit = 50): Promise<PaymentRow[]> {
@@ -859,6 +902,131 @@ export async function nextInvoiceNumber(orgId: string): Promise<string> {
     [orgId],
   );
   return `INV-${String((row?.n ?? 0) + 1).padStart(4, "0")}`;
+}
+
+// --- Invoice print -----------------------------------------------------------
+
+export interface InvoiceItemRow {
+  id: string;
+  description: string | null;
+  product_id: string | null;
+  qty_milli: number;
+  rate_paise: number;
+  tax_bps: number;
+  amount_paise: number;
+  /** The vertical's captured fields for this line (batch/expiry/…), parsed. */
+  meta: Record<string, JsonValue>;
+}
+
+export interface InvoicePrintData {
+  invoice: InvoiceRow | null;
+  items: InvoiceItemRow[];
+  customer: CustomerRow | null;
+}
+
+/**
+ * One invoice, its lines (with the vertical's captured fields), and its
+ * customer — everything a printable tax invoice needs, read from the local DB
+ * so it prints offline. meta is stored as JSON text; it is parsed here so the
+ * print view can render Batch/Expiry (or a jeweller's purity/HUID) as columns.
+ */
+export async function getInvoicePrintData(
+  orgId: string,
+  invoiceId: string,
+): Promise<InvoicePrintData> {
+  await ready();
+
+  const invoice = await get<InvoiceRow>(
+    `SELECT id, number, customer_id, date, status,
+            subtotal_paise, tax_paise, total_paise, updated_at, version, dirty
+     FROM invoices
+     WHERE id = ? AND org_id = ? AND deleted_at IS NULL`,
+    [invoiceId, orgId],
+  );
+
+  const rawItems = await all<{
+    id: string;
+    description: string | null;
+    product_id: string | null;
+    qty_milli: number;
+    rate_paise: number;
+    tax_bps: number;
+    amount_paise: number;
+    meta: string | null;
+  }>(
+    `SELECT id, description, product_id, qty_milli, rate_paise, tax_bps,
+            amount_paise, meta
+     FROM invoice_items
+     WHERE invoice_id = ? AND org_id = ?
+     ORDER BY rowid`,
+    [invoiceId, orgId],
+  );
+
+  const items: InvoiceItemRow[] = rawItems.map((r) => {
+    let meta: Record<string, JsonValue> = {};
+    if (r.meta) {
+      try {
+        meta = JSON.parse(r.meta) as Record<string, JsonValue>;
+      } catch {
+        meta = {};
+      }
+    }
+    return {
+      id: r.id,
+      description: r.description,
+      product_id: r.product_id,
+      qty_milli: r.qty_milli,
+      rate_paise: r.rate_paise,
+      tax_bps: r.tax_bps,
+      amount_paise: r.amount_paise,
+      meta,
+    };
+  });
+
+  let customer: CustomerRow | null = null;
+  if (invoice?.customer_id) {
+    customer = await get<CustomerRow>(
+      `SELECT id, name, phone, gstin, updated_at, version, dirty
+       FROM customers
+       WHERE id = ? AND org_id = ?`,
+      [invoice.customer_id, orgId],
+    );
+  }
+
+  return { invoice, items, customer };
+}
+
+// --- Sales intelligence (Vyora Edge) -----------------------------------------
+
+export interface ProductSales {
+  product_id: string;
+  qty_sold_milli: number;
+  /** ISO date of the most recent sale, or null if never sold. */
+  last_sold: string | null;
+  sale_count: number;
+}
+
+/**
+ * How much of each product has sold, and when it last moved.
+ *
+ * Powers the Dead-Stock Radar: a product with stock on hand but no recent sale
+ * is money sitting still. Read from the same invoice lines every report uses, so
+ * it always agrees with Sales.
+ */
+export function salesByProduct(orgId: string): Promise<ProductSales[]> {
+  return ready().then(() =>
+    all<ProductSales>(
+      `SELECT ii.product_id AS product_id,
+              COALESCE(SUM(ii.qty_milli), 0) AS qty_sold_milli,
+              MAX(i.date) AS last_sold,
+              COUNT(*) AS sale_count
+       FROM invoice_items ii
+       JOIN invoices i ON i.id = ii.invoice_id
+       WHERE ii.org_id = ? AND i.deleted_at IS NULL AND ii.product_id IS NOT NULL
+       GROUP BY ii.product_id`,
+      [orgId],
+    ),
+  );
 }
 
 // --- Suppliers ---------------------------------------------------------------

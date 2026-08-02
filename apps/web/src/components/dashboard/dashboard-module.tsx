@@ -6,6 +6,7 @@ import {
   type Paise,
 } from "@vyora/core";
 import { Badge, Card, EmptyState } from "@vyora/ui";
+import type { Route } from "next";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
@@ -185,7 +186,7 @@ function Kpi({
   sub,
   tone = "default",
 }: {
-  href: string;
+  href: Route;
   label: string;
   value: string;
   sub?: string;

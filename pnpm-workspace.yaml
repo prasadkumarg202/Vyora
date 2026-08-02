@@ -5,6 +5,8 @@ packages:
 # Native postinstall builds, reviewed and allowed explicitly.
 allowBuilds:
   # The compiler behind tsx (used by packages/core scripts).
+  electron: true
+  electron-winstaller: true
   esbuild: true
   # Next.js image optimization.
   sharp: true

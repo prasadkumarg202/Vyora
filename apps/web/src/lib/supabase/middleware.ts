@@ -4,9 +4,12 @@ import { NextResponse, type NextRequest } from "next/server";
 import { clientEnv } from "~/env";
 
 /** Routes reachable without a session. */
-const PUBLIC_PATHS = ["/login", "/auth", "/~offline"];
+const PUBLIC_PATHS = ["/login", "/auth", "/~offline", "/download"];
 
 const isPublic = (pathname: string) =>
+  // "/" is the public marketing landing page; the page itself sends
+  // signed-in users on to /dashboard.
+  pathname === "/" ||
   PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/"));
 
 /**

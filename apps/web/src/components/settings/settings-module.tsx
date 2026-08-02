@@ -6,6 +6,9 @@ import {
 } from "@vyora/core";
 import { Badge, Card } from "@vyora/ui";
 
+import { MarketingChannels } from "./marketing-channels";
+import { PaymentSettings } from "./payment-settings";
+
 /**
  * Settings (route: /settings) — the workspace's business profile and the
  * configuration its whole behaviour is derived from.
@@ -38,6 +41,10 @@ export function SettingsModule({
         </div>
         {config ? <Badge tone="primary">{config.label}</Badge> : null}
       </div>
+
+      <PaymentSettings />
+
+      <MarketingChannels />
 
       {config ? (
         <>

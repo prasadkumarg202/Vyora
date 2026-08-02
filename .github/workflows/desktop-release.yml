@@ -1,0 +1,43 @@
+name: Desktop release (Windows)
+
+# Builds Vyora-Setup.exe on a Windows runner and attaches it to a GitHub
+# Release. Trigger by pushing a version tag (v0.1.0, v1.2.3, ...) or manually
+# from the Actions tab.
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+jobs:
+  windows-installer:
+    runs-on: windows-latest
+    permissions:
+      contents: write # create the release + upload the installer
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4 # reads pnpm version from packageManager
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      # --no-frozen-lockfile keeps this green even if the lockfile lags the
+      # desktop package; tighten to --frozen-lockfile once it's committed.
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile --filter @vyora/desktop...
+
+      - name: Build and publish installer
+        run: pnpm --filter @vyora/desktop exec electron-builder --win --publish always
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Also keep the artifact on the workflow run itself (handy for testing
+      # a workflow_dispatch build without cutting a release).
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Vyora-Setup
+          path: apps/desktop/dist/Vyora-Setup.exe
+          if-no-files-found: error

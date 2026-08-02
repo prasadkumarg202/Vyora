@@ -77,6 +77,12 @@ export const NAV_ZONES: readonly NavZone[] = [
         summary: "Campaigns, broadcasts, templates, coupons, segments.",
         phase: "Phase 7",
       },
+      {
+        label: "Promotions",
+        href: "/promotions",
+        summary: "Festival & offer templates, AI writer, WhatsApp send.",
+        phase: "Phase 7",
+      },
     ],
   },
   {
@@ -199,6 +205,50 @@ export const NAV_ZONES: readonly NavZone[] = [
         label: "Help & Support",
         href: "/support",
         summary: "Chat, WhatsApp & Instagram support, FAQs, raise a ticket.",
+        phase: "Phase 7",
+      },
+    ],
+  },
+  {
+    id: "edge",
+    ordinal: "08",
+    label: "Vyora Edge",
+    tagline: "What the others don't have",
+    modules: [
+      {
+        label: "Scan & Sell",
+        href: "/scan-sell",
+        summary: "Your camera is the barcode scanner + POS. Scan, charge, collect by UPI.",
+        phase: "Phase 7",
+      },
+      {
+        label: "Voice Billing",
+        href: "/voice-bill",
+        summary: "Speak the sale in your language — it becomes an invoice.",
+        phase: "Phase 7",
+      },
+      {
+        label: "Snap Bill",
+        href: "/snap-bill",
+        summary: "Photograph a supplier bill — AI reads it & books the purchase.",
+        phase: "Phase 7",
+      },
+      {
+        label: "Credit Radar",
+        href: "/credit-radar",
+        summary: "Bharosa score & safe udhaar limit for every customer.",
+        phase: "Phase 7",
+      },
+      {
+        label: "Stock Radar",
+        href: "/stock-radar",
+        summary: "Dead & slow stock, capital stuck, clearance actions.",
+        phase: "Phase 7",
+      },
+      {
+        label: "UPI Auto-Match",
+        href: "/reconcile",
+        summary: "Paste a UPI/bank statement — credits auto-match to invoices & mark paid.",
         phase: "Phase 7",
       },
     ],

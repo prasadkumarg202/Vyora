@@ -16,6 +16,7 @@ import {
   type TaxBreakup,
 } from "@vyora/core";
 import { Badge, Button, Card, EmptyState, Input, Label } from "@vyora/ui";
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import {
@@ -215,7 +216,7 @@ export function SalesModule({
       calc.active.forEach((l, i) => {
         const record: Record<string, JsonValue> = {
           ...l.values,
-          rate: l.values.rate, // selling price, referenced by "price ≤ MRP"
+          rate: l.values.rate ?? "", // selling price, referenced by "price ≤ MRP"
         };
         const issues = [
           ...validateRequired(config, l.values),
@@ -423,6 +424,12 @@ export function SalesModule({
                   <span className="font-mono text-body-lg">
                     {formatPaise(inv.total_paise as Paise)}
                   </span>
+                  <Link
+                    href={`/invoice/${inv.id}`}
+                    className="text-caption font-medium text-primary hover:underline"
+                  >
+                    Print
+                  </Link>
                 </div>
               </div>
             ))}
@@ -540,8 +547,8 @@ function Row({ label, value }: { label: string; value: string }) {
   );
 }
 
-/** Rupee string -> paise, tolerant of an empty or partial entry. */
-function safePaise(rupees: string): Paise {
+/** Rupee string -> paise, tolerant of an empty, partial, or missing entry. */
+function safePaise(rupees: string | undefined): Paise {
   const n = Number((rupees ?? "").trim());
   if (!Number.isFinite(n) || n < 0) return 0 as Paise;
   try {
