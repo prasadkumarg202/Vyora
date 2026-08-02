@@ -5,10 +5,13 @@ packages:
 # Native postinstall builds, reviewed and allowed explicitly.
 allowBuilds:
   # The compiler behind tsx (used by packages/core scripts).
-  electron: true
-  electron-winstaller: true
   esbuild: true
   # Next.js image optimization.
   sharp: true
   # Native resolver behind eslint-plugin-import.
   unrs-resolver: true
+  # Cloudflare's local Workers runtime (wrangler / opennextjs preview).
+  workerd: true
+  # Electron desktop shell (apps/desktop) — downloads the Electron binary.
+  electron: true
+  electron-winstaller: set this to true or false
