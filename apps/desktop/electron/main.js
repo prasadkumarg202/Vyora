@@ -12,8 +12,7 @@ const DEV = !app.isPackaged;
 
 // Where the Vyora web app lives.
 //   - Override at runtime with VYORA_APP_URL (handy for staging).
-//   - TODO: change PROD_URL to your deployed web app URL before releasing.
-const PROD_URL = "https://app.vyora.in";
+const PROD_URL = "https://vyora.prasadkumar-g202.workers.dev";
 const APP_URL =
   process.env.VYORA_APP_URL || (DEV ? "http://localhost:3000" : PROD_URL);
 
