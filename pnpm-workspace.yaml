@@ -14,4 +14,5 @@ allowBuilds:
   workerd: true
   # Electron desktop shell (apps/desktop) — downloads the Electron binary.
   electron: true
-  electron-winstaller: set this to true or false
+  # Part of electron-builder's toolchain (apps/desktop).
+  electron-winstaller: true
