@@ -1,0 +1,25 @@
+/**
+ * Cloudflare Workers config for the Vyora web app (deployed via OpenNext).
+ * Build:  pnpm --filter @vyora/web run deploy   (or Cloudflare git builds)
+ */
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "vyora-web",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-06-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS",
+    // Route every request through the worker so Next's headers() config
+    // (COOP/COEP for sqlite-wasm's SharedArrayBuffer) applies to all
+    // responses. Without these headers the local database silently falls
+    // back to memory — correctness beats a few ms of static-serving speed.
+    "run_worker_first": true
+  },
+  "vars": {
+    "NEXTJS_ENV": "production"
+  }
+  // Secrets (SUPABASE_SERVICE_ROLE_KEY etc.) are set in the Cloudflare
+  // dashboard or via `wrangler secret put`, never committed here.
+}

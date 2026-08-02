@@ -35,3 +35,5 @@ publish:
   provider: github
   owner: prasadkumarg202
   repo: Vyora
+  # Publish the release immediately instead of leaving an invisible draft.
+  releaseType: release
