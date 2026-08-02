@@ -1,0 +1,10 @@
+{
+  "extends": "@vyora/config/typescript/library.json",
+  "compilerOptions": {
+    // node:sqlite powers the test driver; the OPFS driver needs DOM globals.
+    // Both live in this package, so it needs both type sets.
+    "types": ["node"]
+  },
+  "include": ["src/**/*.ts", "vitest.config.ts"],
+  "exclude": ["node_modules", "dist"]
+}

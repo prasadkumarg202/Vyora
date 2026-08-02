@@ -1,0 +1,14 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+  - "e2e"
+# Native postinstall builds, reviewed and allowed explicitly.
+allowBuilds:
+  # The compiler behind tsx (used by packages/core scripts).
+  electron: true
+  electron-winstaller: true
+  esbuild: true
+  # Next.js image optimization.
+  sharp: true
+  # Native resolver behind eslint-plugin-import.
+  unrs-resolver: true

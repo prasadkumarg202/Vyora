@@ -1,0 +1,1488 @@
+[
+  {
+    "id": "pharmacy",
+    "name": "Pharmacy",
+    "letter": "Rx",
+    "hue": 150,
+    "sector": "Chemist & medical",
+    "required": [
+      {
+        "l": "Item name",
+        "t": "text"
+      },
+      {
+        "l": "Batch No",
+        "t": "text"
+      },
+      {
+        "l": "Expiry",
+        "t": "date"
+      },
+      {
+        "l": "MRP",
+        "t": "currency"
+      },
+      {
+        "l": "Qty",
+        "t": "number"
+      },
+      {
+        "l": "GST",
+        "t": "percent"
+      }
+    ],
+    "optional": [
+      {
+        "l": "Schedule (H/H1/X)",
+        "t": "select"
+      },
+      {
+        "l": "HSN",
+        "t": "text"
+      },
+      {
+        "l": "Manufacturer",
+        "t": "text"
+      },
+      {
+        "l": "Rack",
+        "t": "text"
+      }
+    ],
+    "validations": [
+      "Expiry date must be after today",
+      "Batch No mandatory for scheduled drugs",
+      "Selling price cannot exceed MRP",
+      "Qty cannot exceed available stock",
+      "Schedule-H sale requires prescription reference"
+    ],
+    "gstDefault": "12%",
+    "gst": [
+      {
+        "l": "Life-saving / exempt drugs",
+        "r": "0–5%"
+      },
+      {
+        "l": "General medicines",
+        "r": "12%"
+      },
+      {
+        "l": "Wellness & OTC",
+        "r": "18%"
+      }
+    ],
+    "invTitle": "TAX INVOICE",
+    "invCols": [
+      "Item",
+      "Batch",
+      "Exp",
+      "HSN",
+      "Qty",
+      "MRP",
+      "Rate",
+      "GST",
+      "Amount"
+    ],
+    "invExtras": [
+      "Drug license no.",
+      "Pharmacist sign"
+    ],
+    "reports": [
+      "GSTR-1",
+      "Expiry & batch register",
+      "Schedule-H register",
+      "Fast movers"
+    ]
+  },
+  {
+    "id": "medical",
+    "name": "Medical Store",
+    "letter": "Ms",
+    "hue": 158,
+    "sector": "Retail chemist",
+    "required": [
+      {
+        "l": "Item name",
+        "t": "text"
+      },
+      {
+        "l": "Batch No",
+        "t": "text"
+      },
+      {
+        "l": "Expiry",
+        "t": "date"
+      },
+      {
+        "l": "MRP",
+        "t": "currency"
+      },
+      {
+        "l": "Qty",
+        "t": "number"
+      },
+      {
+        "l": "GST",
+        "t": "percent"
+      }
+    ],
+    "optional": [
+      {
+        "l": "Prescription upload",
+        "t": "file"
+      },
+      {
+        "l": "Schedule",
+        "t": "select"
+      },
+      {
+        "l": "HSN",
+        "t": "text"
+      },
+      {
+        "l": "Salt / composition",
+        "t": "text"
+      }
+    ],
+    "validations": [
+      "Expiry must be after today",
+      "Substitute suggested if out of stock",
+      "Selling price ≤ MRP",
+      "Rx upload required for schedule drugs"
+    ],
+    "gstDefault": "12%",
+    "gst": [
+      {
+        "l": "Exempt drugs",
+        "r": "0%"
+      },
+      {
+        "l": "Most medicines",
+        "r": "12%"
+      },
+      {
+        "l": "Cosmetics & devices",
+        "r": "18%"
+      }
+    ],
+    "invTitle": "TAX INVOICE",
+    "invCols": [
+      "Item",
+      "Batch",
+      "Exp",
+      "Qty",
+      "MRP",
+      "Rate",
+      "GST",
+      "Amount"
+    ],
+    "invExtras": [
+      "Drug license no."
+    ],
+    "reports": [
+      "GSTR-1",
+      "Expiry alerts",
+      "Salt-wise sales",
+      "Purchase returns"
+    ]
+  },
+  {
+    "id": "grocery",
+    "name": "Grocery",
+    "letter": "Gr",
+    "hue": 130,
+    "sector": "Daily needs",
+    "required": [
+      {
+        "l": "Item name",
+        "t": "text"
+      },
+      {
+        "l": "Weight / unit",
+        "t": "select"
+      },
+      {
+        "l": "MRP",
+        "t": "currency"
+      },
+      {
+        "l": "Qty",
+        "t": "number"
+      },
+      {
+        "l": "GST",
+        "t": "percent"
+      }
+    ],
+    "optional": [
+      {
+        "l": "Barcode",
+        "t": "scan"
+      },
+      {
+        "l": "Brand",
+        "t": "text"
+      },
+      {
+        "l": "HSN",
+        "t": "text"
+      }
+    ],
+    "validations": [
+      "Weight / quantity must be greater than 0",
+      "Barcode must be unique",
+      "Loose items priced per unit weight"
+    ],
+    "gstDefault": "5%",
+    "gst": [
+      {
+        "l": "Unbranded staples",
+        "r": "0%"
+      },
+      {
+        "l": "Packaged food",
+        "r": "5%"
+      },
+      {
+        "l": "Processed / branded",
+        "r": "12–18%"
+      }
+    ],
+    "invTitle": "RETAIL BILL",
+    "invCols": [
+      "Item",
+      "Unit",
+      "Qty",
+      "Rate",
+      "GST",
+      "Amount"
+    ],
+    "invExtras": [
+      "Round-off",
+      "Thank-you note"
+    ],
+    "reports": [
+      "Fast movers",
+      "Low stock",
+      "GST summary",
+      "Daily sales"
+    ]
+  },
+  {
+    "id": "kirana",
+    "name": "Kirana",
+    "letter": "Kr",
+    "hue": 120,
+    "sector": "Neighbourhood store",
+    "required": [
+      {
+        "l": "Item name",
+        "t": "text"
+      },
+      {
+        "l": "Qty",
+        "t": "number"
+      },
+      {
+        "l": "Rate",
+        "t": "currency"
+      }
+    ],
+    "optional": [
+      {
+        "l": "Unit",
+        "t": "select"
+      },
+      {
+        "l": "Customer khata",
+        "t": "select"
+      },
+      {
+        "l": "GST",
+        "t": "percent"
+      }
+    ],
+    "validations": [
+      "Credit (khata) within customer limit",
+      "Composition dealers omit tax breakup",
+      "Daily cash reconciliation prompt"
+    ],
+    "gstDefault": "Composition 1%",
+    "gst": [
+      {
+        "l": "Composition scheme",
+        "r": "1%"
+      },
+      {
+        "l": "Exempt goods",
+        "r": "0%"
+      }
+    ],
+    "invTitle": "BILL OF SUPPLY",
+    "invCols": [
+      "Item",
+      "Qty",
+      "Rate",
+      "Amount"
+    ],
+    "invExtras": [
+      "Khata balance",
+      "Composition dealer"
+    ],
+    "reports": [
+      "Khata outstanding",
+      "Daily sales",
+      "Top customers"
+    ]
+  },
+  {
+    "id": "electronics",
+    "name": "Electronics",
+    "letter": "El",
+    "hue": 245,
+    "sector": "Appliances & gadgets",
+    "required": [
+      {
+        "l": "Item name",
+        "t": "text"
+      },
+      {
+        "l": "Brand",
+        "t": "select"
+      },
+      {
+        "l": "Model",
+        "t": "text"
+      },
+      {
+        "l": "Serial No",
+        "t": "text"
+      },
+      {
+        "l": "MRP",
+        "t": "currency"
+      },
+      {
+        "l": "Qty",
+        "t": "number"
+      },
+      {
+        "l": "GST",
+        "t": "percent"
+      }
+    ],
+    "optional": [
+      {
+        "l": "Warranty",
+        "t": "select"
+      },
+      {
+        "l": "HSN",
+        "t": "text"
+      },
+      {
+        "l": "Extended warranty",
+        "t": "select"
+      }
+    ],
+    "validations": [
+      "Serial No must be unique",
+      "Warranty end auto-calculated from sale date",
+      "Qty ≤ stock"
+    ],
+    "gstDefault": "18%",
+    "gst": [
+      {
+        "l": "Most electronics",
+        "r": "18%"
+      },
+      {
+        "l": "Large appliances / TVs",
+        "r": "28%"
+      }
+    ],
+    "invTitle": "TAX INVOICE",
+    "invCols": [
+      "Item",
+      "Brand",
+      "Model",
+      "Serial",
+      "Warranty",
+      "Qty",
+      "Rate",
+      "GST",
+      "Amount"
+    ],
+    "invExtras": [
+      "Warranty terms",
+      "Serial recorded"
+    ],
+    "reports": [
+      "Warranty tracker",
+      "Serial ledger",
+      "Sales trend",
+      "Service claims"
+    ]
+  },
+  {
+    "id": "mobile",
+    "name": "Mobile Shop",
+    "letter": "Mb",
+    "hue": 265,
+    "sector": "Phones & accessories",
+    "required": [
+      {
+        "l": "Brand",
+        "t": "select"
+      },
+      {
+        "l": "Model",
+        "t": "text"
+      },
+      {
+        "l": "IMEI",
+        "t": "scan"
+      },
+      {
+        "l": "Price",
+        "t": "currency"
+      },
+      {
+        "l": "GST",
+        "t": "percent"
+      }
+    ],
+    "optional": [
+      {
+        "l": "Serial No",
+        "t": "text"
+      },
+      {
+        "l": "Warranty",
+        "t": "select"
+      },
+      {
+        "l": "Colour",
+        "t": "select"
+      },
+      {
+        "l": "Storage",
+        "t": "select"
+      }
+    ],
+    "validations": [
+      "IMEI must be 15 digits and unique",
+      "Warranty auto-registered on sale",
+      "Exchange value deducted before GST"
+    ],
+    "gstDefault": "18%",
+    "gst": [
+      {
+        "l": "Phones & tablets",
+        "r": "18%"
+      },
+      {
+        "l": "Accessories",
+        "r": "18%"
+      }
+    ],
+    "invTitle": "TAX INVOICE",
+    "invCols": [
+      "Brand",
+      "Model",
+      "IMEI",
+      "Warranty",
+      "Qty",
+      "Rate",
+      "GST",
+      "Amount"
+    ],
+    "invExtras": [
+      "IMEI printed",
+      "Warranty card"
+    ],
+    "reports": [
+      "IMEI ledger",
+      "Warranty tracker",
+      "GSTR-1",
+      "Exchange log"
+    ]
+  },
+  {
+    "id": "restaurant",
+    "name": "Restaurant",
+    "letter": "Rt",
+    "hue": 35,
+    "sector": "Dine-in & delivery",
+    "required": [
+      {
+        "l": "Item name",
+        "t": "text"
+      },
+      {
+        "l": "Qty",
+        "t": "number"
+      },
+      {
+        "l": "Rate",
+        "t": "currency"
+      },
+      {
+        "l": "Order type",
+        "t": "select"
+      },
+      {
+        "l": "GST",
+        "t": "percent"
+      }
+    ],
+    "optional": [
+      {
+        "l": "Table",
+        "t": "select"
+      },
+      {
+        "l": "Waiter",
+        "t": "select"
+      },
+      {
+        "l": "KOT No",
+        "t": "auto"
+      },
+      {
+        "l": "Kitchen notes",
+        "t": "text"
+      }
+    ],
+    "validations": [
+      "Table required for dine-in orders",
+      "KOT auto-generated on confirm",
+      "Service charge shown separately from GST"
+    ],
+    "gstDefault": "5%",
+    "gst": [
+      {
+        "l": "Standard restaurant",
+        "r": "5% (no ITC)"
+      },
+      {
+        "l": "AC / hotel ≥ ₹7,500 room",
+        "r": "18%"
+      }
+    ],
+    "invTitle": "TAX INVOICE",
+    "invCols": [
+      "Item",
+      "Qty",
+      "Rate",
+      "Amount"
+    ],
+    "invExtras": [
+      "KOT reference",
+      "Service charge",
+      "Table / parcel"
+    ],
+    "reports": [
+      "Table turnover",
+      "KOT summary",
+      "Item popularity",
+      "Daily sales"
+    ]
+  },
+  {
+    "id": "hotel",
+    "name": "Hotel",
+    "letter": "Ht",
+    "hue": 210,
+    "sector": "Rooms & hospitality",
+    "required": [
+      {
+        "l": "Room type",
+        "t": "select"
+      },
+      {
+        "l": "Guest name",
+        "t": "text"
+      },
+      {
+        "l": "Check-in",
+        "t": "date"
+      },
+      {
+        "l": "Check-out",
+        "t": "date"
+      },
+      {
+        "l": "Tariff",
+        "t": "currency"
+      },
+      {
+        "l": "GST",
+        "t": "percent"
+      }
+    ],
+    "optional": [
+      {
+        "l": "ID proof",
+        "t": "file"
+      },
+      {
+        "l": "Extra bed",
+        "t": "number"
+      },
+      {
+        "l": "Meal plan",
+        "t": "select"
+      }
+    ],
+    "validations": [
+      "Check-out must be after check-in",
+      "GST slab derived from room tariff",
+      "No-show / cancellation policy applied"
+    ],
+    "gstDefault": "12%",
+    "gst": [
+      {
+        "l": "Tariff < ₹7,500",
+        "r": "12%"
+      },
+      {
+        "l": "Tariff ≥ ₹7,500",
+        "r": "18%"
+      },
+      {
+        "l": "Restaurant within hotel",
+        "r": "5–18%"
+      }
+    ],
+    "invTitle": "GUEST FOLIO",
+    "invCols": [
+      "Date",
+      "Description",
+      "Nights",
+      "Rate",
+      "GST",
+      "Amount"
+    ],
+    "invExtras": [
+      "Room + services split",
+      "Guest ID recorded"
+    ],
+    "reports": [
+      "Occupancy",
+      "Revenue per room",
+      "ARR & RevPAR",
+      "Advance bookings"
+    ]
+  },
+  {
+    "id": "catering",
+    "name": "Catering",
+    "letter": "Ct",
+    "hue": 50,
+    "sector": "Events & bulk food",
+    "required": [
+      {
+        "l": "Event date",
+        "t": "date"
+      },
+      {
+        "l": "Menu items",
+        "t": "text"
+      },
+      {
+        "l": "Pax",
+        "t": "number"
+      },
+      {
+        "l": "Rate / plate",
+        "t": "currency"
+      },
+      {
+        "l": "GST",
+        "t": "percent"
+      }
+    ],
+    "optional": [
+      {
+        "l": "Venue",
+        "t": "text"
+      },
+      {
+        "l": "Advance",
+        "t": "currency"
+      },
+      {
+        "l": "Delivery time",
+        "t": "time"
+      },
+      {
+        "l": "Staff count",
+        "t": "number"
+      }
+    ],
+    "validations": [
+      "Pax must be greater than 0",
+      "Advance cannot exceed total",
+      "Ingredient plan generated from pax"
+    ],
+    "gstDefault": "5%",
+    "gst": [
+      {
+        "l": "Outdoor catering",
+        "r": "5%"
+      },
+      {
+        "l": "With premises / AC",
+        "r": "18%"
+      }
+    ],
+    "invTitle": "QUOTATION / INVOICE",
+    "invCols": [
+      "Menu",
+      "Pax",
+      "Rate/plate",
+      "Amount"
+    ],
+    "invExtras": [
+      "Advance received",
+      "Balance due",
+      "Event date"
+    ],
+    "reports": [
+      "Event calendar",
+      "Advance due",
+      "Ingredient plan",
+      "Per-event margin"
+    ]
+  },
+  {
+    "id": "manufacturing",
+    "name": "Manufacturing",
+    "letter": "Mf",
+    "hue": 200,
+    "sector": "Production & assembly",
+    "required": [
+      {
+        "l": "Product",
+        "t": "text"
+      },
+      {
+        "l": "BOM",
+        "t": "text"
+      },
+      {
+        "l": "Qty produced",
+        "t": "number"
+      },
+      {
+        "l": "Batch No",
+        "t": "text"
+      },
+      {
+        "l": "Cost",
+        "t": "currency"
+      },
+      {
+        "l": "GST",
+        "t": "percent"
+      }
+    ],
+    "optional": [
+      {
+        "l": "Machine",
+        "t": "select"
+      },
+      {
+        "l": "Shift",
+        "t": "select"
+      },
+      {
+        "l": "Wastage %",
+        "t": "percent"
+      }
+    ],
+    "validations": [
+      "BOM raw materials must be in stock",
+      "Batch No mandatory per production run",
+      "Output qty updates finished-goods stock"
+    ],
+    "gstDefault": "18%",
+    "gst": [
+      {
+        "l": "Standard goods",
+        "r": "18%"
+      },
+      {
+        "l": "Specific HSN slabs",
+        "r": "5–28%"
+      }
+    ],
+    "invTitle": "TAX INVOICE",
+    "invCols": [
+      "Product",
+      "HSN",
+      "Batch",
+      "Qty",
+      "Rate",
+      "GST",
+      "Amount"
+    ],
+    "invExtras": [
+      "E-way bill",
+      "HSN mandatory"
+    ],
+    "reports": [
+      "Production output",
+      "Raw material consumption",
+      "WIP status",
+      "Product costing"
+    ]
+  },
+  {
+    "id": "automobile",
+    "name": "Automobile",
+    "letter": "Au",
+    "hue": 20,
+    "sector": "Vehicles & service",
+    "required": [
+      {
+        "l": "Vehicle No",
+        "t": "text"
+      },
+      {
+        "l": "Customer",
+        "t": "text"
+      },
+      {
+        "l": "Service / part",
+        "t": "text"
+      },
+      {
+        "l": "Labour",
+        "t": "currency"
+      },
+      {
+        "l": "GST",
+        "t": "percent"
+      }
+    ],
+    "optional": [
+      {
+        "l": "Odometer",
+        "t": "number"
+      },
+      {
+        "l": "Next service date",
+        "t": "date"
+      },
+      {
+        "l": "Warranty",
+        "t": "select"
+      }
+    ],
+    "validations": [
+      "Vehicle No format validated",
+      "Parts and labour taxed under correct HSN/SAC",
+      "Service-due reminder scheduled"
+    ],
+    "gstDefault": "18%",
+    "gst": [
+      {
+        "l": "Spare parts",
+        "r": "18–28%"
+      },
+      {
+        "l": "Labour (SAC)",
+        "r": "18%"
+      }
+    ],
+    "invTitle": "JOB CARD / INVOICE",
+    "invCols": [
+      "Description",
+      "Type",
+      "Qty",
+      "Rate",
+      "GST",
+      "Amount"
+    ],
+    "invExtras": [
+      "Parts + labour split",
+      "Vehicle No recorded"
+    ],
+    "reports": [
+      "Job cards",
+      "Parts ledger",
+      "Service-due reminders",
+      "Technician load"
+    ]
+  },
+  {
+    "id": "jewellery",
+    "name": "Jewellery",
+    "letter": "Jw",
+    "hue": 85,
+    "sector": "Gold & silver",
+    "required": [
+      {
+        "l": "Item",
+        "t": "text"
+      },
+      {
+        "l": "Purity",
+        "t": "select"
+      },
+      {
+        "l": "Gross wt (g)",
+        "t": "number"
+      },
+      {
+        "l": "Net wt (g)",
+        "t": "number"
+      },
+      {
+        "l": "Rate / g",
+        "t": "currency"
+      },
+      {
+        "l": "Making charge",
+        "t": "percent"
+      },
+      {
+        "l": "GST",
+        "t": "percent"
+      }
+    ],
+    "optional": [
+      {
+        "l": "Stone wt",
+        "t": "number"
+      },
+      {
+        "l": "HUID",
+        "t": "text"
+      },
+      {
+        "l": "Hallmark no",
+        "t": "text"
+      }
+    ],
+    "validations": [
+      "Net weight cannot exceed gross weight",
+      "HUID must be 6 characters",
+      "Value = metal + making + GST",
+      "Old-gold exchange deducted before tax"
+    ],
+    "gstDefault": "3%",
+    "gst": [
+      {
+        "l": "Gold & silver ornaments",
+        "r": "3%"
+      },
+      {
+        "l": "Making charges",
+        "r": "5%"
+      }
+    ],
+    "invTitle": "TAX INVOICE",
+    "invCols": [
+      "Item",
+      "Purity",
+      "Gross",
+      "Net",
+      "Rate/g",
+      "Making",
+      "GST",
+      "Amount"
+    ],
+    "invExtras": [
+      "HUID printed",
+      "Hallmark details"
+    ],
+    "reports": [
+      "Metal (gold/silver) ledger",
+      "Making-charge summary",
+      "Hallmark log",
+      "Old-gold exchange"
+    ]
+  },
+  {
+    "id": "garments",
+    "name": "Garments",
+    "letter": "Ga",
+    "hue": 350,
+    "sector": "Apparel & textile",
+    "required": [
+      {
+        "l": "Style / SKU",
+        "t": "text"
+      },
+      {
+        "l": "Size",
+        "t": "select"
+      },
+      {
+        "l": "Colour",
+        "t": "select"
+      },
+      {
+        "l": "MRP",
+        "t": "currency"
+      },
+      {
+        "l": "Qty",
+        "t": "number"
+      },
+      {
+        "l": "GST",
+        "t": "percent"
+      }
+    ],
+    "optional": [
+      {
+        "l": "HSN",
+        "t": "text"
+      },
+      {
+        "l": "Fabric",
+        "t": "text"
+      },
+      {
+        "l": "Brand",
+        "t": "select"
+      }
+    ],
+    "validations": [
+      "SKU unique per size + colour",
+      "GST slab depends on price point",
+      "Size-colour matrix keeps stock"
+    ],
+    "gstDefault": "5%",
+    "gst": [
+      {
+        "l": "Apparel < ₹1,000",
+        "r": "5%"
+      },
+      {
+        "l": "Apparel ≥ ₹1,000",
+        "r": "12%"
+      }
+    ],
+    "invTitle": "TAX INVOICE",
+    "invCols": [
+      "Style",
+      "Size",
+      "Colour",
+      "Qty",
+      "Rate",
+      "GST",
+      "Amount"
+    ],
+    "invExtras": [
+      "Size-colour matrix"
+    ],
+    "reports": [
+      "Size-wise sales",
+      "SKU stock",
+      "Season trend",
+      "Dead stock"
+    ]
+  },
+  {
+    "id": "furniture",
+    "name": "Furniture",
+    "letter": "Fu",
+    "hue": 60,
+    "sector": "Home & office",
+    "required": [
+      {
+        "l": "Item",
+        "t": "text"
+      },
+      {
+        "l": "Material",
+        "t": "select"
+      },
+      {
+        "l": "Dimensions",
+        "t": "text"
+      },
+      {
+        "l": "Price",
+        "t": "currency"
+      },
+      {
+        "l": "Qty",
+        "t": "number"
+      },
+      {
+        "l": "GST",
+        "t": "percent"
+      }
+    ],
+    "optional": [
+      {
+        "l": "Warranty",
+        "t": "select"
+      },
+      {
+        "l": "Assembly",
+        "t": "boolean"
+      },
+      {
+        "l": "Delivery date",
+        "t": "date"
+      }
+    ],
+    "validations": [
+      "Delivery date must be on/after order date",
+      "Assembly charge added when selected",
+      "Made-to-order needs advance"
+    ],
+    "gstDefault": "18%",
+    "gst": [
+      {
+        "l": "Wooden furniture",
+        "r": "12%"
+      },
+      {
+        "l": "Metal / modular",
+        "r": "18%"
+      }
+    ],
+    "invTitle": "TAX INVOICE",
+    "invCols": [
+      "Item",
+      "Material",
+      "Dimensions",
+      "Qty",
+      "Rate",
+      "GST",
+      "Amount"
+    ],
+    "invExtras": [
+      "Delivery & assembly",
+      "Warranty terms"
+    ],
+    "reports": [
+      "Order pipeline",
+      "Delivery schedule",
+      "Material stock",
+      "Made-to-order status"
+    ]
+  },
+  {
+    "id": "hardware",
+    "name": "Hardware",
+    "letter": "Hw",
+    "hue": 215,
+    "sector": "Tools & building",
+    "required": [
+      {
+        "l": "Item",
+        "t": "text"
+      },
+      {
+        "l": "Unit",
+        "t": "select"
+      },
+      {
+        "l": "Qty",
+        "t": "number"
+      },
+      {
+        "l": "Rate",
+        "t": "currency"
+      },
+      {
+        "l": "GST",
+        "t": "percent"
+      }
+    ],
+    "optional": [
+      {
+        "l": "HSN",
+        "t": "text"
+      },
+      {
+        "l": "Brand",
+        "t": "select"
+      },
+      {
+        "l": "Barcode",
+        "t": "scan"
+      }
+    ],
+    "validations": [
+      "Quantity must be greater than 0",
+      "Unit conversions kept consistent",
+      "Slab varies by HSN"
+    ],
+    "gstDefault": "18%",
+    "gst": [
+      {
+        "l": "Fittings & pipes",
+        "r": "18%"
+      },
+      {
+        "l": "Cement / paint",
+        "r": "28%"
+      }
+    ],
+    "invTitle": "TAX INVOICE",
+    "invCols": [
+      "Item",
+      "Unit",
+      "Qty",
+      "Rate",
+      "GST",
+      "Amount"
+    ],
+    "invExtras": [
+      "Unit-based pricing"
+    ],
+    "reports": [
+      "Stock by unit",
+      "Supplier dues",
+      "GST summary",
+      "Bulk orders"
+    ]
+  },
+  {
+    "id": "wholesale",
+    "name": "Wholesale",
+    "letter": "Wh",
+    "hue": 190,
+    "sector": "Bulk B2B trade",
+    "required": [
+      {
+        "l": "Item",
+        "t": "text"
+      },
+      {
+        "l": "Qty",
+        "t": "number"
+      },
+      {
+        "l": "Rate",
+        "t": "currency"
+      },
+      {
+        "l": "GST",
+        "t": "percent"
+      },
+      {
+        "l": "Party GSTIN",
+        "t": "text"
+      }
+    ],
+    "optional": [
+      {
+        "l": "Discount slab",
+        "t": "percent"
+      },
+      {
+        "l": "Credit days",
+        "t": "number"
+      },
+      {
+        "l": "Transport",
+        "t": "text"
+      }
+    ],
+    "validations": [
+      "Party GSTIN must be valid (15 chars)",
+      "Credit within party limit",
+      "E-way bill for invoices above threshold"
+    ],
+    "gstDefault": "As per HSN",
+    "gst": [
+      {
+        "l": "Rate follows item HSN",
+        "r": "0–28%"
+      },
+      {
+        "l": "Inter-state",
+        "r": "IGST"
+      }
+    ],
+    "invTitle": "TAX INVOICE (B2B)",
+    "invCols": [
+      "Item",
+      "HSN",
+      "Qty",
+      "Rate",
+      "Disc",
+      "GST",
+      "Amount"
+    ],
+    "invExtras": [
+      "E-way bill",
+      "Party GSTIN"
+    ],
+    "reports": [
+      "Party outstanding",
+      "Bulk movers",
+      "Margin analysis",
+      "Credit ageing"
+    ]
+  },
+  {
+    "id": "retail",
+    "name": "Retail",
+    "letter": "Rl",
+    "hue": 280,
+    "sector": "General store / POS",
+    "required": [
+      {
+        "l": "Item",
+        "t": "text"
+      },
+      {
+        "l": "Qty",
+        "t": "number"
+      },
+      {
+        "l": "Rate",
+        "t": "currency"
+      },
+      {
+        "l": "GST",
+        "t": "percent"
+      }
+    ],
+    "optional": [
+      {
+        "l": "Barcode",
+        "t": "scan"
+      },
+      {
+        "l": "Customer",
+        "t": "select"
+      },
+      {
+        "l": "Discount",
+        "t": "percent"
+      }
+    ],
+    "validations": [
+      "Qty cannot exceed stock",
+      "GST per item HSN",
+      "Discount within allowed limit"
+    ],
+    "gstDefault": "As per HSN",
+    "gst": [
+      {
+        "l": "Rate follows item HSN",
+        "r": "0–28%"
+      }
+    ],
+    "invTitle": "RETAIL BILL",
+    "invCols": [
+      "Item",
+      "Qty",
+      "Rate",
+      "Disc",
+      "GST",
+      "Amount"
+    ],
+    "invExtras": [
+      "POS quick-bill",
+      "Loyalty points"
+    ],
+    "reports": [
+      "Daily sales",
+      "Fast movers",
+      "Average bill value",
+      "Hourly footfall"
+    ]
+  },
+  {
+    "id": "distributor",
+    "name": "Distributor",
+    "letter": "Ds",
+    "hue": 170,
+    "sector": "Supply & route sales",
+    "required": [
+      {
+        "l": "Item",
+        "t": "text"
+      },
+      {
+        "l": "Batch",
+        "t": "text"
+      },
+      {
+        "l": "Qty",
+        "t": "number"
+      },
+      {
+        "l": "Rate",
+        "t": "currency"
+      },
+      {
+        "l": "GST",
+        "t": "percent"
+      },
+      {
+        "l": "Retailer GSTIN",
+        "t": "text"
+      }
+    ],
+    "optional": [
+      {
+        "l": "Scheme",
+        "t": "text"
+      },
+      {
+        "l": "Credit days",
+        "t": "number"
+      },
+      {
+        "l": "Route",
+        "t": "select"
+      },
+      {
+        "l": "Salesman",
+        "t": "select"
+      }
+    ],
+    "validations": [
+      "Scheme discount within margin",
+      "Retailer GSTIN valid",
+      "Batch tracked for secondary sales",
+      "E-way bill above threshold"
+    ],
+    "gstDefault": "As per HSN",
+    "gst": [
+      {
+        "l": "Rate follows item HSN",
+        "r": "0–28%"
+      },
+      {
+        "l": "Scheme discount pre-tax",
+        "r": "—"
+      }
+    ],
+    "invTitle": "TAX INVOICE (B2B)",
+    "invCols": [
+      "Item",
+      "Batch",
+      "Qty",
+      "Rate",
+      "Scheme",
+      "GST",
+      "Amount"
+    ],
+    "invExtras": [
+      "E-way bill",
+      "Route / salesman"
+    ],
+    "reports": [
+      "Route sales",
+      "Scheme cost",
+      "Secondary sales",
+      "Outstanding by retailer"
+    ]
+  }
+]

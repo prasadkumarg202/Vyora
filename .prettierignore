@@ -1,0 +1,8 @@
+# Design references are read-only — never reformat them.
+design/
+
+pnpm-lock.yaml
+.turbo/
+node_modules/
+dist/
+.next/

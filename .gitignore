@@ -1,0 +1,50 @@
+node_modules/
+.pnpm-store/
+
+# builds
+dist/
+build/
+.next/
+out/
+*.tsbuildinfo
+
+# turbo
+.turbo/
+
+# Copied from node_modules by prebuild; never edit or commit these. A vendored
+# copy would silently drift from the version in package.json.
+apps/web/public/sqlite/
+
+# Service worker — generated into public/ by Serwist on every build.
+apps/web/public/sw.js
+apps/web/public/sw.js.map
+apps/web/public/swe-worker-*.js
+
+# env — secrets live in env only, never in the repo
+.env
+.env.*
+!.env.example
+!.env.mcp.example
+
+# test artifacts
+coverage/
+playwright-report/
+test-results/
+# Saved signed-in browser state — contains real session tokens.
+e2e/.auth/
+
+# editor / os
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# supabase local
+supabase/.branches/
+supabase/.temp/
+
+# Cloudflare / OpenNext build output
+.open-next/
+.wrangler/
+.dev.vars
