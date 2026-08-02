@@ -75,7 +75,7 @@ const DESCS: EntityDesc[] = [
 
 type Listener = (s: SyncStatus) => void;
 const listeners = new Set<Listener>();
-let status: SyncStatus = { online: true, pending: 0, syncing: false, failed: 0 };
+const status: SyncStatus = { online: true, pending: 0, syncing: false, failed: 0 };
 
 function emit() {
   for (const l of listeners) l(status);

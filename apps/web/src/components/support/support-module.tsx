@@ -199,7 +199,7 @@ export function SupportModule({ config }: { orgId: string; config: BusinessTypeC
               </select>
             </div>
           </div>
-          <div className="flex flex-col gap-1"><label className="text-caption font-medium uppercase text-content-muted">What's the issue?</label>
+          <div className="flex flex-col gap-1"><label className="text-caption font-medium uppercase text-content-muted">What&apos;s the issue?</label>
             <textarea value={vForm.issue} onChange={(e) => setVForm({ ...vForm, issue: e.target.value })} rows={2} className="rounded-input border border-border bg-surface px-3 py-2 text-body outline-none focus-visible:border-primary focus-visible:shadow-focus" placeholder="Briefly describe the problem" />
           </div>
           <div className="flex flex-wrap items-center gap-2 border-t border-border pt-3">

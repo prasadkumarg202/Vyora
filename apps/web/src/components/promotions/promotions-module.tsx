@@ -104,7 +104,7 @@ export function PromotionsModule({ orgId, config }: { orgId: string; config: Bus
   }
 
   const withPhone = customers.filter((c) => c.phone);
-  const toggleSel = (id: string) => setSelected((s) => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n; });
+  const toggleSel = (id: string) => setSelected((s) => { const n = new Set(s); if (n.has(id)) n.delete(id); else n.add(id); return n; });
   const allSel = withPhone.length > 0 && withPhone.every((c) => selected.has(c.id));
   function toast(m: string) { setFlash(m); window.setTimeout(() => setFlash(null), 2600); }
 
