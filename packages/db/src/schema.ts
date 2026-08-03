@@ -263,8 +263,53 @@ CREATE INDEX IF NOT EXISTS payments_reference_idx
   ON payments(org_id, reference) WHERE reference IS NOT NULL;
 `;
 
+
+/**
+ * Migration 4 — estimates / quotations and delivery challans.
+ *
+ * One table for both document kinds (doc_type discriminates) because they share
+ * every column and both convert into an invoice. Kept OUT of the invoices table
+ * on purpose: reports, GST and outstanding queries sum invoices, and a
+ * quotation must never count as revenue.
+ */
+const MIGRATION_4 = `
+CREATE TABLE IF NOT EXISTS sale_documents (
+  id                   TEXT PRIMARY KEY,
+  doc_type             TEXT NOT NULL,
+  number               TEXT,
+  customer_id          TEXT REFERENCES customers(id),
+  date                 TEXT NOT NULL,
+  status               TEXT NOT NULL DEFAULT 'open',
+  subtotal_paise       INTEGER NOT NULL DEFAULT 0,
+  tax_paise            INTEGER NOT NULL DEFAULT 0,
+  total_paise          INTEGER NOT NULL DEFAULT 0,
+  converted_invoice_id TEXT,
+  note                 TEXT,
+  custom_fields        TEXT NOT NULL DEFAULT '{}',
+  created_by           TEXT,
+  ${SYNC_COLUMNS}
+);
+
+CREATE TABLE IF NOT EXISTS sale_document_items (
+  id           TEXT PRIMARY KEY,
+  document_id  TEXT NOT NULL REFERENCES sale_documents(id) ON DELETE CASCADE,
+  product_id   TEXT REFERENCES products(id),
+  description  TEXT,
+  qty_milli    INTEGER NOT NULL DEFAULT 1000,
+  rate_paise   INTEGER NOT NULL DEFAULT 0,
+  tax_bps      INTEGER NOT NULL DEFAULT 0,
+  amount_paise INTEGER NOT NULL DEFAULT 0,
+  meta         TEXT NOT NULL DEFAULT '{}',
+  ${SYNC_COLUMNS}
+);
+
+CREATE INDEX IF NOT EXISTS sale_documents_org_idx ON sale_documents(org_id, deleted_at);
+CREATE INDEX IF NOT EXISTS sale_documents_type_idx ON sale_documents(org_id, doc_type, status);
+CREATE INDEX IF NOT EXISTS sale_document_items_doc_idx ON sale_document_items(document_id);
+`;
+
 /** Append-only. Index = version - 1. */
-export const MIGRATIONS: readonly string[] = [MIGRATION_1, MIGRATION_2, MIGRATION_3];
+export const MIGRATIONS: readonly string[] = [MIGRATION_1, MIGRATION_2, MIGRATION_3, MIGRATION_4];
 
 /** Tables that sync. sync_state is local-only and deliberately absent. */
 export const SYNCED_TABLES = [
@@ -281,6 +326,8 @@ export const SYNCED_TABLES = [
   "purchase_items",
   "expenses",
   "marketing_campaigns",
+  "sale_documents",
+  "sale_document_items",
 ] as const;
 
 export type SyncedTable = (typeof SYNCED_TABLES)[number];

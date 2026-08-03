@@ -66,6 +66,12 @@ export const NAV_ZONES: readonly NavZone[] = [
         phase: "Phase 7",
       },
       {
+        label: "Quotes & Challans",
+        href: "/quotes",
+        summary: "Estimates, quotations and delivery challans — convert to invoice in one tap.",
+        phase: "Phase 7",
+      },
+      {
         label: "CRM",
         href: "/crm",
         summary: "Leads, pipeline, activities, follow-ups.",
@@ -118,6 +124,12 @@ export const NAV_ZONES: readonly NavZone[] = [
         phase: "Phase 7",
       },
       {
+        label: "Import Data",
+        href: "/import",
+        summary: "Bulk-import items and customers from Excel/CSV, Vyapar or Tally exports.",
+        phase: "Phase 7",
+      },
+      {
         label: "Inventory",
         href: "/inventory",
         summary: "Stock levels, adjustments, transfers.",
@@ -155,6 +167,12 @@ export const NAV_ZONES: readonly NavZone[] = [
         label: "Payments",
         href: "/payments",
         summary: "Received, made, reminders, payment links, reconcile.",
+        phase: "Phase 7",
+      },
+      {
+        label: "Reminders",
+        href: "/reminders",
+        summary: "Overdue invoices with one-tap WhatsApp payment reminders.",
         phase: "Phase 7",
       },
       {

@@ -7,6 +7,7 @@ import {
 import { Badge, Card } from "@vyora/ui";
 
 import { MarketingChannels } from "./marketing-channels";
+import { InvoiceBranding } from "./invoice-branding";
 import { PaymentSettings } from "./payment-settings";
 
 /**
@@ -43,6 +44,8 @@ export function SettingsModule({
       </div>
 
       <PaymentSettings />
+
+      <InvoiceBranding />
 
       <MarketingChannels />
 

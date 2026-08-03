@@ -13,6 +13,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { UpiPay } from "~/components/sales/upi-pay";
 import {
   getInvoicePrintData,
+  getSetting,
   type InvoiceItemRow,
   type InvoicePrintData,
 } from "~/lib/db/repository";
@@ -93,6 +94,19 @@ export function InvoicePrintView({
 
   const byKey = useMemo(() => (config ? fieldsByKey(config) : {}), [config]);
 
+  // Shop branding, saved on-device in Settings -> Invoice branding.
+  const [brand, setBrand] = useState<{ address: string; gstin: string; phone: string; footer: string }>({ address: "", gstin: "", phone: "", footer: "" });
+  useEffect(() => {
+    void (async () => {
+      setBrand({
+        address: (await getSetting("shop_address")) ?? "",
+        gstin: (await getSetting("shop_gstin")) ?? "",
+        phone: (await getSetting("shop_phone")) ?? "",
+        footer: (await getSetting("invoice_footer")) ?? "",
+      });
+    })();
+  }, []);
+
   // Vertical columns: meta keys present on any line, minus the core ones.
   const verticalKeys = useMemo(() => {
     if (!data) return [];
@@ -154,6 +168,9 @@ export function InvoicePrintView({
           <div className="flex flex-col gap-0.5">
             <h1 className="text-2xl font-bold" style={{ color: "oklch(0.42 0.2 285)" }}>{businessName}</h1>
             {config ? <span className="text-[12px] text-gray-600">{config.label} · State code {stateCode}</span> : null}
+            {brand.address ? <span className="text-[12px] text-gray-600">{brand.address}</span> : null}
+            {brand.phone ? <span className="text-[12px] text-gray-600">Phone: {brand.phone}</span> : null}
+            {brand.gstin ? <span className="text-[12px] font-medium text-gray-700">GSTIN: {brand.gstin}</span> : null}
           </div>
           <div className="flex flex-col items-end gap-0.5">
             <span className="text-xl font-bold tracking-wide">{config?.invoice.template ?? "TAX INVOICE"}</span>
@@ -249,6 +266,7 @@ export function InvoicePrintView({
           <span>Thank you for your business.</span>
           <div className="flex flex-col items-end gap-6">
             <span className="font-semibold text-black">For {businessName}</span>
+            {brand.footer ? <span className="text-[11px] text-gray-500">{brand.footer}</span> : null}
             <span>Authorised signatory</span>
           </div>
         </div>

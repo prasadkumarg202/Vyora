@@ -1206,3 +1206,325 @@ export async function expensesSummary(
   );
   return { totalPaise: row?.total ?? 0, count: row?.n ?? 0 };
 }
+
+// --- Estimates, quotations & delivery challans -------------------------------
+
+export type SaleDocType = "estimate" | "challan";
+
+export interface SaleDocumentRow {
+  id: string;
+  doc_type: string;
+  number: string | null;
+  customer_id: string | null;
+  date: string;
+  status: string;
+  subtotal_paise: number;
+  tax_paise: number;
+  total_paise: number;
+  converted_invoice_id: string | null;
+  updated_at: string;
+  dirty: number;
+}
+
+export interface NewSaleDocument {
+  id: string;
+  orgId: string;
+  docType: SaleDocType;
+  number: string;
+  date: string;
+  customerId?: string;
+  note?: string;
+  subtotalPaise: Paise;
+  taxPaise: Paise;
+  totalPaise: Paise;
+  createdBy?: string;
+  items: InvoiceItemInput[];
+}
+
+/**
+ * Persist an estimate/quotation or delivery challan and its lines atomically,
+ * marked dirty — the same local-first contract as saveInvoice. Documents never
+ * touch stock or revenue; only conversion to an invoice does.
+ */
+export async function saveSaleDocument(doc: NewSaleDocument): Promise<void> {
+  await ready();
+  const now = new Date().toISOString();
+
+  const statements = [
+    {
+      sql: `INSERT INTO sale_documents
+              (id, doc_type, number, customer_id, date, status, subtotal_paise,
+               tax_paise, total_paise, note, created_by, org_id, updated_at, version, dirty)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,0,1)`,
+      params: [
+        doc.id,
+        doc.docType,
+        doc.number,
+        doc.customerId ?? null,
+        doc.date,
+        "open",
+        doc.subtotalPaise,
+        doc.taxPaise,
+        doc.totalPaise,
+        doc.note ?? null,
+        doc.createdBy ?? null,
+        doc.orgId,
+        now,
+      ] as (string | number | null)[],
+    },
+    ...doc.items.map((item) => ({
+      sql: `INSERT INTO sale_document_items
+              (id, document_id, product_id, description, qty_milli, rate_paise,
+               tax_bps, amount_paise, meta, org_id, updated_at, dirty)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,1)`,
+      params: [
+        crypto.randomUUID(),
+        doc.id,
+        item.productId ?? null,
+        item.description,
+        item.qtyMilli,
+        item.ratePaise,
+        item.taxBps,
+        item.amountPaise,
+        JSON.stringify(item.meta ?? {}),
+        doc.orgId,
+        now,
+      ] as (string | number | null)[],
+    })),
+  ];
+
+  await batch(statements);
+}
+
+/** Documents of one kind for an org, newest first, tombstones hidden. */
+export function listSaleDocuments(
+  orgId: string,
+  docType: SaleDocType,
+  limit = 50,
+): Promise<SaleDocumentRow[]> {
+  return ready().then(() =>
+    all<SaleDocumentRow>(
+      `SELECT id, doc_type, number, customer_id, date, status, subtotal_paise,
+              tax_paise, total_paise, converted_invoice_id, updated_at, dirty
+       FROM sale_documents
+       WHERE org_id = ? AND doc_type = ? AND deleted_at IS NULL
+       ORDER BY date DESC, updated_at DESC
+       LIMIT ?`,
+      [orgId, docType, limit],
+    ),
+  );
+}
+
+/** Display sequence per document kind (EST-0001 / DC-0001), like invoices. */
+export async function nextDocumentNumber(
+  orgId: string,
+  docType: SaleDocType,
+): Promise<string> {
+  await ready();
+  const row = await get<{ n: number }>(
+    `SELECT COUNT(*) AS n FROM sale_documents WHERE org_id = ? AND doc_type = ?`,
+    [orgId, docType],
+  );
+  const prefix = docType === "estimate" ? "EST" : "DC";
+  return `${prefix}-${String((row?.n ?? 0) + 1).padStart(4, "0")}`;
+}
+
+/**
+ * Convert an open estimate/challan into a real invoice — atomically.
+ *
+ * Copies the document's lines into a new invoice (which from then on behaves
+ * exactly like any sale: reports, GST, outstanding), and marks the document
+ * converted with a pointer to the invoice it became. Refuses double conversion
+ * via the status check in the UPDATE's WHERE clause.
+ */
+export async function convertDocumentToInvoice(args: {
+  orgId: string;
+  documentId: string;
+  createdBy?: string;
+}): Promise<string | null> {
+  await ready();
+
+  const doc = await get<SaleDocumentRow>(
+    `SELECT id, doc_type, number, customer_id, date, status, subtotal_paise,
+            tax_paise, total_paise, converted_invoice_id, updated_at, dirty
+     FROM sale_documents
+     WHERE id = ? AND org_id = ? AND deleted_at IS NULL`,
+    [args.documentId, args.orgId],
+  );
+  if (!doc || doc.status !== "open") return null;
+
+  const items = await all<{
+    product_id: string | null;
+    description: string | null;
+    qty_milli: number;
+    rate_paise: number;
+    tax_bps: number;
+    amount_paise: number;
+    meta: string | null;
+  }>(
+    `SELECT product_id, description, qty_milli, rate_paise, tax_bps, amount_paise, meta
+     FROM sale_document_items
+     WHERE document_id = ? AND org_id = ?
+     ORDER BY rowid`,
+    [args.documentId, args.orgId],
+  );
+
+  const invoiceId = crypto.randomUUID();
+  const number = await nextInvoiceNumber(args.orgId);
+  const now = new Date().toISOString();
+  const today = now.slice(0, 10);
+
+  await batch([
+    {
+      sql: `INSERT INTO invoices
+              (id, number, customer_id, date, status, subtotal_paise, tax_paise,
+               total_paise, created_by, org_id, updated_at, version, dirty)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,0,1)`,
+      params: [
+        invoiceId,
+        number,
+        doc.customer_id,
+        today,
+        "issued",
+        doc.subtotal_paise,
+        doc.tax_paise,
+        doc.total_paise,
+        args.createdBy ?? null,
+        args.orgId,
+        now,
+      ] as (string | number | null)[],
+    },
+    ...items.map((it) => ({
+      sql: `INSERT INTO invoice_items
+              (id, invoice_id, product_id, description, qty_milli, rate_paise,
+               tax_bps, amount_paise, meta, org_id, updated_at, dirty)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,1)`,
+      params: [
+        crypto.randomUUID(),
+        invoiceId,
+        it.product_id,
+        it.description,
+        it.qty_milli,
+        it.rate_paise,
+        it.tax_bps,
+        it.amount_paise,
+        it.meta ?? "{}",
+        args.orgId,
+        now,
+      ] as (string | number | null)[],
+    })),
+    {
+      sql: `UPDATE sale_documents
+            SET status = 'converted', converted_invoice_id = ?, dirty = 1, updated_at = ?
+            WHERE id = ? AND org_id = ? AND status = 'open'`,
+      params: [invoiceId, now, args.documentId, args.orgId] as (string | number | null)[],
+    },
+  ]);
+
+  return invoiceId;
+}
+
+// --- Payment reminders -------------------------------------------------------
+
+export interface OverdueInvoiceRow {
+  id: string;
+  number: string | null;
+  date: string;
+  total_paise: number;
+  amount_paid_paise: number;
+  customer_name: string | null;
+  customer_phone: string | null;
+}
+
+/**
+ * Unpaid invoices with the customer to chase — oldest debt first. Feeds the
+ * Reminders screen, which turns each row into a one-tap WhatsApp reminder.
+ */
+export function listOverdueInvoices(
+  orgId: string,
+  limit = 100,
+): Promise<OverdueInvoiceRow[]> {
+  return ready().then(() =>
+    all<OverdueInvoiceRow>(
+      `SELECT i.id, i.number, i.date, i.total_paise, i.amount_paid_paise,
+              c.name AS customer_name, c.phone AS customer_phone
+       FROM invoices i
+       LEFT JOIN customers c ON c.id = i.customer_id AND c.deleted_at IS NULL
+       WHERE i.org_id = ? AND i.deleted_at IS NULL
+         AND i.amount_paid_paise < i.total_paise
+       ORDER BY i.date ASC, i.updated_at ASC
+       LIMIT ?`,
+      [orgId, limit],
+    ),
+  );
+}
+
+// --- Bulk import (ETL load step) ---------------------------------------------
+
+/**
+ * Insert many products (and their opening-stock movements) in ONE transaction —
+ * the load step of the import wizard. All-or-nothing: a bad row rolls back the
+ * whole file, so a half-imported catalog can never exist.
+ */
+export async function bulkInsertProducts(
+  orgId: string,
+  rows: {
+    name: string;
+    sku?: string;
+    pricePaise: Paise;
+    taxBps: number;
+    hsn?: string;
+    openingMilli: number;
+  }[],
+): Promise<number> {
+  await ready();
+  const now = new Date().toISOString();
+  const statements: { sql: string; params: (string | number | null)[] }[] = [];
+
+  for (const r of rows) {
+    const id = crypto.randomUUID();
+    statements.push({
+      sql: `INSERT INTO products
+              (id, name, sku, price_paise, tax_bps, hsn, org_id, updated_at, version, dirty)
+            VALUES (?,?,?,?,?,?,?,?,0,1)`,
+      params: [id, r.name, r.sku ?? null, r.pricePaise, r.taxBps, r.hsn ?? null, orgId, now],
+    });
+    if (r.openingMilli !== 0) {
+      statements.push({
+        sql: `INSERT INTO stock_movements
+                (id, product_id, type, qty_milli, ref_type, created_at, org_id, updated_at, dirty)
+              VALUES (?,?,?,?,?,?,?,?,1)`,
+        params: [crypto.randomUUID(), id, "opening", r.openingMilli, "import", now, orgId, now],
+      });
+    }
+  }
+
+  await batch(statements);
+  return rows.length;
+}
+
+/** Insert many customers in one transaction — see bulkInsertProducts. */
+export async function bulkInsertCustomers(
+  orgId: string,
+  rows: { name: string; phone?: string; gstin?: string }[],
+): Promise<number> {
+  await ready();
+  const now = new Date().toISOString();
+
+  await batch(
+    rows.map((r) => ({
+      sql: `INSERT INTO customers
+              (id, name, phone, gstin, org_id, updated_at, version, dirty)
+            VALUES (?,?,?,?,?,?,0,1)`,
+      params: [
+        crypto.randomUUID(),
+        r.name,
+        r.phone ?? null,
+        r.gstin ?? null,
+        orgId,
+        now,
+      ] as (string | number | null)[],
+    })),
+  );
+  return rows.length;
+}
