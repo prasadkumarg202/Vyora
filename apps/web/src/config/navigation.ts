@@ -110,6 +110,12 @@ export const NAV_ZONES: readonly NavZone[] = [
         phase: "Phase 7",
       },
       {
+        label: "Supply Desk",
+        href: "/supply",
+        summary: "Supply orders, supplier returns (debit notes) and money paid out.",
+        phase: "Phase 7",
+      },
+      {
         label: "Expenses",
         href: "/expenses",
         summary: "Entries, categories, recurring, receipt OCR.",

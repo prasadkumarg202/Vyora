@@ -323,8 +323,62 @@ CREATE INDEX IF NOT EXISTS sale_documents_ref_idx
   ON sale_documents(org_id, ref_invoice_id) WHERE ref_invoice_id IS NOT NULL;
 `;
 
+
+/**
+ * Migration 6 — purchase orders and debit notes.
+ *
+ * The mirror of MIGRATION_4 on the buying side. Kept as its own pair of tables
+ * rather than a `party_type` column on the sale ones: a purchase order points at
+ * a supplier and becomes a purchase, a quotation points at a customer and
+ * becomes an invoice, and collapsing the two would mean every query carrying a
+ * discriminator it can never forget.
+ */
+const MIGRATION_6 = `
+CREATE TABLE IF NOT EXISTS purchase_documents (
+  id                    TEXT PRIMARY KEY,
+  doc_type              TEXT NOT NULL,
+  number                TEXT,
+  supplier_id           TEXT REFERENCES suppliers(id),
+  date                  TEXT NOT NULL,
+  status                TEXT NOT NULL DEFAULT 'open',
+  subtotal_paise        INTEGER NOT NULL DEFAULT 0,
+  tax_paise             INTEGER NOT NULL DEFAULT 0,
+  total_paise           INTEGER NOT NULL DEFAULT 0,
+  converted_purchase_id TEXT,
+  ref_purchase_id       TEXT,
+  note                  TEXT,
+  custom_fields         TEXT NOT NULL DEFAULT '{}',
+  created_by            TEXT,
+  ${SYNC_COLUMNS}
+);
+
+CREATE TABLE IF NOT EXISTS purchase_document_items (
+  id           TEXT PRIMARY KEY,
+  document_id  TEXT NOT NULL REFERENCES purchase_documents(id) ON DELETE CASCADE,
+  product_id   TEXT REFERENCES products(id),
+  description  TEXT,
+  qty_milli    INTEGER NOT NULL DEFAULT 1000,
+  rate_paise   INTEGER NOT NULL DEFAULT 0,
+  tax_bps      INTEGER NOT NULL DEFAULT 0,
+  amount_paise INTEGER NOT NULL DEFAULT 0,
+  meta         TEXT NOT NULL DEFAULT '{}',
+  ${SYNC_COLUMNS}
+);
+
+CREATE INDEX IF NOT EXISTS purchase_documents_org_idx  ON purchase_documents(org_id, deleted_at);
+CREATE INDEX IF NOT EXISTS purchase_documents_type_idx ON purchase_documents(org_id, doc_type, status);
+CREATE INDEX IF NOT EXISTS purchase_document_items_doc_idx ON purchase_document_items(document_id);
+`;
+
 /** Append-only. Index = version - 1. */
-export const MIGRATIONS: readonly string[] = [MIGRATION_1, MIGRATION_2, MIGRATION_3, MIGRATION_4, MIGRATION_5];
+export const MIGRATIONS: readonly string[] = [
+  MIGRATION_1,
+  MIGRATION_2,
+  MIGRATION_3,
+  MIGRATION_4,
+  MIGRATION_5,
+  MIGRATION_6,
+];
 
 /** Tables that sync. sync_state is local-only and deliberately absent. */
 export const SYNCED_TABLES = [
@@ -343,6 +397,8 @@ export const SYNCED_TABLES = [
   "marketing_campaigns",
   "sale_documents",
   "sale_document_items",
+  "purchase_documents",
+  "purchase_document_items",
 ] as const;
 
 export type SyncedTable = (typeof SYNCED_TABLES)[number];

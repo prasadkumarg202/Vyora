@@ -1622,6 +1622,491 @@ export async function saveSaleReturn(args: {
   return docId;
 }
 
+// --- The buying side: supply orders, supplier returns, payments out ----------
+
+/** Paperwork around a purchase, mirroring SaleDocType on the selling side. */
+export type PurchaseDocType =
+  | "order"   // supply order: placed with a supplier, goods awaited
+  | "return"; // goods sent back — the GST debit note
+
+const PURCHASE_DOC_PREFIX: Record<PurchaseDocType, string> = {
+  order: "PO",
+  return: "DBN",
+};
+
+export interface PurchaseDocumentRow {
+  id: string;
+  doc_type: string;
+  number: string | null;
+  supplier_id: string | null;
+  supplier_name: string | null;
+  date: string;
+  status: string;
+  subtotal_paise: number;
+  tax_paise: number;
+  total_paise: number;
+  converted_purchase_id: string | null;
+  ref_purchase_id: string | null;
+  updated_at: string;
+  dirty: number;
+}
+
+export interface NewPurchaseDocument {
+  id: string;
+  orgId: string;
+  docType: PurchaseDocType;
+  number: string;
+  date: string;
+  supplierId?: string;
+  note?: string;
+  /** The purchase this answers to (a debit note's original bill). */
+  refPurchaseId?: string;
+  subtotalPaise: Paise;
+  taxPaise: Paise;
+  totalPaise: Paise;
+  createdBy?: string;
+  items: (InvoiceItemInput & { productId?: string })[];
+}
+
+/** Next number in the series (PO-0001, DBN-0001). */
+export async function nextPurchaseDocNumber(
+  orgId: string,
+  docType: PurchaseDocType,
+): Promise<string> {
+  await ready();
+  const row = await get<{ n: number }>(
+    `SELECT COUNT(*) AS n FROM purchase_documents WHERE org_id = ? AND doc_type = ?`,
+    [orgId, docType],
+  );
+  return `${PURCHASE_DOC_PREFIX[docType]}-${String((row?.n ?? 0) + 1).padStart(4, "0")}`;
+}
+
+/** Save a supply order (or the shell of a debit note) with its lines, atomically. */
+export async function savePurchaseDocument(doc: NewPurchaseDocument): Promise<void> {
+  await ready();
+  const now = new Date().toISOString();
+
+  await batch([
+    {
+      sql: `INSERT INTO purchase_documents
+              (id, doc_type, number, supplier_id, date, status, subtotal_paise,
+               tax_paise, total_paise, note, ref_purchase_id, created_by, org_id,
+               updated_at, version, dirty)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,0,1)`,
+      params: [
+        doc.id,
+        doc.docType,
+        doc.number,
+        doc.supplierId ?? null,
+        doc.date,
+        doc.docType === "return" ? "issued" : "open",
+        doc.subtotalPaise,
+        doc.taxPaise,
+        doc.totalPaise,
+        doc.note ?? null,
+        doc.refPurchaseId ?? null,
+        doc.createdBy ?? null,
+        doc.orgId,
+        now,
+      ] as (string | number | null)[],
+    },
+    ...doc.items.map((item) => ({
+      sql: `INSERT INTO purchase_document_items
+              (id, document_id, product_id, description, qty_milli, rate_paise,
+               tax_bps, amount_paise, meta, org_id, updated_at, dirty)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,1)`,
+      params: [
+        crypto.randomUUID(),
+        doc.id,
+        item.productId ?? null,
+        item.description,
+        item.qtyMilli,
+        item.ratePaise,
+        item.taxBps,
+        item.amountPaise,
+        JSON.stringify(item.meta ?? {}),
+        doc.orgId,
+        now,
+      ] as (string | number | null)[],
+    })),
+  ]);
+}
+
+/** Documents of one kind, newest first, with the supplier's name resolved. */
+export function listPurchaseDocuments(
+  orgId: string,
+  docType: PurchaseDocType,
+  limit = 50,
+): Promise<PurchaseDocumentRow[]> {
+  return ready().then(() =>
+    all<PurchaseDocumentRow>(
+      `SELECT d.id, d.doc_type, d.number, d.supplier_id, s.name AS supplier_name,
+              d.date, d.status, d.subtotal_paise, d.tax_paise, d.total_paise,
+              d.converted_purchase_id, d.ref_purchase_id, d.updated_at, d.dirty
+       FROM purchase_documents d
+       LEFT JOIN suppliers s ON s.id = d.supplier_id
+       WHERE d.org_id = ? AND d.doc_type = ? AND d.deleted_at IS NULL
+       ORDER BY d.date DESC, d.updated_at DESC
+       LIMIT ?`,
+      [orgId, docType, limit],
+    ),
+  );
+}
+
+/**
+ * Receive a supply order: it becomes a purchase bill, and the goods land on the
+ * stock ledger — the same movement rows savePurchase writes, so Inventory sees
+ * no difference between stock received this way and any other.
+ */
+export async function convertOrderToPurchase(args: {
+  orgId: string;
+  documentId: string;
+}): Promise<string | null> {
+  await ready();
+
+  const doc = await get<PurchaseDocumentRow>(
+    `SELECT id, doc_type, number, supplier_id, NULL AS supplier_name, date, status,
+            subtotal_paise, tax_paise, total_paise, converted_purchase_id,
+            ref_purchase_id, updated_at, dirty
+     FROM purchase_documents
+     WHERE id = ? AND org_id = ? AND deleted_at IS NULL`,
+    [args.documentId, args.orgId],
+  );
+  if (!doc || doc.status !== "open") return null;
+
+  const items = await all<{
+    product_id: string | null;
+    qty_milli: number;
+    rate_paise: number;
+    tax_bps: number;
+    amount_paise: number;
+  }>(
+    `SELECT product_id, qty_milli, rate_paise, tax_bps, amount_paise
+     FROM purchase_document_items
+     WHERE document_id = ? AND org_id = ?
+     ORDER BY rowid`,
+    [args.documentId, args.orgId],
+  );
+
+  const purchaseId = crypto.randomUUID();
+  const number = await nextPurchaseNumber(args.orgId);
+  const now = new Date().toISOString();
+
+  const statements: { sql: string; params: (string | number | null)[] }[] = [
+    {
+      sql: `INSERT INTO purchases
+              (id, number, supplier_id, date, status, subtotal_paise, tax_paise,
+               total_paise, org_id, updated_at, version, dirty)
+            VALUES (?,?,?,?,?,?,?,?,?,?,0,1)`,
+      params: [
+        purchaseId,
+        number,
+        doc.supplier_id,
+        now.slice(0, 10),
+        "received",
+        doc.subtotal_paise,
+        doc.tax_paise,
+        doc.total_paise,
+        args.orgId,
+        now,
+      ],
+    },
+  ];
+
+  for (const it of items) {
+    statements.push({
+      sql: `INSERT INTO purchase_items
+              (id, purchase_id, product_id, qty_milli, rate_paise, tax_bps,
+               amount_paise, org_id, updated_at, dirty)
+            VALUES (?,?,?,?,?,?,?,?,?,1)`,
+      params: [
+        crypto.randomUUID(),
+        purchaseId,
+        it.product_id,
+        it.qty_milli,
+        it.rate_paise,
+        it.tax_bps,
+        it.amount_paise,
+        args.orgId,
+        now,
+      ],
+    });
+    if (it.product_id) {
+      statements.push({
+        sql: `INSERT INTO stock_movements
+                (id, product_id, type, qty_milli, ref_type, ref_id, created_at,
+                 org_id, updated_at, dirty)
+              VALUES (?,?,?,?,?,?,?,?,?,1)`,
+        params: [
+          crypto.randomUUID(),
+          it.product_id,
+          "purchase",
+          it.qty_milli, // positive: stock in
+          "purchase",
+          purchaseId,
+          now,
+          args.orgId,
+          now,
+        ],
+      });
+    }
+  }
+
+  statements.push({
+    sql: `UPDATE purchase_documents
+          SET status = 'converted', converted_purchase_id = ?, dirty = 1, updated_at = ?
+          WHERE id = ? AND org_id = ? AND status = 'open'`,
+    params: [purchaseId, now, args.documentId, args.orgId],
+  });
+
+  await batch(statements);
+  return purchaseId;
+}
+
+export interface PurchaseItemRow {
+  id: string;
+  product_id: string | null;
+  description: string | null;
+  qty_milli: number;
+  rate_paise: number;
+  tax_bps: number;
+  amount_paise: number;
+}
+
+export interface PurchaseDetail {
+  purchase: PurchaseRow | null;
+  supplierId: string | null;
+  supplierName: string | null;
+  items: PurchaseItemRow[];
+}
+
+/**
+ * One purchase bill with its lines and supplier — what the returns screen needs
+ * to price a send-back exactly as the bill priced it. Line names come from the
+ * product, since purchase_items store the link rather than a copy of the name.
+ */
+export async function getPurchaseDetail(
+  orgId: string,
+  purchaseId: string,
+): Promise<PurchaseDetail> {
+  await ready();
+
+  const purchase = await get<PurchaseRow & { supplier_id: string | null }>(
+    `SELECT id, number, date, status, subtotal_paise, tax_paise, total_paise,
+            supplier_id, updated_at, dirty
+     FROM purchases
+     WHERE id = ? AND org_id = ? AND deleted_at IS NULL`,
+    [purchaseId, orgId],
+  );
+
+  const items = await all<PurchaseItemRow>(
+    `SELECT pi.id, pi.product_id, p.name AS description, pi.qty_milli,
+            pi.rate_paise, pi.tax_bps, pi.amount_paise
+     FROM purchase_items pi
+     LEFT JOIN products p ON p.id = pi.product_id
+     WHERE pi.purchase_id = ? AND pi.org_id = ?
+     ORDER BY pi.rowid`,
+    [purchaseId, orgId],
+  );
+
+  let supplierName: string | null = null;
+  if (purchase?.supplier_id) {
+    const s = await get<{ name: string }>(
+      `SELECT name FROM suppliers WHERE id = ? AND org_id = ?`,
+      [purchase.supplier_id, orgId],
+    );
+    supplierName = s?.name ?? null;
+  }
+
+  return {
+    purchase: purchase ?? null,
+    supplierId: purchase?.supplier_id ?? null,
+    supplierName,
+    items,
+  };
+}
+
+/**
+ * Send goods back to a supplier: the debit note, the stock leaving, and the
+ * money you no longer owe — one transaction.
+ *
+ * The mirror of saveSaleReturn. Stock moves out (negative), and the debit is
+ * recorded as a payment out so the supplier's payable — purchases minus
+ * payments out — drops without a second ledger to reconcile.
+ */
+export async function savePurchaseReturn(args: {
+  orgId: string;
+  purchaseId: string;
+  supplierId?: string | null;
+  number: string;
+  note?: string;
+  createdBy?: string;
+  subtotalPaise: Paise;
+  taxPaise: Paise;
+  totalPaise: Paise;
+  items: (InvoiceItemInput & { productId?: string })[];
+}): Promise<string> {
+  await ready();
+  const now = new Date().toISOString();
+  const docId = crypto.randomUUID();
+
+  const statements: { sql: string; params: (string | number | null)[] }[] = [
+    {
+      sql: `INSERT INTO purchase_documents
+              (id, doc_type, number, supplier_id, date, status, subtotal_paise,
+               tax_paise, total_paise, note, ref_purchase_id, created_by, org_id,
+               updated_at, version, dirty)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,0,1)`,
+      params: [
+        docId,
+        "return",
+        args.number,
+        args.supplierId ?? null,
+        now.slice(0, 10),
+        "issued",
+        args.subtotalPaise,
+        args.taxPaise,
+        args.totalPaise,
+        args.note ?? null,
+        args.purchaseId,
+        args.createdBy ?? null,
+        args.orgId,
+        now,
+      ],
+    },
+  ];
+
+  for (const item of args.items) {
+    statements.push({
+      sql: `INSERT INTO purchase_document_items
+              (id, document_id, product_id, description, qty_milli, rate_paise,
+               tax_bps, amount_paise, meta, org_id, updated_at, dirty)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,1)`,
+      params: [
+        crypto.randomUUID(),
+        docId,
+        item.productId ?? null,
+        item.description,
+        item.qtyMilli,
+        item.ratePaise,
+        item.taxBps,
+        item.amountPaise,
+        JSON.stringify(item.meta ?? {}),
+        args.orgId,
+        now,
+      ],
+    });
+    if (item.productId) {
+      statements.push({
+        sql: `INSERT INTO stock_movements
+                (id, product_id, type, qty_milli, ref_type, ref_id, created_at,
+                 org_id, updated_at, dirty)
+              VALUES (?,?,?,?,?,?,?,?,?,1)`,
+        // Negative: the goods have left the shelf, back to the supplier.
+        params: [
+          crypto.randomUUID(),
+          item.productId,
+          "purchase-return",
+          -item.qtyMilli,
+          "return",
+          docId,
+          now,
+          args.orgId,
+          now,
+        ],
+      });
+    }
+  }
+
+  statements.push({
+    sql: `INSERT INTO payments
+            (id, direction, party_type, party_id, amount_paise, method, date,
+             created_by, org_id, updated_at, dirty)
+          VALUES (?,?,?,?,?,?,?,?,?,?,1)`,
+    params: [
+      crypto.randomUUID(),
+      "out",
+      "supplier",
+      args.supplierId ?? null,
+      args.totalPaise,
+      "debit-note",
+      now.slice(0, 10),
+      args.createdBy ?? null,
+      args.orgId,
+      now,
+    ],
+  });
+
+  await batch(statements);
+  return docId;
+}
+
+/**
+ * Pay a supplier. The payable on the Suppliers screen is purchases minus
+ * payments out, so this single row is all it takes for every screen to agree.
+ */
+export async function recordSupplierPayment(args: {
+  orgId: string;
+  supplierId: string;
+  amountPaise: Paise;
+  method: string;
+  createdBy?: string;
+  reference?: string | null;
+}): Promise<void> {
+  await ready();
+  const now = new Date().toISOString();
+
+  await batch([
+    {
+      sql: `INSERT INTO payments
+              (id, direction, party_type, party_id, amount_paise, method, date,
+               created_by, reference, org_id, updated_at, dirty)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,1)`,
+      params: [
+        crypto.randomUUID(),
+        "out",
+        "supplier",
+        args.supplierId,
+        args.amountPaise,
+        args.method,
+        now.slice(0, 10),
+        args.createdBy ?? null,
+        args.reference ?? null,
+        args.orgId,
+        now,
+      ] as (string | number | null)[],
+    },
+  ]);
+}
+
+export interface SupplierPaymentRow {
+  id: string;
+  supplier_name: string | null;
+  amount_paise: number;
+  method: string;
+  date: string;
+  dirty: number;
+}
+
+/** Money paid out to suppliers, newest first. */
+export function listSupplierPayments(
+  orgId: string,
+  limit = 50,
+): Promise<SupplierPaymentRow[]> {
+  return ready().then(() =>
+    all<SupplierPaymentRow>(
+      `SELECT p.id, s.name AS supplier_name, p.amount_paise, p.method, p.date, p.dirty
+       FROM payments p
+       LEFT JOIN suppliers s ON s.id = p.party_id
+       WHERE p.org_id = ? AND p.deleted_at IS NULL
+         AND p.direction = 'out' AND p.party_type = 'supplier'
+       ORDER BY p.date DESC, p.updated_at DESC
+       LIMIT ?`,
+      [orgId, limit],
+    ),
+  );
+}
+
 // --- Bulk import (the load step) & export -------------------------------------
 
 /** What to do when an imported row matches a record that already exists. */
