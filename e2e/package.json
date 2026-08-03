@@ -6,6 +6,9 @@
   "description": "Playwright end-to-end tests",
   "scripts": {
     "test:e2e": "playwright test",
+    "test:e2e:billing": "playwright test billing- pricing-public",
+    "test:e2e:update-snapshots": "playwright test --update-snapshots",
+    "test:e2e:report": "playwright show-report",
     "lint": "eslint .",
     "check-types": "tsc --noEmit"
   },

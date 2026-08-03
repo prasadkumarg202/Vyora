@@ -42,6 +42,12 @@ export interface Preferences {
   reminderTemplate: string;
   invoiceMessageTemplate: string;
 
+  // --- Invoice document ---
+  /** Free text under the totals — "Delivery on Monday", a vehicle number. */
+  invoiceNotes: string;
+  /** The shop's standing terms. Printed on every invoice unless cleared. */
+  invoiceTerms: string;
+
   // --- Print ---
   printLogo: boolean;
   printGstin: boolean;
@@ -74,6 +80,13 @@ export const DEFAULTS: Preferences = {
     "Hello {party},\n\nA gentle reminder: invoice {number} dated {date} has {due} pending.\n\nKindly arrange the payment at your convenience. Thank you!",
   invoiceMessageTemplate:
     "Hello {party},\n\nHere is your invoice {number} for {total} dated {date}.\n\nThank you for your business!",
+
+  invoiceNotes: "",
+  // The two lines almost every Indian shop already has printed on its bill
+  // book. Defaults, not rules — a shop that disagrees clears the box, and a
+  // shop that never opens Settings still gets terms that match its counter.
+  invoiceTerms:
+    "1. Goods once sold will not be taken back.\n2. Interest @ 24% p.a. will be charged if payment is delayed beyond the due date.",
 
   printLogo: true,
   printGstin: true,
@@ -131,5 +144,8 @@ export function fillTemplate(
   template: string,
   values: Record<string, string>,
 ): string {
-  return template.replace(/\{(\w+)\}/g, (whole, key: string) => values[key] ?? whole);
+  return template.replace(
+    /\{(\w+)\}/g,
+    (whole, key: string) => values[key] ?? whole,
+  );
 }

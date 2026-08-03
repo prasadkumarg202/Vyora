@@ -1484,5 +1484,93 @@
       "Secondary sales",
       "Outstanding by retailer"
     ]
+  },
+  {
+    "id": "diagnostics",
+    "name": "Diagnostic Centre",
+    "letter": "Dx",
+    "hue": 196,
+    "sector": "Pathology & imaging",
+    "required": [
+      {
+        "l": "Test / scan",
+        "t": "text"
+      },
+      {
+        "l": "Patient name",
+        "t": "text"
+      },
+      {
+        "l": "Qty",
+        "t": "number"
+      },
+      {
+        "l": "Rate",
+        "t": "currency"
+      },
+      {
+        "l": "GST",
+        "t": "percent"
+      }
+    ],
+    "optional": [
+      {
+        "l": "Sample ID",
+        "t": "scan"
+      },
+      {
+        "l": "Referred by",
+        "t": "text"
+      },
+      {
+        "l": "Collected on",
+        "t": "date"
+      },
+      {
+        "l": "Report due",
+        "t": "date"
+      },
+      {
+        "l": "SAC",
+        "t": "text"
+      }
+    ],
+    "validations": [
+      "Sample ID must be unique",
+      "Report due cannot be before the collection date",
+      "Rate must be greater than 0",
+      "Healthcare diagnostics are GST-exempt — issue a bill of supply, not a tax invoice",
+      "Referring doctor required for a TPA or insurance claim"
+    ],
+    "gstDefault": "Exempt",
+    "gst": [
+      {
+        "l": "Diagnostic & pathology services",
+        "r": "0%"
+      },
+      {
+        "l": "Non-clinical services (reports, records)",
+        "r": "18%"
+      }
+    ],
+    "invTitle": "BILL OF SUPPLY",
+    "invCols": [
+      "Test",
+      "Patient",
+      "Qty",
+      "Rate",
+      "Amount"
+    ],
+    "invExtras": [
+      "Referring doctor",
+      "Report collection date",
+      "Lab in-charge sign"
+    ],
+    "reports": [
+      "Test-wise revenue",
+      "Referring doctor register",
+      "Pending reports",
+      "Daily collections"
+    ]
   }
 ]

@@ -33,9 +33,22 @@ import {
 type Tab = "accounts" | "cheques" | "loans";
 
 const TABS: { key: Tab; label: string; blurb: string }[] = [
-  { key: "accounts", label: "Cash & accounts", blurb: "Counter cash and bank accounts, with what is in each right now." },
-  { key: "cheques", label: "Cheques", blurb: "Cheques given and received — mark them cleared or bounced as they settle." },
-  { key: "loans", label: "Loans", blurb: "What you have borrowed and what is still to repay." },
+  {
+    key: "accounts",
+    label: "Cash & accounts",
+    blurb: "Counter cash and bank accounts, with what is in each right now.",
+  },
+  {
+    key: "cheques",
+    label: "Cheques",
+    blurb:
+      "Cheques given and received — mark them cleared or bounced as they settle.",
+  },
+  {
+    key: "loans",
+    label: "Loans",
+    blurb: "What you have borrowed and what is still to repay.",
+  },
 ];
 
 const KINDS: { value: AccountKind; label: string; icon: string }[] = [
@@ -58,7 +71,13 @@ function paiseOf(rupees: string): Paise {
 const maskAccount = (n: string | null): string =>
   n && n.length > 4 ? `••••${n.slice(-4)}` : (n ?? "");
 
-export function CashModule({ orgId, userId }: { orgId: string; userId: string }) {
+export function CashModule({
+  orgId,
+  userId,
+}: {
+  orgId: string;
+  userId: string;
+}) {
   const [tab, setTab] = useState<Tab>("accounts");
   const [accounts, setAccounts] = useState<AccountRow[] | null>(null);
   const [entries, setEntries] = useState<AccountEntryRow[]>([]);
@@ -264,7 +283,11 @@ export function CashModule({ orgId, userId }: { orgId: string; userId: string })
     setBusy(true);
     try {
       await setChequeStatus({ orgId, entryId, status });
-      say(status === "cleared" ? "Marked cleared — balance updated." : "Marked bounced.");
+      say(
+        status === "cleared"
+          ? "Marked cleared — balance updated."
+          : "Marked bounced.",
+      );
       await refresh();
     } catch (err) {
       setError((err as Error).message);
@@ -314,7 +337,8 @@ export function CashModule({ orgId, userId }: { orgId: string; userId: string })
   }
 
   async function payEmi(loan: AccountRow) {
-    const amount = paiseOf(emiAmount) || (loan.emi_paise as Paise) || (0 as Paise);
+    const amount =
+      paiseOf(emiAmount) || (loan.emi_paise as Paise) || (0 as Paise);
     if (amount <= 0) {
       setError("Enter the instalment amount.");
       return;
@@ -366,14 +390,23 @@ export function CashModule({ orgId, userId }: { orgId: string; userId: string })
       </div>
 
       <div className="grid gap-3 sm:grid-cols-3">
-        <Stat label="In hand & in bank" value={formatPaise(totalInHand as Paise)} />
+        <Stat
+          label="In hand & in bank"
+          value={formatPaise(totalInHand as Paise)}
+        />
         <Stat
           label="Cheques not yet cleared"
-          value={formatPaise(pendingCheques.reduce((s, c) => s + c.amount_paise, 0) as Paise)}
+          value={formatPaise(
+            pendingCheques.reduce((s, c) => s + c.amount_paise, 0) as Paise,
+          )}
           foot={`${pendingCheques.length} cheque${pendingCheques.length === 1 ? "" : "s"}`}
           tone={pendingCheques.length ? "warn" : undefined}
         />
-        <Stat label="Loans outstanding" value={formatPaise(totalOwed as Paise)} tone={totalOwed > 0 ? "warn" : undefined} />
+        <Stat
+          label="Loans outstanding"
+          value={formatPaise(totalOwed as Paise)}
+          tone={totalOwed > 0 ? "warn" : undefined}
+        />
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -395,7 +428,10 @@ export function CashModule({ orgId, userId }: { orgId: string; userId: string })
       <p className="text-body text-content-muted">{current.blurb}</p>
 
       {error ? (
-        <p role="alert" className="rounded-control border border-danger-border bg-danger-tonal px-3 py-2 text-body text-danger">
+        <p
+          role="alert"
+          className="rounded-control border border-danger-border bg-danger-tonal px-3 py-2 text-body text-danger"
+        >
           {error}
         </p>
       ) : null}
@@ -407,7 +443,11 @@ export function CashModule({ orgId, userId }: { orgId: string; userId: string })
           <section className="flex flex-col gap-3">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <h2 className="text-h3">Your accounts</h2>
-              <Button variant="outline" size="sm" onClick={() => setShowNew((v) => !v)}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowNew((v) => !v)}
+              >
                 {showNew ? "Cancel" : "+ Add account"}
               </Button>
             </div>
@@ -431,19 +471,54 @@ export function CashModule({ orgId, userId }: { orgId: string; userId: string })
                   ))}
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <Field id="acc-name" label="Name *" value={name} set={setName}
-                    placeholder={kind === "cash" ? "Counter cash" : "HDFC current account"} />
-                  <Field id="acc-open" label="Opening balance" value={opening} set={setOpening}
-                    numeric placeholder="0.00" />
+                  <Field
+                    id="acc-name"
+                    label="Name *"
+                    value={name}
+                    set={setName}
+                    placeholder={
+                      kind === "cash" ? "Counter cash" : "HDFC current account"
+                    }
+                  />
+                  <Field
+                    id="acc-open"
+                    label="Opening balance"
+                    value={opening}
+                    set={setOpening}
+                    numeric
+                    placeholder="0.00"
+                  />
                   {kind === "bank" ? (
                     <>
-                      <Field id="acc-bank" label="Bank" value={bankName} set={setBankName} placeholder="HDFC Bank" />
-                      <Field id="acc-no" label="Account number" value={accountNo} set={setAccountNo} placeholder="For your invoice footer" />
-                      <Field id="acc-ifsc" label="IFSC" value={ifsc} set={setIfsc} placeholder="HDFC0001234" />
+                      <Field
+                        id="acc-bank"
+                        label="Bank"
+                        value={bankName}
+                        set={setBankName}
+                        placeholder="HDFC Bank"
+                      />
+                      <Field
+                        id="acc-no"
+                        label="Account number"
+                        value={accountNo}
+                        set={setAccountNo}
+                        placeholder="For your invoice footer"
+                      />
+                      <Field
+                        id="acc-ifsc"
+                        label="IFSC"
+                        value={ifsc}
+                        set={setIfsc}
+                        placeholder="HDFC0001234"
+                      />
                     </>
                   ) : null}
                 </div>
-                <Button onClick={addAccount} disabled={busy} className="self-start">
+                <Button
+                  onClick={addAccount}
+                  disabled={busy}
+                  className="self-start"
+                >
                   {busy ? "Saving…" : "Add account"}
                 </Button>
               </Card>
@@ -459,15 +534,26 @@ export function CashModule({ orgId, userId }: { orgId: string; userId: string })
             ) : (
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {money.map((a) => (
-                  <div key={a.id} className="flex flex-col gap-1 rounded-card border border-border bg-surface p-5 shadow-card">
+                  <div
+                    key={a.id}
+                    className="flex flex-col gap-1 rounded-card border border-border bg-surface p-5 shadow-card"
+                  >
                     <span className="text-caption font-medium uppercase text-content-muted">
-                      {KINDS.find((k) => k.value === a.kind)?.icon ?? "🏦"} {a.name}
+                      {KINDS.find((k) => k.value === a.kind)?.icon ?? "🏦"}{" "}
+                      {a.name}
                     </span>
-                    <span className={"font-mono text-h2 " + (a.balance_paise < 0 ? "text-danger" : "text-content")}>
+                    <span
+                      className={
+                        "font-mono text-h2 " +
+                        (a.balance_paise < 0 ? "text-danger" : "text-content")
+                      }
+                    >
                       {formatPaise(a.balance_paise as Paise)}
                     </span>
                     <span className="text-caption normal-case text-content-muted">
-                      {a.bank_name ? `${a.bank_name} ${maskAccount(a.account_number)}` : "Cash on hand"}
+                      {a.bank_name
+                        ? `${a.bank_name} ${maskAccount(a.account_number)}`
+                        : "Cash on hand"}
                     </span>
                   </div>
                 ))}
@@ -479,26 +565,80 @@ export function CashModule({ orgId, userId }: { orgId: string; userId: string })
             <div className="grid gap-3 lg:grid-cols-2">
               <Card className="flex flex-col gap-3 p-5">
                 <h2 className="text-h3">Money in or out</h2>
-                <AccountPicker id="mv-acc" label="Account" value={moveAccount} set={setMoveAccount} options={money} />
+                <AccountPicker
+                  id="mv-acc"
+                  label="Account"
+                  value={moveAccount}
+                  set={setMoveAccount}
+                  options={money}
+                />
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <Field id="mv-amt" label="Amount" value={moveAmount} set={setMoveAmount} numeric placeholder="0.00" />
-                  <Field id="mv-note" label="What for" value={moveNote} set={setMoveNote} placeholder="Owner drawing, rent…" />
+                  <Field
+                    id="mv-amt"
+                    label="Amount"
+                    value={moveAmount}
+                    set={setMoveAmount}
+                    numeric
+                    placeholder="0.00"
+                  />
+                  <Field
+                    id="mv-note"
+                    label="What for"
+                    value={moveNote}
+                    set={setMoveNote}
+                    placeholder="Owner drawing, rent…"
+                  />
                 </div>
                 <div className="flex flex-wrap gap-3">
-                  <Button onClick={() => void moveMoney("in")} disabled={busy}>Money in</Button>
-                  <Button variant="outline" onClick={() => void moveMoney("out")} disabled={busy}>Money out</Button>
+                  <Button onClick={() => void moveMoney("in")} disabled={busy}>
+                    Money in
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => void moveMoney("out")}
+                    disabled={busy}
+                  >
+                    Money out
+                  </Button>
                 </div>
               </Card>
 
               <Card className="flex flex-col gap-3 p-5">
                 <h2 className="text-h3">Move between accounts</h2>
-                <p className="text-body text-content-muted">Banking the day&apos;s cash, or drawing cash out.</p>
+                <p className="text-body text-content-muted">
+                  Banking the day&apos;s cash, or drawing cash out.
+                </p>
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <AccountPicker id="tr-from" label="From" value={fromAcc} set={setFromAcc} options={money} />
-                  <AccountPicker id="tr-to" label="To" value={toAcc} set={setToAcc} options={money} />
+                  <AccountPicker
+                    id="tr-from"
+                    label="From"
+                    value={fromAcc}
+                    set={setFromAcc}
+                    options={money}
+                  />
+                  <AccountPicker
+                    id="tr-to"
+                    label="To"
+                    value={toAcc}
+                    set={setToAcc}
+                    options={money}
+                  />
                 </div>
-                <Field id="tr-amt" label="Amount" value={transferAmt} set={setTransferAmt} numeric placeholder="0.00" />
-                <Button onClick={doTransfer} disabled={busy} className="self-start">Move money</Button>
+                <Field
+                  id="tr-amt"
+                  label="Amount"
+                  value={transferAmt}
+                  set={setTransferAmt}
+                  numeric
+                  placeholder="0.00"
+                />
+                <Button
+                  onClick={doTransfer}
+                  disabled={busy}
+                  className="self-start"
+                >
+                  Move money
+                </Button>
               </Card>
             </div>
           ) : null}
@@ -506,11 +646,17 @@ export function CashModule({ orgId, userId }: { orgId: string; userId: string })
           <section className="flex flex-col gap-3">
             <h2 className="text-h3">Recent movements</h2>
             {entries.length === 0 ? (
-              <EmptyState title="Nothing recorded yet" description="Money in, money out and transfers will appear here." />
+              <EmptyState
+                title="Nothing recorded yet"
+                description="Money in, money out and transfers will appear here."
+              />
             ) : (
               <Card className="divide-y divide-border p-0">
                 {entries.map((e) => (
-                  <div key={e.id} className="flex flex-wrap items-center justify-between gap-3 p-4">
+                  <div
+                    key={e.id}
+                    className="flex flex-wrap items-center justify-between gap-3 p-4"
+                  >
                     <div className="flex flex-col">
                       <span className="text-body font-medium">
                         {e.note || e.category || "Movement"}
@@ -520,8 +666,14 @@ export function CashModule({ orgId, userId }: { orgId: string; userId: string })
                         {e.cheque_status ? ` · cheque ${e.cheque_status}` : ""}
                       </span>
                     </div>
-                    <span className={"font-mono text-body-lg " + (e.direction === "in" ? "text-success" : "text-content")}>
-                      {e.direction === "in" ? "+" : "−"} {formatPaise(e.amount_paise as Paise)}
+                    <span
+                      className={
+                        "font-mono text-body-lg " +
+                        (e.direction === "in" ? "text-success" : "text-content")
+                      }
+                    >
+                      {e.direction === "in" ? "+" : "−"}{" "}
+                      {formatPaise(e.amount_paise as Paise)}
                     </span>
                   </div>
                 ))}
@@ -543,7 +695,9 @@ export function CashModule({ orgId, userId }: { orgId: string; userId: string })
                   onClick={() => setChqDirection(d)}
                   className={
                     "rounded-control border px-3 py-2 text-body font-medium " +
-                    (chqDirection === d ? "border-primary bg-primary-tonal text-primary" : "border-border bg-canvas text-content-muted")
+                    (chqDirection === d
+                      ? "border-primary bg-primary-tonal text-primary"
+                      : "border-border bg-canvas text-content-muted")
                   }
                 >
                   {d === "in" ? "Received" : "Given"}
@@ -551,51 +705,110 @@ export function CashModule({ orgId, userId }: { orgId: string; userId: string })
               ))}
             </div>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              <AccountPicker id="chq-acc" label="Account" value={chqAccount} set={setChqAccount} options={money} />
-              <Field id="chq-no" label="Cheque number" value={chqNo} set={setChqNo} placeholder="000123" />
-              <Field id="chq-amt" label="Amount" value={chqAmount} set={setChqAmount} numeric placeholder="0.00" />
-              <Field id="chq-party" label="Party" value={chqParty} set={setChqParty} placeholder="Who it is from / to" />
+              <AccountPicker
+                id="chq-acc"
+                label="Account"
+                value={chqAccount}
+                set={setChqAccount}
+                options={money}
+              />
+              <Field
+                id="chq-no"
+                label="Cheque number"
+                value={chqNo}
+                set={setChqNo}
+                placeholder="000123"
+              />
+              <Field
+                id="chq-amt"
+                label="Amount"
+                value={chqAmount}
+                set={setChqAmount}
+                numeric
+                placeholder="0.00"
+              />
+              <Field
+                id="chq-party"
+                label="Party"
+                value={chqParty}
+                set={setChqParty}
+                placeholder="Who it is from / to"
+              />
               <div className="flex flex-col gap-1">
                 <Label htmlFor="chq-due">Dated</Label>
-                <input id="chq-due" type="date" value={chqDue} onChange={(e) => setChqDue(e.target.value)}
-                  className="min-h-touch rounded-input border border-border bg-surface px-3 text-body text-content outline-none focus-visible:border-primary focus-visible:shadow-focus" />
+                <input
+                  id="chq-due"
+                  type="date"
+                  value={chqDue}
+                  onChange={(e) => setChqDue(e.target.value)}
+                  className="min-h-touch rounded-input border border-border bg-surface px-3 text-body text-content outline-none focus-visible:border-primary focus-visible:shadow-focus"
+                />
               </div>
             </div>
             <Button onClick={addCheque} disabled={busy} className="self-start">
               {busy ? "Saving…" : "Record cheque"}
             </Button>
             <p className="text-caption normal-case text-content-muted">
-              A cheque counts towards your balance only once you mark it cleared.
+              A cheque counts towards your balance only once you mark it
+              cleared.
             </p>
           </Card>
 
           <section className="flex flex-col gap-3">
             <h2 className="text-h3">Cheques</h2>
             {cheques.length === 0 ? (
-              <EmptyState title="No cheques recorded" description="Cheques you give or receive will be tracked here until they settle." />
+              <EmptyState
+                title="No cheques recorded"
+                description="Cheques you give or receive will be tracked here until they settle."
+              />
             ) : (
               <Card className="divide-y divide-border p-0">
                 {cheques.map((c) => (
-                  <div key={c.id} className="flex flex-wrap items-center justify-between gap-3 p-4">
+                  <div
+                    key={c.id}
+                    className="flex flex-wrap items-center justify-between gap-3 p-4"
+                  >
                     <div className="flex flex-col">
                       <span className="text-body font-medium">
-                        {c.cheque_no ? `#${c.cheque_no}` : "Cheque"} · {c.note || (c.direction === "in" ? "Received" : "Given")}
+                        {c.cheque_no ? `#${c.cheque_no}` : "Cheque"} ·{" "}
+                        {c.note ||
+                          (c.direction === "in" ? "Received" : "Given")}
                       </span>
                       <span className="text-caption normal-case text-content-muted">
-                        {c.due_date ? `Dated ${c.due_date}` : c.date} · {c.account_name}
+                        {c.due_date ? `Dated ${c.due_date}` : c.date} ·{" "}
+                        {c.account_name}
                       </span>
                     </div>
                     <div className="flex flex-wrap items-center gap-3">
-                      <Badge tone={c.cheque_status === "cleared" ? "success" : c.cheque_status === "bounced" ? "danger" : "warning"}>
+                      <Badge
+                        tone={
+                          c.cheque_status === "cleared"
+                            ? "success"
+                            : c.cheque_status === "bounced"
+                              ? "danger"
+                              : "warning"
+                        }
+                      >
                         {c.cheque_status}
                       </Badge>
-                      <span className="font-mono text-body-lg">{formatPaise(c.amount_paise as Paise)}</span>
+                      <span className="font-mono text-body-lg">
+                        {formatPaise(c.amount_paise as Paise)}
+                      </span>
                       {c.cheque_status === "pending" ? (
                         <>
-                          <Button size="sm" onClick={() => void settleCheque(c.id, "cleared")} disabled={busy}>
+                          <Button
+                            size="sm"
+                            onClick={() => void settleCheque(c.id, "cleared")}
+                            disabled={busy}
+                          >
                             Cleared
                           </Button>
-                          <Button variant="outline" size="sm" onClick={() => void settleCheque(c.id, "bounced")} disabled={busy}>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => void settleCheque(c.id, "bounced")}
+                            disabled={busy}
+                          >
                             Bounced
                           </Button>
                         </>
@@ -615,9 +828,29 @@ export function CashModule({ orgId, userId }: { orgId: string; userId: string })
           <Card className="flex flex-col gap-4 p-5">
             <h2 className="text-h3">Add a loan</h2>
             <div className="grid gap-3 sm:grid-cols-3">
-              <Field id="ln-name" label="Lender / purpose *" value={loanName} set={setLoanName} placeholder="Shop loan — SBI" />
-              <Field id="ln-amt" label="Amount borrowed *" value={loanPrincipal} set={setLoanPrincipal} numeric placeholder="0.00" />
-              <Field id="ln-emi" label="Monthly instalment" value={loanEmi} set={setLoanEmi} numeric placeholder="0.00" />
+              <Field
+                id="ln-name"
+                label="Lender / purpose *"
+                value={loanName}
+                set={setLoanName}
+                placeholder="Shop loan — SBI"
+              />
+              <Field
+                id="ln-amt"
+                label="Amount borrowed *"
+                value={loanPrincipal}
+                set={setLoanPrincipal}
+                numeric
+                placeholder="0.00"
+              />
+              <Field
+                id="ln-emi"
+                label="Monthly instalment"
+                value={loanEmi}
+                set={setLoanEmi}
+                numeric
+                placeholder="0.00"
+              />
             </div>
             <Button onClick={addLoan} disabled={busy} className="self-start">
               {busy ? "Saving…" : "Add loan"}
@@ -625,29 +858,59 @@ export function CashModule({ orgId, userId }: { orgId: string; userId: string })
           </Card>
 
           {loans.length === 0 ? (
-            <EmptyState title="No loans recorded" description="Add one to track what is left to repay, instalment by instalment." />
+            <EmptyState
+              title="No loans recorded"
+              description="Add one to track what is left to repay, instalment by instalment."
+            />
           ) : (
             <div className="flex flex-col gap-3">
               {loans.map((l) => (
                 <Card key={l.id} className="flex flex-col gap-3 p-5">
                   <div className="flex flex-wrap items-baseline justify-between gap-3">
                     <div className="flex flex-col">
-                      <span className="text-body-lg font-semibold">{l.name}</span>
+                      <span className="text-body-lg font-semibold">
+                        {l.name}
+                      </span>
                       <span className="text-caption normal-case text-content-muted">
-                        Borrowed {formatPaise((l.principal_paise ?? 0) as Paise)}
-                        {l.emi_paise ? ` · instalment ${formatPaise(l.emi_paise as Paise)}` : ""}
+                        Borrowed{" "}
+                        {formatPaise((l.principal_paise ?? 0) as Paise)}
+                        {l.emi_paise
+                          ? ` · instalment ${formatPaise(l.emi_paise as Paise)}`
+                          : ""}
                       </span>
                     </div>
                     <div className="flex flex-col items-end">
-                      <span className="text-caption font-medium uppercase text-content-muted">Still to repay</span>
-                      <span className="font-mono text-h2 text-warning">{formatPaise(l.balance_paise as Paise)}</span>
+                      <span className="text-caption font-medium uppercase text-content-muted">
+                        Still to repay
+                      </span>
+                      <span className="font-mono text-h2 text-warning">
+                        {formatPaise(l.balance_paise as Paise)}
+                      </span>
                     </div>
                   </div>
                   <div className="flex flex-wrap items-end gap-3 border-t border-border pt-3">
-                    <Field id={`emi-${l.id}`} label="Instalment amount" value={emiAmount} set={setEmiAmount}
-                      numeric placeholder={l.emi_paise ? String((l.emi_paise / 100).toFixed(2)) : "0.00"} />
-                    <AccountPicker id={`emi-acc-${l.id}`} label="Paid from" value={emiAccount} set={setEmiAccount} options={money} />
-                    <Button onClick={() => void payEmi(l)} disabled={busy}>Record repayment</Button>
+                    <Field
+                      id={`emi-${l.id}`}
+                      label="Instalment amount"
+                      value={emiAmount}
+                      set={setEmiAmount}
+                      numeric
+                      placeholder={
+                        l.emi_paise
+                          ? String((l.emi_paise / 100).toFixed(2))
+                          : "0.00"
+                      }
+                    />
+                    <AccountPicker
+                      id={`emi-acc-${l.id}`}
+                      label="Paid from"
+                      value={emiAccount}
+                      set={setEmiAccount}
+                      options={money}
+                    />
+                    <Button onClick={() => void payEmi(l)} disabled={busy}>
+                      Record repayment
+                    </Button>
                   </div>
                 </Card>
               ))}
@@ -659,18 +922,46 @@ export function CashModule({ orgId, userId }: { orgId: string; userId: string })
   );
 }
 
-function Stat({ label, value, foot, tone }: { label: string; value: string; foot?: string; tone?: "warn" }) {
+function Stat({
+  label,
+  value,
+  foot,
+  tone,
+}: {
+  label: string;
+  value: string;
+  foot?: string | undefined;
+  tone?: "warn" | undefined;
+}) {
   return (
     <div className="flex flex-col gap-1 rounded-card border border-border bg-surface p-5 shadow-card">
-      <span className="text-caption font-medium uppercase text-content-muted">{label}</span>
-      <span className={"font-mono text-h2 " + (tone === "warn" ? "text-warning" : "text-content")}>{value}</span>
-      {foot ? <span className="text-caption normal-case text-content-muted">{foot}</span> : null}
+      <span className="text-caption font-medium uppercase text-content-muted">
+        {label}
+      </span>
+      <span
+        className={
+          "font-mono text-h2 " +
+          (tone === "warn" ? "text-warning" : "text-content")
+        }
+      >
+        {value}
+      </span>
+      {foot ? (
+        <span className="text-caption normal-case text-content-muted">
+          {foot}
+        </span>
+      ) : null}
     </div>
   );
 }
 
 function Field({
-  id, label, value, set, placeholder, numeric,
+  id,
+  label,
+  value,
+  set,
+  placeholder,
+  numeric,
 }: {
   id: string;
   label: string;
@@ -688,14 +979,20 @@ function Field({
         placeholder={placeholder}
         inputMode={numeric ? "decimal" : undefined}
         className={numeric ? "text-right font-mono" : undefined}
-        onChange={(e) => set(numeric ? e.target.value.replace(/[^\d.]/g, "") : e.target.value)}
+        onChange={(e) =>
+          set(numeric ? e.target.value.replace(/[^\d.]/g, "") : e.target.value)
+        }
       />
     </div>
   );
 }
 
 function AccountPicker({
-  id, label, value, set, options,
+  id,
+  label,
+  value,
+  set,
+  options,
 }: {
   id: string;
   label: string;

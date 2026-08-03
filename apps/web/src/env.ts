@@ -21,6 +21,13 @@ import { z } from "zod";
 const clientSchema = z.object({
   NEXT_PUBLIC_SUPABASE_URL: z.url().optional(),
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1).optional(),
+  /**
+   * Razorpay's publishable key id. Public by design — it identifies the
+   * merchant to the checkout widget and authorises nothing on its own.
+   * Absent until KYC clears, which is why billing runs against the mock
+   * provider by default.
+   */
+  NEXT_PUBLIC_RAZORPAY_KEY_ID: z.string().min(1).optional(),
 });
 
 const serverSchema = z.object({
@@ -29,6 +36,19 @@ const serverSchema = z.object({
     .default("development"),
   // Bypasses RLS. Server-side only — must never reach a browser bundle.
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1).optional(),
+
+  // --- Billing (Phase 8) ---
+  // Razorpay account credentials. Absent = the mock provider, which walks the
+  // identical order -> checkout -> webhook path without moving money, so the
+  // flow is finished and tested before KYC completes.
+  RAZORPAY_KEY_ID: z.string().min(1).optional(),
+  RAZORPAY_KEY_SECRET: z.string().min(1).optional(),
+  /**
+   * Shared secret for webhook HMAC. Separate from the API secret because
+   * Razorpay signs webhooks with it, and a leaked webhook secret must not also
+   * grant API access.
+   */
+  RAZORPAY_WEBHOOK_SECRET: z.string().min(1).optional(),
 });
 
 /**
@@ -39,6 +59,7 @@ const serverSchema = z.object({
 const clientRuntime = {
   NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
   NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  NEXT_PUBLIC_RAZORPAY_KEY_ID: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
 };
 
 function parse<T extends z.ZodType>(schema: T, input: unknown, scope: string) {

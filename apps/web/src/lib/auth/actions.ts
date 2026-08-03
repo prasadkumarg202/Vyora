@@ -147,7 +147,10 @@ async function ensureProfile(userId: string, email: string): Promise<void> {
 
   const { error } = await supabase
     .from("users")
-    .upsert({ id: userId, email }, { onConflict: "id", ignoreDuplicates: true });
+    .upsert(
+      { id: userId, email },
+      { onConflict: "id", ignoreDuplicates: true },
+    );
 
   if (error) {
     // Not fatal to the sign-in itself, but the app will misbehave without it,
@@ -232,21 +235,36 @@ export async function signOut(): Promise<never> {
 }
 
 /**
- * Bootstraps the caller's first workspace.
+ * Bootstraps the caller's first workspace, with the onboarding profile.
  *
- * Delegates to the create_workspace() definer function, because a user with no
- * membership has no org_id claim and RLS therefore denies both inserts. See
- * supabase/migrations/20260716000600_bootstrap_workspace.sql.
+ * Delegates to the create_workspace_profile() definer function, because a user
+ * with no membership has no org_id claim and RLS therefore denies both inserts.
+ * See supabase/migrations/20260803000300_business_profile.sql.
  *
- * This is the minimum needed for a signed-in user to reach the app. The real
- * onboarding — business-type selection driving a generated workspace — is
- * Phase 5, once the metadata engine can interpret business_types.config.
+ * GSTIN and PAN are optional on purpose. Most Indian shops this is built for
+ * are below the registration threshold, and an onboarding that demands a GSTIN
+ * turns them away on the first screen. What follows from not having one is a
+ * product decision, not an error: the caller switches GST off for the shop.
  */
+export interface WorkspaceProfile {
+  name: string;
+  businessTypeKey?: string | undefined;
+  phone?: string | undefined;
+  email?: string | undefined;
+  gstin?: string | undefined;
+  pan?: string | undefined;
+  state?: string | undefined;
+  stateCode?: string | undefined;
+  addressLine1?: string | undefined;
+  addressLine2?: string | undefined;
+  city?: string | undefined;
+  pincode?: string | undefined;
+}
+
 export async function createWorkspace(
-  name: string,
-  businessTypeKey?: string,
-): Promise<ActionResult> {
-  const workspaceName = name.trim();
+  profile: WorkspaceProfile,
+): Promise<ActionResult & { orgId?: string }> {
+  const workspaceName = profile.name.trim();
 
   if (workspaceName.length < 2) {
     return { ok: false, error: "Enter your business name." };
@@ -254,9 +272,19 @@ export async function createWorkspace(
 
   const supabase = await createClient();
 
-  const { error } = await supabase.rpc("create_workspace", {
+  const { data, error } = await supabase.rpc("create_workspace_profile", {
     workspace_name: workspaceName,
-    business_type_key: businessTypeKey ?? null,
+    business_type_key: profile.businessTypeKey ?? null,
+    p_phone: profile.phone ?? null,
+    p_email: profile.email ?? null,
+    p_gstin: profile.gstin ?? null,
+    p_pan: profile.pan ?? null,
+    p_state: profile.state ?? null,
+    p_state_code: profile.stateCode ?? null,
+    p_address_line1: profile.addressLine1 ?? null,
+    p_address_line2: profile.addressLine2 ?? null,
+    p_city: profile.city ?? null,
+    p_pincode: profile.pincode ?? null,
   });
 
   if (error) {
@@ -279,7 +307,7 @@ export async function createWorkspace(
   }
 
   revalidatePath("/", "layout");
-  return { ok: true };
+  return { ok: true, orgId: typeof data === "string" ? data : undefined };
 }
 
 function decodeClaim(jwt: string, claim: string): string | null {

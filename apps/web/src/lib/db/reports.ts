@@ -39,7 +39,7 @@ export interface ReportArgs {
   orgId: string;
   from: string;
   to: string;
-  partyId?: string;
+  partyId?: string | undefined;
 }
 
 export type ReportId =
@@ -69,27 +69,105 @@ export interface ReportMeta {
 }
 
 export const REPORTS: ReportMeta[] = [
-  { id: "all-transactions", group: "Transactions", title: "All transactions", blurb: "Every sale, purchase, payment and expense in one ledger." },
-  { id: "cash-flow", group: "Transactions", title: "Cash flow", blurb: "Money in against money out, and what it left behind." },
-  { id: "party-outstanding", group: "Parties", title: "Party outstanding", blurb: "Who owes you, oldest first, with ageing.", ignoresDates: true },
-  { id: "party-statement", group: "Parties", title: "Party statement", blurb: "One customer's bills and payments, as a running account.", needsParty: true },
-  { id: "stock-summary", group: "Stock", title: "Stock summary", blurb: "What is on the shelf and what it is worth.", ignoresDates: true },
-  { id: "low-stock", group: "Stock", title: "Low stock", blurb: "What has run out or is about to.", ignoresDates: true },
-  { id: "item-sales", group: "Stock", title: "Item-wise sales", blurb: "Quantity and value sold, per item." },
-  { id: "item-profit", group: "Stock", title: "Item-wise profit", blurb: "Margin per item, using your average purchase cost." },
-  { id: "hsn-summary", group: "GST", title: "Sales by HSN", blurb: "Taxable value and tax per HSN code — the GSTR-1 table." },
-  { id: "gst-rate", group: "GST", title: "Sales by GST rate", blurb: "How much sold at each slab, and the tax on it." },
-  { id: "expense-category", group: "Expenses", title: "Expenses by category", blurb: "Where the money went, grouped." },
-  { id: "bank-statement", group: "Cash & bank", title: "Account statement", blurb: "Every movement through cash and bank accounts." },
-  { id: "loan-statement", group: "Cash & bank", title: "Loan statement", blurb: "Borrowings and repayments, with the balance left." },
+  {
+    id: "all-transactions",
+    group: "Transactions",
+    title: "All transactions",
+    blurb: "Every sale, purchase, payment and expense in one ledger.",
+  },
+  {
+    id: "cash-flow",
+    group: "Transactions",
+    title: "Cash flow",
+    blurb: "Money in against money out, and what it left behind.",
+  },
+  {
+    id: "party-outstanding",
+    group: "Parties",
+    title: "Party outstanding",
+    blurb: "Who owes you, oldest first, with ageing.",
+    ignoresDates: true,
+  },
+  {
+    id: "party-statement",
+    group: "Parties",
+    title: "Party statement",
+    blurb: "One customer's bills and payments, as a running account.",
+    needsParty: true,
+  },
+  {
+    id: "stock-summary",
+    group: "Stock",
+    title: "Stock summary",
+    blurb: "What is on the shelf and what it is worth.",
+    ignoresDates: true,
+  },
+  {
+    id: "low-stock",
+    group: "Stock",
+    title: "Low stock",
+    blurb: "What has run out or is about to.",
+    ignoresDates: true,
+  },
+  {
+    id: "item-sales",
+    group: "Stock",
+    title: "Item-wise sales",
+    blurb: "Quantity and value sold, per item.",
+  },
+  {
+    id: "item-profit",
+    group: "Stock",
+    title: "Item-wise profit",
+    blurb: "Margin per item, using your average purchase cost.",
+  },
+  {
+    id: "hsn-summary",
+    group: "GST",
+    title: "Sales by HSN",
+    blurb: "Taxable value and tax per HSN code — the GSTR-1 table.",
+  },
+  {
+    id: "gst-rate",
+    group: "GST",
+    title: "Sales by GST rate",
+    blurb: "How much sold at each slab, and the tax on it.",
+  },
+  {
+    id: "expense-category",
+    group: "Expenses",
+    title: "Expenses by category",
+    blurb: "Where the money went, grouped.",
+  },
+  {
+    id: "bank-statement",
+    group: "Cash & bank",
+    title: "Account statement",
+    blurb: "Every movement through cash and bank accounts.",
+  },
+  {
+    id: "loan-statement",
+    group: "Cash & bank",
+    title: "Loan statement",
+    blurb: "Borrowings and repayments, with the balance left.",
+  },
 ];
 
-const sum = (rows: Record<string, string | number | null>[], key: string): number =>
-  rows.reduce((t, r) => t + (typeof r[key] === "number" ? (r[key] as number) : 0), 0);
+const sum = (
+  rows: Record<string, string | number | null>[],
+  key: string,
+): number =>
+  rows.reduce(
+    (t, r) => t + (typeof r[key] === "number" ? (r[key] as number) : 0),
+    0,
+  );
 
 const milliToQty = (milli: number): number => Math.round(milli) / 1000;
 
-export async function runReport(id: ReportId, args: ReportArgs): Promise<ReportTable> {
+export async function runReport(
+  id: ReportId,
+  args: ReportArgs,
+): Promise<ReportTable> {
   await ready();
   const { orgId, from, to } = args;
 
@@ -166,7 +244,23 @@ export async function runReport(id: ReportId, args: ReportArgs): Promise<ReportT
              AND direction = 'out' AND COALESCE(category,'') <> 'transfer'
              AND (cheque_status IS NULL OR cheque_status = 'cleared')
              AND date BETWEEN ? AND ?`,
-        [orgId, from, to, orgId, from, to, orgId, from, to, orgId, from, to, orgId, from, to],
+        [
+          orgId,
+          from,
+          to,
+          orgId,
+          from,
+          to,
+          orgId,
+          from,
+          to,
+          orgId,
+          from,
+          to,
+          orgId,
+          from,
+          to,
+        ],
       );
       const inflow = sum(rows, "inflow");
       const outflow = sum(rows, "outflow");
@@ -176,7 +270,10 @@ export async function runReport(id: ReportId, args: ReportArgs): Promise<ReportT
           { key: "inflow", label: "In", align: "right", money: true },
           { key: "outflow", label: "Out", align: "right", money: true },
         ],
-        rows: [...rows, { head: "Net movement", inflow: inflow - outflow, outflow: 0 }],
+        rows: [
+          ...rows,
+          { head: "Net movement", inflow: inflow - outflow, outflow: 0 },
+        ],
         totals: { inflow, outflow },
         note: "Transfers between your own accounts are excluded — moving money is not earning it.",
       };
@@ -212,7 +309,8 @@ export async function runReport(id: ReportId, args: ReportArgs): Promise<ReportT
     }
 
     case "party-statement": {
-      if (!args.partyId) return { columns: [], rows: [], note: "Choose a party above." };
+      if (!args.partyId)
+        return { columns: [], rows: [], note: "Choose a party above." };
       const rows = await all<Record<string, string | number | null>>(
         `SELECT i.date AS date, 'Invoice' AS particulars, i.number AS ref,
                 i.total_paise AS debit, 0 AS credit
@@ -262,7 +360,10 @@ export async function runReport(id: ReportId, args: ReportArgs): Promise<ReportT
           ORDER BY value DESC`,
         [orgId],
       );
-      const mapped = rows.map((r) => ({ ...r, qty: milliToQty(r.qty_milli as number) }));
+      const mapped = rows.map((r) => ({
+        ...r,
+        qty: milliToQty(r.qty_milli as number),
+      }));
       return {
         columns: [
           { key: "item", label: "Item" },
@@ -303,7 +404,10 @@ export async function runReport(id: ReportId, args: ReportArgs): Promise<ReportT
           { key: "qty", label: "Left", align: "right" },
           { key: "last_sold", label: "Last sold" },
         ],
-        rows: rows.map((r) => ({ ...r, qty: milliToQty(r.qty_milli as number) })),
+        rows: rows.map((r) => ({
+          ...r,
+          qty: milliToQty(r.qty_milli as number),
+        })),
         note: "Threshold comes from Settings — change it there and this list follows.",
       };
     }
@@ -322,7 +426,10 @@ export async function runReport(id: ReportId, args: ReportArgs): Promise<ReportT
           ORDER BY value DESC`,
         [orgId, from, to],
       );
-      const mapped = rows.map((r) => ({ ...r, qty: milliToQty(r.qty_milli as number) }));
+      const mapped = rows.map((r) => ({
+        ...r,
+        qty: milliToQty(r.qty_milli as number),
+      }));
       return {
         columns: [
           { key: "item", label: "Item" },
@@ -357,7 +464,8 @@ export async function runReport(id: ReportId, args: ReportArgs): Promise<ReportT
       const mapped = rows.map((r) => {
         const qtyMilli = r.qty_milli as number;
         const avgCost = r.avg_cost as number | null;
-        const cost = avgCost == null ? null : Math.round((avgCost * qtyMilli) / 1000);
+        const cost =
+          avgCost == null ? null : Math.round((avgCost * qtyMilli) / 1000);
         const revenue = r.revenue as number;
         return {
           item: r.item,
@@ -365,7 +473,10 @@ export async function runReport(id: ReportId, args: ReportArgs): Promise<ReportT
           revenue,
           cost,
           profit: cost == null ? null : revenue - cost,
-          margin: cost == null || revenue === 0 ? "—" : `${Math.round(((revenue - cost) / revenue) * 100)}%`,
+          margin:
+            cost == null || revenue === 0
+              ? "—"
+              : `${Math.round(((revenue - cost) / revenue) * 100)}%`,
         };
       });
       return {
@@ -378,7 +489,11 @@ export async function runReport(id: ReportId, args: ReportArgs): Promise<ReportT
           { key: "margin", label: "Margin", align: "right" },
         ],
         rows: mapped,
-        totals: { revenue: sum(mapped, "revenue"), cost: sum(mapped, "cost"), profit: sum(mapped, "profit") },
+        totals: {
+          revenue: sum(mapped, "revenue"),
+          cost: sum(mapped, "cost"),
+          profit: sum(mapped, "profit"),
+        },
         note: "Cost is the average of what you paid for that item across all purchases. Items never purchased in Vyora show no margin.",
       };
     }
@@ -409,12 +524,21 @@ export async function runReport(id: ReportId, args: ReportArgs): Promise<ReportT
         columns: [
           { key: "hsn", label: "HSN" },
           { key: "qty", label: "Qty", align: "right" },
-          { key: "taxable", label: "Taxable value", align: "right", money: true },
+          {
+            key: "taxable",
+            label: "Taxable value",
+            align: "right",
+            money: true,
+          },
           { key: "tax", label: "Tax", align: "right", money: true },
           { key: "total", label: "Total", align: "right", money: true },
         ],
         rows: mapped,
-        totals: { taxable: sum(mapped, "taxable"), tax: sum(mapped, "tax"), total: sum(mapped, "total") },
+        totals: {
+          taxable: sum(mapped, "taxable"),
+          tax: sum(mapped, "tax"),
+          total: sum(mapped, "total"),
+        },
         note: "The shape GSTR-1 asks for. Items with no HSN are grouped so you can spot and fix them.",
       };
     }
@@ -442,12 +566,21 @@ export async function runReport(id: ReportId, args: ReportArgs): Promise<ReportT
         columns: [
           { key: "rate", label: "GST rate" },
           { key: "bills", label: "Bills", align: "right" },
-          { key: "taxable", label: "Taxable value", align: "right", money: true },
+          {
+            key: "taxable",
+            label: "Taxable value",
+            align: "right",
+            money: true,
+          },
           { key: "tax", label: "Tax", align: "right", money: true },
           { key: "total", label: "Total", align: "right", money: true },
         ],
         rows: mapped,
-        totals: { taxable: sum(mapped, "taxable"), tax: sum(mapped, "tax"), total: sum(mapped, "total") },
+        totals: {
+          taxable: sum(mapped, "taxable"),
+          tax: sum(mapped, "tax"),
+          total: sum(mapped, "total"),
+        },
       };
     }
 
@@ -527,7 +660,10 @@ export async function runReport(id: ReportId, args: ReportArgs): Promise<ReportT
           { key: "balance", label: "Still owed", align: "right", money: true },
         ],
         rows: withBalance,
-        totals: { borrowed: sum(rows, "borrowed"), repaid: sum(rows, "repaid") },
+        totals: {
+          borrowed: sum(rows, "borrowed"),
+          repaid: sum(rows, "repaid"),
+        },
         note: "Full history, so the closing balance is the truth rather than a slice of it.",
       };
     }

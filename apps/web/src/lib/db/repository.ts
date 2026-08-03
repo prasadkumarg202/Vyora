@@ -31,7 +31,7 @@ export interface InvoiceRow {
 
 export interface InvoiceItemInput {
   description: string;
-  productId?: string;
+  productId?: string | undefined;
   qtyMilli: number;
   ratePaise: Paise;
   taxBps: number;
@@ -43,7 +43,26 @@ export interface InvoiceItemInput {
    * "Expiry alerts" and "Salt-wise sales" can read them back. Empty for the
    * generic (no business-type) path.
    */
-  meta?: Record<string, JsonValue>;
+  meta?: Record<string, JsonValue> | undefined;
+}
+
+/**
+ * The document-level facts an invoice carries beyond its lines.
+ *
+ * Stored in `invoices.custom_fields` rather than in columns of their own:
+ * nothing queries or filters on them, only the printed document reads them
+ * back, and a column apiece would be a migration on both the local SQLite
+ * schema and Postgres for text and two totals.
+ */
+export interface InvoiceExtrasInput {
+  notes?: string | undefined;
+  terms?: string | undefined;
+  discountPaise?: number | undefined;
+  chargesPaise?: number | undefined;
+  charges?:
+    | readonly { label: string; amountPaise: number; gstBps?: number }[]
+    | undefined;
+  roundOffPaise?: number | undefined;
 }
 
 export interface NewInvoice {
@@ -51,11 +70,12 @@ export interface NewInvoice {
   orgId: string;
   number: string;
   date: string;
-  customerId?: string;
+  customerId?: string | undefined;
+  extras?: InvoiceExtrasInput | undefined;
   subtotalPaise: Paise;
   taxPaise: Paise;
   totalPaise: Paise;
-  createdBy?: string;
+  createdBy?: string | undefined;
   items: InvoiceItemInput[];
 }
 
@@ -113,8 +133,9 @@ export async function saveInvoice(invoice: NewInvoice): Promise<void> {
     {
       sql: `INSERT INTO invoices
               (id, number, customer_id, date, status, subtotal_paise, tax_paise,
-               total_paise, created_by, org_id, updated_at, version, dirty)
-            VALUES (?,?,?,?,?,?,?,?,?,?,?,0,1)`,
+               total_paise, custom_fields, created_by, org_id, updated_at,
+               version, dirty)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,0,1)`,
       params: [
         invoice.id,
         invoice.number,
@@ -124,6 +145,7 @@ export async function saveInvoice(invoice: NewInvoice): Promise<void> {
         invoice.subtotalPaise,
         invoice.taxPaise,
         invoice.totalPaise,
+        JSON.stringify(invoice.extras ?? {}),
         invoice.createdBy ?? null,
         invoice.orgId,
         now,
@@ -421,7 +443,13 @@ export async function recordInvoicePayment(args: {
                 dirty = 1,
                 updated_at = ?
             WHERE id = ? AND org_id = ?`,
-      params: [args.amountPaise, args.amountPaise, now, args.invoiceId, args.orgId],
+      params: [
+        args.amountPaise,
+        args.amountPaise,
+        now,
+        args.invoiceId,
+        args.orgId,
+      ],
     },
   ]);
 }
@@ -448,7 +476,9 @@ export function listOutstandingInvoices(
  * Bank references already applied for this org — the reconcile flow's dedupe
  * set, so re-importing an overlapping statement never double-records a credit.
  */
-export async function listReconciledReferences(orgId: string): Promise<Set<string>> {
+export async function listReconciledReferences(
+  orgId: string,
+): Promise<Set<string>> {
   await ready();
   const rows = await all<{ reference: string }>(
     `SELECT DISTINCT reference FROM payments
@@ -521,7 +551,10 @@ export async function saveCampaign(args: {
 }
 
 /** Campaigns for an org, newest first, tombstones hidden. */
-export function listCampaigns(orgId: string, limit = 50): Promise<CampaignRow[]> {
+export function listCampaigns(
+  orgId: string,
+  limit = 50,
+): Promise<CampaignRow[]> {
   return ready().then(() =>
     all<CampaignRow>(
       `SELECT id, name, channel, message, status, updated_at, dirty
@@ -607,7 +640,10 @@ export async function saveCustomer(customer: {
 }
 
 /** Customers for an org, newest first, tombstones hidden. */
-export function listCustomers(orgId: string, limit = 100): Promise<CustomerRow[]> {
+export function listCustomers(
+  orgId: string,
+  limit = 100,
+): Promise<CustomerRow[]> {
   return ready().then(() =>
     all<CustomerRow>(
       `SELECT id, name, phone, gstin, updated_at, version, dirty
@@ -638,10 +674,10 @@ export interface NewProduct {
   id: string;
   orgId: string;
   name: string;
-  sku?: string;
+  sku?: string | undefined;
   pricePaise: Paise;
   taxBps: number;
-  hsn?: string;
+  hsn?: string | undefined;
   /** Opening stock in milli-units; recorded as the first movement, not a column. */
   openingMilli: number;
 }
@@ -712,7 +748,7 @@ export interface PurchaseRow {
 
 export interface PurchaseItemInput {
   /** When set, receiving this line adds to that product's stock. */
-  productId?: string;
+  productId?: string | undefined;
   description: string;
   qtyMilli: number;
   ratePaise: Paise;
@@ -725,7 +761,7 @@ export interface NewPurchase {
   orgId: string;
   number: string;
   date: string;
-  supplierId?: string;
+  supplierId?: string | undefined;
   subtotalPaise: Paise;
   taxPaise: Paise;
   totalPaise: Paise;
@@ -813,7 +849,10 @@ export async function savePurchase(purchase: NewPurchase): Promise<void> {
 }
 
 /** Recent purchases for an org, newest first. */
-export function listPurchases(orgId: string, limit = 50): Promise<PurchaseRow[]> {
+export function listPurchases(
+  orgId: string,
+  limit = 50,
+): Promise<PurchaseRow[]> {
   return ready().then(() =>
     all<PurchaseRow>(
       `SELECT id, number, date, status, subtotal_paise, tax_paise, total_paise,
@@ -870,7 +909,10 @@ export async function recordMovement(args: {
  * always the truth even after two devices sold concurrently and their deltas
  * merged.
  */
-export function listProducts(orgId: string, limit = 100): Promise<ProductRow[]> {
+export function listProducts(
+  orgId: string,
+  limit = 100,
+): Promise<ProductRow[]> {
   return ready().then(() =>
     all<ProductRow>(
       `SELECT p.id, p.name, p.sku, p.price_paise, p.tax_bps, p.hsn, p.dirty,
@@ -885,6 +927,142 @@ export function listProducts(orgId: string, limit = 100): Promise<ProductRow[]> 
       [orgId, limit],
     ),
   );
+}
+
+/**
+ * One catalogue product, as the billing line needs it.
+ *
+ * Deliberately its own type rather than reusing ProductRow: the till cares
+ * about MRP (for the "selling price ≤ MRP" rule a chemist is held to) and does
+ * not care about the dirty flag, and a picker that dragged the whole product
+ * row through would tempt callers into writing back to it.
+ */
+export interface ProductPick {
+  id: string;
+  name: string;
+  sku: string | null;
+  hsn: string | null;
+  tax_bps: number | null;
+  price_paise: number | null;
+  mrp_paise: number | null;
+  on_hand_milli: number;
+}
+
+/**
+ * Products matching what the shopkeeper has typed into a billing line.
+ *
+ * Runs against the local SQLite copy, so it answers while the counter is
+ * offline — which is the only reason it is worth putting a lookup in the
+ * billing path at all. A search that needs the network would be slower than
+ * typing the HSN by hand.
+ *
+ * Matches name, SKU and HSN, because all three are things a shop actually
+ * reaches for: the name when serving a customer, the SKU when reading a label,
+ * the HSN when a CA has asked about one. Exact and prefix matches sort first —
+ * typing "cro" should offer Crocin before Microcin.
+ */
+export async function searchProducts(
+  orgId: string,
+  query: string,
+  limit = 8,
+): Promise<ProductPick[]> {
+  await ready();
+  const term = query.trim();
+  if (!term) return [];
+
+  // % and _ are wildcards. A shopkeeper typing a product name with an
+  // underscore should search for that underscore, not for any character.
+  const escaped = term.replace(/[\\%_]/g, (c) => `\\${c}`);
+  const contains = `%${escaped}%`;
+  const prefix = `${escaped}%`;
+
+  return all<ProductPick>(
+    `SELECT p.id, p.name, p.sku, p.hsn, p.tax_bps, p.price_paise, p.mrp_paise,
+            COALESCE((
+              SELECT SUM(m.qty_milli) FROM stock_movements m
+              WHERE m.product_id = p.id AND m.deleted_at IS NULL
+            ), 0) AS on_hand_milli
+       FROM products p
+      WHERE p.org_id = ?
+        AND p.deleted_at IS NULL
+        AND (p.name LIKE ? ESCAPE '\\'
+          OR p.sku  LIKE ? ESCAPE '\\'
+          OR p.hsn  LIKE ? ESCAPE '\\')
+      ORDER BY
+        CASE WHEN p.name LIKE ? ESCAPE '\\' THEN 0
+             WHEN p.sku  LIKE ? ESCAPE '\\' THEN 1
+             ELSE 2 END,
+        p.name
+      LIMIT ?`,
+    [orgId, contains, contains, contains, prefix, prefix, limit],
+  );
+}
+
+/**
+ * Products this shop bills most often, then its newest ones.
+ *
+ * The default set of till shortcuts. Ordered by how many bills a product has
+ * appeared on rather than by revenue: a grocery sells one gas stove and four
+ * hundred packets of salt, and it is the salt that needs a key.
+ *
+ * A brand-new shop has no billing history at all, so recently-added products
+ * fill the rest — on day one, the things they bothered to register *are* the
+ * things they sell.
+ */
+export async function suggestedQuickKeyProducts(
+  orgId: string,
+  limit = 9,
+): Promise<ProductPick[]> {
+  await ready();
+  return all<ProductPick>(
+    `SELECT p.id, p.name, p.sku, p.hsn, p.tax_bps, p.price_paise, p.mrp_paise,
+            COALESCE((
+              SELECT SUM(m.qty_milli) FROM stock_movements m
+              WHERE m.product_id = p.id AND m.deleted_at IS NULL
+            ), 0) AS on_hand_milli
+       FROM products p
+      WHERE p.org_id = ? AND p.deleted_at IS NULL
+      -- Counted in ORDER BY rather than selected, so the row shape stays
+      -- exactly ProductPick and no caller inherits a column it should not use.
+      ORDER BY (
+              SELECT COUNT(DISTINCT ii.invoice_id) FROM invoice_items ii
+               WHERE ii.product_id = p.id AND ii.deleted_at IS NULL
+            ) DESC, p.updated_at DESC, p.name
+      LIMIT ?`,
+    [orgId, limit],
+  );
+}
+
+/**
+ * Specific products, in the order the caller asked for them.
+ *
+ * SQL has no opinion about the order of an IN list, and the shop's chosen key
+ * order is the whole point — so the sort happens here, and an id that no
+ * longer resolves (product deleted since it was pinned) simply drops out
+ * rather than leaving a hole or throwing.
+ */
+export async function productsByIds(
+  orgId: string,
+  ids: readonly string[],
+): Promise<ProductPick[]> {
+  await ready();
+  if (ids.length === 0) return [];
+
+  const placeholders = ids.map(() => "?").join(",");
+  const rows = await all<ProductPick>(
+    `SELECT p.id, p.name, p.sku, p.hsn, p.tax_bps, p.price_paise, p.mrp_paise,
+            COALESCE((
+              SELECT SUM(m.qty_milli) FROM stock_movements m
+              WHERE m.product_id = p.id AND m.deleted_at IS NULL
+            ), 0) AS on_hand_milli
+       FROM products p
+      WHERE p.org_id = ? AND p.deleted_at IS NULL
+        AND p.id IN (${placeholders})`,
+    [orgId, ...ids],
+  );
+
+  const byId = new Map(rows.map((r) => [r.id, r]));
+  return ids.map((id) => byId.get(id)).filter((p): p is ProductPick => !!p);
 }
 
 /**
@@ -1091,7 +1269,10 @@ export async function saveSupplier(supplier: {
  * payments made out to them. Both sums read data the Purchase and Payments
  * modules already wrote, so the figure is exact and needs no network.
  */
-export function listSuppliers(orgId: string, limit = 100): Promise<SupplierRow[]> {
+export function listSuppliers(
+  orgId: string,
+  limit = 100,
+): Promise<SupplierRow[]> {
   return ready().then(() =>
     all<SupplierRow>(
       `SELECT s.id, s.name, s.phone, s.gstin, s.updated_at, s.version, s.dirty,
@@ -1130,12 +1311,12 @@ export interface ExpenseRow {
 export interface NewExpense {
   id: string;
   orgId: string;
-  category?: string;
+  category?: string | undefined;
   amountPaise: Paise;
   date: string;
-  note?: string;
-  recurring?: boolean;
-  createdBy?: string;
+  note?: string | undefined;
+  recurring?: boolean | undefined;
+  createdBy?: string | undefined;
 }
 
 /**
@@ -1171,7 +1352,10 @@ export async function saveExpense(expense: NewExpense): Promise<void> {
 }
 
 /** Recent expenses for an org, newest first, tombstones hidden. */
-export function listExpenses(orgId: string, limit = 100): Promise<ExpenseRow[]> {
+export function listExpenses(
+  orgId: string,
+  limit = 100,
+): Promise<ExpenseRow[]> {
   return ready().then(() =>
     all<ExpenseRow>(
       `SELECT id, category, amount_paise, date, note, recurring, updated_at, dirty
@@ -1216,11 +1400,11 @@ export async function expensesSummary(
  * near-identical modules.
  */
 export type SaleDocType =
-  | "estimate"   // quotation: a price, offered
-  | "proforma"   // a bill in advance of supply, for advances and imports
-  | "order"      // a confirmed booking, awaiting delivery
-  | "challan"    // goods moving, billed later
-  | "return";    // goods coming back — the GST credit note
+  | "estimate" // quotation: a price, offered
+  | "proforma" // a bill in advance of supply, for advances and imports
+  | "order" // a confirmed booking, awaiting delivery
+  | "challan" // goods moving, billed later
+  | "return"; // goods coming back — the GST credit note
 
 export interface SaleDocumentRow {
   id: string;
@@ -1244,14 +1428,14 @@ export interface NewSaleDocument {
   docType: SaleDocType;
   number: string;
   date: string;
-  customerId?: string;
-  note?: string;
+  customerId?: string | undefined;
+  note?: string | undefined;
   /** The invoice this document answers to (a credit note's original bill). */
-  refInvoiceId?: string;
+  refInvoiceId?: string | undefined;
   subtotalPaise: Paise;
   taxPaise: Paise;
   totalPaise: Paise;
-  createdBy?: string;
+  createdBy?: string | undefined;
   items: InvoiceItemInput[];
 }
 
@@ -1362,7 +1546,8 @@ export async function nextDocumentNumber(
   );
   // A shop that renumbers its books should not have to renumber ours.
   const prefix =
-    (await getSetting(`pref.${DOC_PREF_SETTING[docType]}`)) ?? DOC_PREFIX[docType];
+    (await getSetting(`pref.${DOC_PREF_SETTING[docType]}`)) ??
+    DOC_PREFIX[docType];
   return `${prefix}-${String((row?.n ?? 0) + 1).padStart(4, "0")}`;
 }
 
@@ -1455,7 +1640,11 @@ export async function convertDocumentToInvoice(args: {
       sql: `UPDATE sale_documents
             SET status = 'converted', converted_invoice_id = ?, dirty = 1, updated_at = ?
             WHERE id = ? AND org_id = ? AND status = 'open'`,
-      params: [invoiceId, now, args.documentId, args.orgId] as (string | number | null)[],
+      params: [invoiceId, now, args.documentId, args.orgId] as (
+        | string
+        | number
+        | null
+      )[],
     },
   ]);
 
@@ -1638,7 +1827,7 @@ export async function saveSaleReturn(args: {
 
 /** Paperwork around a purchase, mirroring SaleDocType on the selling side. */
 export type PurchaseDocType =
-  | "order"   // supply order: placed with a supplier, goods awaited
+  | "order" // supply order: placed with a supplier, goods awaited
   | "return"; // goods sent back — the GST debit note
 
 const PURCHASE_DOC_PREFIX: Record<PurchaseDocType, string> = {
@@ -1669,14 +1858,14 @@ export interface NewPurchaseDocument {
   docType: PurchaseDocType;
   number: string;
   date: string;
-  supplierId?: string;
-  note?: string;
+  supplierId?: string | undefined;
+  note?: string | undefined;
   /** The purchase this answers to (a debit note's original bill). */
-  refPurchaseId?: string;
+  refPurchaseId?: string | undefined;
   subtotalPaise: Paise;
   taxPaise: Paise;
   totalPaise: Paise;
-  createdBy?: string;
+  createdBy?: string | undefined;
   items: (InvoiceItemInput & { productId?: string })[];
 }
 
@@ -1692,13 +1881,16 @@ export async function nextPurchaseDocNumber(
   );
   const prefix =
     docType === "order"
-      ? ((await getSetting("pref.purchaseOrderPrefix")) ?? PURCHASE_DOC_PREFIX.order)
+      ? ((await getSetting("pref.purchaseOrderPrefix")) ??
+        PURCHASE_DOC_PREFIX.order)
       : PURCHASE_DOC_PREFIX[docType];
   return `${prefix}-${String((row?.n ?? 0) + 1).padStart(4, "0")}`;
 }
 
 /** Save a supply order (or the shell of a debit note) with its lines, atomically. */
-export async function savePurchaseDocument(doc: NewPurchaseDocument): Promise<void> {
+export async function savePurchaseDocument(
+  doc: NewPurchaseDocument,
+): Promise<void> {
   await ready();
   const now = new Date().toISOString();
 
@@ -2360,7 +2552,10 @@ export function listAccountEntries(
 }
 
 /** Cheques written or received, newest first — pending ones first in the UI. */
-export function listCheques(orgId: string, limit = 60): Promise<AccountEntryRow[]> {
+export function listCheques(
+  orgId: string,
+  limit = 60,
+): Promise<AccountEntryRow[]> {
   return ready().then(() =>
     all<AccountEntryRow>(
       `SELECT e.id, e.account_id, a.name AS account_name, e.direction,
@@ -2412,18 +2607,18 @@ export interface ImportProductRow {
   /** Source row number, so a skipped-row report can point at the right line. */
   rowNumber: number;
   name: string;
-  sku?: string;
+  sku?: string | undefined;
   pricePaise: Paise;
   taxBps: number;
-  hsn?: string;
+  hsn?: string | undefined;
   openingMilli: number;
 }
 
 export interface ImportCustomerRow {
   rowNumber: number;
   name: string;
-  phone?: string;
-  gstin?: string;
+  phone?: string | undefined;
+  gstin?: string | undefined;
 }
 
 const norm = (v: string | null | undefined): string =>
@@ -2460,7 +2655,12 @@ export async function importProducts(
   }
 
   const statements: { sql: string; params: (string | number | null)[] }[] = [];
-  const outcome: ImportOutcome = { inserted: 0, updated: 0, skipped: 0, skippedRows: [] };
+  const outcome: ImportOutcome = {
+    inserted: 0,
+    updated: 0,
+    skipped: 0,
+    skippedRows: [],
+  };
 
   for (const r of rows) {
     const match =
@@ -2498,14 +2698,32 @@ export async function importProducts(
       sql: `INSERT INTO products
               (id, name, sku, price_paise, tax_bps, hsn, org_id, updated_at, version, dirty)
             VALUES (?,?,?,?,?,?,?,?,0,1)`,
-      params: [id, r.name, r.sku ?? null, r.pricePaise, r.taxBps, r.hsn ?? null, orgId, now],
+      params: [
+        id,
+        r.name,
+        r.sku ?? null,
+        r.pricePaise,
+        r.taxBps,
+        r.hsn ?? null,
+        orgId,
+        now,
+      ],
     });
     if (r.openingMilli !== 0) {
       statements.push({
         sql: `INSERT INTO stock_movements
                 (id, product_id, type, qty_milli, ref_type, created_at, org_id, updated_at, dirty)
               VALUES (?,?,?,?,?,?,?,?,1)`,
-        params: [crypto.randomUUID(), id, "opening", r.openingMilli, "import", now, orgId, now],
+        params: [
+          crypto.randomUUID(),
+          id,
+          "opening",
+          r.openingMilli,
+          "import",
+          now,
+          orgId,
+          now,
+        ],
       });
     }
     // Later rows in the same file must see this one, or a file listing the
@@ -2531,7 +2749,11 @@ export async function importCustomers(
   await ready();
   const now = new Date().toISOString();
 
-  const existing = await all<{ id: string; name: string; phone: string | null }>(
+  const existing = await all<{
+    id: string;
+    name: string;
+    phone: string | null;
+  }>(
     `SELECT id, name, phone FROM customers WHERE org_id = ? AND deleted_at IS NULL`,
     [orgId],
   );
@@ -2544,7 +2766,12 @@ export async function importCustomers(
   }
 
   const statements: { sql: string; params: (string | number | null)[] }[] = [];
-  const outcome: ImportOutcome = { inserted: 0, updated: 0, skipped: 0, skippedRows: [] };
+  const outcome: ImportOutcome = {
+    inserted: 0,
+    updated: 0,
+    skipped: 0,
+    skippedRows: [],
+  };
 
   for (const r of rows) {
     const d = digits(r.phone);

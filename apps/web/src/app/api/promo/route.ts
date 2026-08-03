@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+import { requireFeature } from "~/lib/billing/guard";
+
 /**
  * AI promo writer (POST /api/promo).
  *
@@ -13,9 +15,17 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function POST(req: Request): Promise<Response> {
+  // Paid surface, and every call spends provider credit — so the plan is
+  // checked here, not only on the promotions screen.
+  const denied = await requireFeature("promotions");
+  if (denied) return denied;
+
   const key = process.env.GEMINI_API_KEY;
   if (!key) {
-    return NextResponse.json({ error: "AI is not configured." }, { status: 400 });
+    return NextResponse.json(
+      { error: "AI is not configured." },
+      { status: 400 },
+    );
   }
   const model = process.env.GEMINI_MODEL || "gemini-2.0-flash";
 
@@ -23,9 +33,13 @@ export async function POST(req: Request): Promise<Response> {
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
+    return NextResponse.json(
+      { error: "Invalid request body." },
+      { status: 400 },
+    );
   }
-  const { business, occasion, offer, shop, language, channel } = (body ?? {}) as Record<string, unknown>;
+  const { business, occasion, offer, shop, language, channel } = (body ??
+    {}) as Record<string, unknown>;
   const ch = String(channel ?? "whatsapp");
 
   const head =
@@ -56,12 +70,24 @@ export async function POST(req: Request): Promise<Response> {
     });
     if (!r.ok) {
       const detail = (await r.text()).slice(0, 300);
-      return NextResponse.json({ error: `Gemini error ${r.status}`, detail }, { status: 502 });
+      return NextResponse.json(
+        { error: `Gemini error ${r.status}`, detail },
+        { status: 502 },
+      );
     }
-    const data = (await r.json()) as { candidates?: { content?: { parts?: { text?: string }[] } }[] };
-    const text = data.candidates?.[0]?.content?.parts?.map((p) => p.text ?? "").join("").trim() ?? "";
+    const data = (await r.json()) as {
+      candidates?: { content?: { parts?: { text?: string }[] } }[];
+    };
+    const text =
+      data.candidates?.[0]?.content?.parts
+        ?.map((p) => p.text ?? "")
+        .join("")
+        .trim() ?? "";
     return NextResponse.json({ text });
   } catch (err) {
-    return NextResponse.json({ error: (err as Error).message }, { status: 502 });
+    return NextResponse.json(
+      { error: (err as Error).message },
+      { status: 502 },
+    );
   }
 }

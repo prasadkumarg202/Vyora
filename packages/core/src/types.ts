@@ -13,7 +13,12 @@
  */
 
 export type JsonValue =
-  string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue };
+  | string
+  | number
+  | boolean
+  | null
+  | JsonValue[]
+  | { [key: string]: JsonValue };
 
 /** Rupees never appear as floats. 12.5% -> 1250 bps, ₹7,500 -> 750000 paise. */
 export type Bps = number;
@@ -175,6 +180,17 @@ export interface GstConfig {
   default: GstRate;
   /** Present only for composition dealers; forces a bill of supply, no breakup. */
   composition?: CompositionScheme;
+  /**
+   * The vertical's *output* supplies are exempt — healthcare by a clinical
+   * establishment, for instance (Notification 12/2017, entry 74).
+   *
+   * Distinct from `composition`, which is a scheme a dealer opts into on
+   * taxable supplies. Both oblige the supplier to issue a Bill of Supply
+   * rather than a tax invoice, which is why `isBillOfSupply` reads either —
+   * but conflating them would let an exempt clinic file as a composition
+   * dealer, and they are taxed nothing alike.
+   */
+  exempt?: boolean;
   slabs: GstSlab[];
 }
 
