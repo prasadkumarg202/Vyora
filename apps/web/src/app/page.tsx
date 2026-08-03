@@ -11,6 +11,20 @@ export const metadata: Metadata = {
     "Easy GST billing, inventory, payments and accounting that work fully offline. Voice billing, Scan & Sell, UPI and WhatsApp built in — tailored to your trade. Download Vyora for Windows free.",
 };
 
+/** Claims we can stand behind, with the number carrying the sentence. */
+const HERO_POINTS = [
+  { before: "Make a GST bill in ", bold: "under a minute", after: " — voice, barcode or by hand" },
+  { before: "Keep billing with ", bold: "zero internet", after: ", and sync when it returns" },
+  { before: "Get paid faster with ", bold: "UPI and WhatsApp", after: " on every invoice" },
+  { before: "Fits your trade — ", bold: "18 shop types", after: ", each with its own fields" },
+];
+
+const SAMPLE_LINES = [
+  { name: "Parle-G 100g × 10", amount: "₹100.00" },
+  { name: "Lux Soap × 2", amount: "₹90.00" },
+  { name: "Toor Dal 1kg × 5", amount: "₹850.00" },
+];
+
 const TRUST_BADGES = [
   "GST-ready billing",
   "Works fully offline",
@@ -140,6 +154,16 @@ export default async function IndexPage() {
 
   return (
     <main className="min-h-dvh bg-canvas">
+      {/* Announcement bar */}
+      <div className="bg-primary-tonal">
+        <p className="mx-auto max-w-6xl px-6 py-2 text-center text-body font-medium text-primary sm:px-10">
+          Free while in early access ·{" "}
+          <Link href="/download" className="underline underline-offset-2">
+            Download for Windows →
+          </Link>
+        </p>
+      </div>
+
       {/* Header */}
       <header className="sticky top-0 z-10 border-b border-border bg-surface">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3 sm:px-10">
@@ -152,44 +176,111 @@ export default async function IndexPage() {
             <a href="#industries" className="hidden text-body text-content-muted hover:text-primary md:block">Industries</a>
             <a href="#faq" className="hidden text-body text-content-muted hover:text-primary md:block">FAQ</a>
             <Link href="/download" className="hidden text-body text-content-muted hover:text-primary sm:block">Download</Link>
-            <Link href="/login" className="rounded-control bg-primary px-4 py-1.5 text-body font-medium text-white hover:opacity-90">Login</Link>
+            <Link href="/login" className="text-body font-medium text-content-muted hover:text-primary">Login</Link>
+            <a
+              href={WINDOWS_INSTALLER_URL}
+              className="rounded-control bg-primary px-4 py-2 text-body font-semibold text-white hover:opacity-90"
+            >
+              Get Vyora free
+            </a>
           </nav>
         </div>
       </header>
 
-      {/* Hero */}
-      <section className="mx-auto flex max-w-6xl flex-col items-center gap-6 px-6 py-14 text-center sm:px-10 sm:py-20">
-        <span className="rounded-control border border-border bg-surface px-4 py-1.5 text-caption font-medium text-primary shadow-card">
-          Offline-first · AI-first · Made for Indian MSMEs
-        </span>
-        <h1 className="max-w-3xl text-h1">
-          Best GST Billing Software for Small Businesses
-        </h1>
-        <p className="max-w-2xl text-body-lg text-content-muted">
-          Easy GST billing, inventory, payments and accounting — even with no
-          internet. Voice billing, Scan &amp; Sell, UPI and WhatsApp built in,
-          tailored to your trade.
-        </p>
-        <div className="flex flex-col items-center gap-3 sm:flex-row">
-          <a
-            href={WINDOWS_INSTALLER_URL}
-            className="rounded-control bg-primary px-8 py-3 text-body-lg font-semibold text-white shadow-card transition-opacity hover:opacity-90"
-          >
-            🪟 Download Vyora Now
-          </a>
-          <Link
-            href="/download"
-            className="rounded-control border border-border bg-surface px-8 py-3 text-body-lg font-semibold text-primary shadow-card hover:underline"
-          >
-            📱 Try the mobile app
-          </Link>
+      {/* Hero — the one screen that has to land */}
+      <section
+        className="text-white"
+        style={{
+          background:
+            "linear-gradient(135deg, oklch(0.42 0.20 285) 0%, oklch(0.36 0.19 290) 55%, oklch(0.30 0.16 295) 100%)",
+        }}
+      >
+        <div className="mx-auto grid max-w-6xl items-center gap-10 px-6 py-16 sm:px-10 lg:grid-cols-2 lg:py-20">
+          <div className="flex flex-col gap-6">
+            <h1 className="text-h1 leading-tight">
+              GST Billing Software built for Indian Small Businesses
+            </h1>
+
+            <ul className="flex flex-col gap-3">
+              {HERO_POINTS.map((p) => (
+                <li key={p.bold} className="flex items-start gap-3">
+                  <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-pill bg-white/20 text-caption font-bold">
+                    ✓
+                  </span>
+                  <span className="text-body-lg">
+                    {p.before}
+                    <strong className="font-bold">{p.bold}</strong>
+                    {p.after}
+                  </span>
+                </li>
+              ))}
+            </ul>
+
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <a
+                href={WINDOWS_INSTALLER_URL}
+                className="rounded-control bg-white px-8 py-3 text-center text-body-lg font-semibold text-primary shadow-card transition-transform hover:-translate-y-0.5"
+              >
+                Download free →
+              </a>
+              <Link
+                href="/download"
+                className="rounded-control border-2 border-white/70 px-8 py-3 text-center text-body-lg font-semibold text-white hover:bg-white/10"
+              >
+                Install on phone
+              </Link>
+            </div>
+
+            <p className="text-body text-white/80">
+              Works fully offline · No card needed · Your data stays on your device
+            </p>
+          </div>
+
+          {/* Product panel — the app talking about itself */}
+          <div className="rounded-card bg-white/10 p-4 shadow-card ring-1 ring-white/20">
+            <div className="flex flex-col gap-3 rounded-card bg-white p-5 text-content">
+              <div className="flex items-center justify-between border-b border-border pb-3">
+                <span className="text-caption font-semibold uppercase text-content-muted">Tax invoice</span>
+                <span className="rounded-pill bg-primary-tonal px-2 py-0.5 text-caption font-semibold text-primary">
+                  Saved offline
+                </span>
+              </div>
+              {SAMPLE_LINES.map((l) => (
+                <div key={l.name} className="flex items-baseline justify-between text-body">
+                  <span>{l.name}</span>
+                  <span className="font-mono">{l.amount}</span>
+                </div>
+              ))}
+              <div className="flex items-baseline justify-between border-t border-border pt-3">
+                <span className="text-body font-semibold">Total</span>
+                <span className="font-mono text-h3 text-primary">₹1,062.00</span>
+              </div>
+              <div className="flex items-center justify-between rounded-control bg-canvas px-3 py-2">
+                <span className="text-caption normal-case text-content-muted">Pay by UPI</span>
+                <span className="text-caption font-semibold text-primary">Scan QR ▸</span>
+              </div>
+              <div className="flex gap-2">
+                <span className="flex-1 rounded-control bg-primary py-2 text-center text-caption font-semibold text-white">
+                  WhatsApp
+                </span>
+                <span className="flex-1 rounded-control border border-border py-2 text-center text-caption font-semibold text-content-muted">
+                  Print
+                </span>
+              </div>
+            </div>
+            <p className="pt-3 text-center text-caption normal-case text-white/80">
+              A real Vyora bill — GST worked out, UPI on it, sent in one tap.
+            </p>
+          </div>
         </div>
-        <div className="flex flex-wrap items-center justify-center gap-2">
-          {TRUST_BADGES.map((b) => (
-            <span key={b} className="rounded-control border border-border bg-surface px-3 py-1 text-caption normal-case text-content-muted">
-              ✓ {b}
-            </span>
-          ))}
+
+        {/* Trust strip */}
+        <div className="border-t border-white/15">
+          <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-8 gap-y-2 px-6 py-4 text-center sm:px-10">
+            {TRUST_BADGES.map((b) => (
+              <span key={b} className="text-body text-white/90">✓ {b}</span>
+            ))}
+          </div>
         </div>
       </section>
 

@@ -53,6 +53,47 @@ That combination is the moat: a competitor can't copy it without rebuilding thei
 
 ---
 
+
+## Next up — competitor parity, specced and ready to build
+
+Three gaps found by walking Vyapar / myBillBook / Zoho Books side by side. Each
+is specced enough to start cold.
+
+### 1. Deeper onboarding (myBillBook-style)
+After the business type is chosen, ask four things that actually change the app:
+who the customers are (retail vs distributor — drives default GST posture and
+whether party GSTIN is required), whether they sell on credit (turns Credit
+Radar and Reminders on or off), roughly how many parties (chooses list vs search
+UI), and preferred language. Store in `sync_state` beside the other preferences;
+each answer must switch something on, or leave it out.
+
+### 2. "How would you like to start?" screen
+Straight after onboarding, three routes: **Create your first invoice** (deep
+link to /sales), **Import your data** (deep link to /import — already built),
+**Look around** (dashboard). One screen, no video, no sales call.
+
+### 3. Subscriptions & billing — the money path
+Vyora has a /subscriptions page but no plans and no payment. Needed:
+- Plan definitions (free tier + paid), monthly and yearly, priced in ₹.
+- **UPI AutoPay / e-mandate** via Razorpay or Cashfree — the flow every Indian
+  SaaS uses (mandate up to a max amount, small immediate charge, auto-renew).
+- A Supabase edge function to create the subscription and, critically, a
+  **webhook** to record payment state server-side. Never trust the browser's
+  "payment succeeded" callback — that is the classic way to give away paid
+  plans.
+- Plan state on the org record, read by a `useEntitlement` hook; gate the
+  premium surface (multi-user, unlimited e-way bills) in ONE place, not
+  scattered `if` statements.
+- Requires: a Razorpay/Cashfree account and KYC. Nothing here can be finished
+  without it, so wire the sandbox first and switch keys at the end.
+
+### Also outstanding
+- Settings toggles stored but not yet honoured: block-sale-on-negative-stock
+  (sales flow), batch/expiry (item form), the four print switches (invoice view).
+- Trial Balance & Balance Sheet — need double-entry and a chart of accounts.
+- GSTR-2 / 3B / 9, TDS/TCS — need purchase reconciliation and filing periods.
+- Multi-currency; staff roles with real Sync & Share.
+
 ## Integration roadmap (ranked by leverage)
 
 ### Tier 1 — leapfrog Zoho entirely
