@@ -1,5 +1,7 @@
 "use client";
 
+import { getPreference } from "~/lib/settings";
+
 import { all } from "./client";
 import { ready } from "./repository";
 
@@ -290,9 +292,9 @@ export async function runReport(id: ReportId, args: ReportArgs): Promise<ReportT
              FROM products p
             WHERE p.org_id = ? AND p.deleted_at IS NULL
          )
-         WHERE qty_milli <= 5000
+         WHERE qty_milli <= ?
          ORDER BY qty_milli ASC`,
-        [orgId],
+        [orgId, (await getPreference("lowStockThreshold")) * 1000],
       );
       return {
         columns: [
@@ -302,7 +304,7 @@ export async function runReport(id: ReportId, args: ReportArgs): Promise<ReportT
           { key: "last_sold", label: "Last sold" },
         ],
         rows: rows.map((r) => ({ ...r, qty: milliToQty(r.qty_milli as number) })),
-        note: "Anything at or below 5 units.",
+        note: "Threshold comes from Settings — change it there and this list follows.",
       };
     }
 

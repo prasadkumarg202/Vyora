@@ -7,7 +7,9 @@ import {
 import { Badge, Card } from "@vyora/ui";
 
 import { MarketingChannels } from "./marketing-channels";
+import { BackupPanel } from "./backup-panel";
 import { InvoiceBranding } from "./invoice-branding";
+import { PreferencesPanel } from "./preferences-panel";
 import { PaymentSettings } from "./payment-settings";
 
 /**
@@ -22,6 +24,7 @@ import { PaymentSettings } from "./payment-settings";
  */
 
 export function SettingsModule({
+  orgId,
   config,
   supplierStateCode,
 }: {
@@ -46,6 +49,10 @@ export function SettingsModule({
       <PaymentSettings />
 
       <InvoiceBranding />
+
+      <PreferencesPanel />
+
+      <BackupPanel orgId={orgId} />
 
       <MarketingChannels />
 

@@ -901,7 +901,8 @@ export async function nextInvoiceNumber(orgId: string): Promise<string> {
     `SELECT COUNT(*) AS n FROM invoices WHERE org_id = ?`,
     [orgId],
   );
-  return `INV-${String((row?.n ?? 0) + 1).padStart(4, "0")}`;
+  const prefix = (await getSetting("pref.invoicePrefix")) ?? "INV";
+  return `${prefix}-${String((row?.n ?? 0) + 1).padStart(4, "0")}`;
 }
 
 // --- Invoice print -----------------------------------------------------------
@@ -1331,6 +1332,15 @@ export function listSaleDocuments(
   );
 }
 
+/** Which preference overrides each kind's default prefix. */
+const DOC_PREF_SETTING: Record<SaleDocType, string> = {
+  estimate: "quotationPrefix",
+  proforma: "proformaPrefix",
+  order: "orderPrefix",
+  challan: "challanPrefix",
+  return: "creditNotePrefix",
+};
+
 /** Number series per kind — a shop's books read better when the prefix says what it is. */
 const DOC_PREFIX: Record<SaleDocType, string> = {
   estimate: "QTN",
@@ -1350,7 +1360,9 @@ export async function nextDocumentNumber(
     `SELECT COUNT(*) AS n FROM sale_documents WHERE org_id = ? AND doc_type = ?`,
     [orgId, docType],
   );
-  const prefix = DOC_PREFIX[docType];
+  // A shop that renumbers its books should not have to renumber ours.
+  const prefix =
+    (await getSetting(`pref.${DOC_PREF_SETTING[docType]}`)) ?? DOC_PREFIX[docType];
   return `${prefix}-${String((row?.n ?? 0) + 1).padStart(4, "0")}`;
 }
 
@@ -1678,7 +1690,11 @@ export async function nextPurchaseDocNumber(
     `SELECT COUNT(*) AS n FROM purchase_documents WHERE org_id = ? AND doc_type = ?`,
     [orgId, docType],
   );
-  return `${PURCHASE_DOC_PREFIX[docType]}-${String((row?.n ?? 0) + 1).padStart(4, "0")}`;
+  const prefix =
+    docType === "order"
+      ? ((await getSetting("pref.purchaseOrderPrefix")) ?? PURCHASE_DOC_PREFIX.order)
+      : PURCHASE_DOC_PREFIX[docType];
+  return `${prefix}-${String((row?.n ?? 0) + 1).padStart(4, "0")}`;
 }
 
 /** Save a supply order (or the shell of a debit note) with its lines, atomically. */
