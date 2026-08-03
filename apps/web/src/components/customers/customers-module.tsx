@@ -2,6 +2,7 @@
 
 import { type BusinessTypeConfig } from "@vyora/core";
 import { Badge, Button, Card, EmptyState, Input, Label } from "@vyora/ui";
+import { ModuleDataActions } from "~/components/common/module-data-actions";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import {
@@ -93,7 +94,10 @@ export function CustomersModule({
             Everyone you sell to — used across Sales, Payments and GST.
           </p>
         </div>
-        {config ? <Badge tone="primary">{config.label}</Badge> : null}
+        <div className="flex items-center gap-3">
+          <ModuleDataActions module="customers" orgId={orgId} />
+          {config ? <Badge tone="primary">{config.label}</Badge> : null}
+        </div>
       </div>
 
       <Card className="flex flex-col gap-4 p-5">

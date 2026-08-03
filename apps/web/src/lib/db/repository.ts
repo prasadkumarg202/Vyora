@@ -1459,29 +1459,104 @@ export function listOverdueInvoices(
   );
 }
 
-// --- Bulk import (ETL load step) ---------------------------------------------
+// --- Bulk import (the load step) & export -------------------------------------
+
+/** What to do when an imported row matches a record that already exists. */
+export type DuplicateMode = "skip" | "update" | "duplicate";
+
+export interface ImportOutcome {
+  inserted: number;
+  updated: number;
+  skipped: number;
+  /** Row numbers (1-based, as the user sees them) that were skipped. */
+  skippedRows: number[];
+}
+
+export interface ImportProductRow {
+  /** Source row number, so a skipped-row report can point at the right line. */
+  rowNumber: number;
+  name: string;
+  sku?: string;
+  pricePaise: Paise;
+  taxBps: number;
+  hsn?: string;
+  openingMilli: number;
+}
+
+export interface ImportCustomerRow {
+  rowNumber: number;
+  name: string;
+  phone?: string;
+  gstin?: string;
+}
+
+const norm = (v: string | null | undefined): string =>
+  (v ?? "").trim().toLowerCase();
+const digits = (v: string | null | undefined): string =>
+  (v ?? "").replace(/\D/g, "");
 
 /**
- * Insert many products (and their opening-stock movements) in ONE transaction —
- * the load step of the import wizard. All-or-nothing: a bad row rolls back the
- * whole file, so a half-imported catalog can never exist.
+ * Import products in ONE transaction — all-or-nothing, so a failed file can
+ * never leave a half-loaded catalogue behind.
+ *
+ * Matching is by SKU first (the only real identity a catalogue has), falling
+ * back to name. On "update" the row's details are refreshed but stock is left
+ * alone on purpose: on-hand is the sum of stock_movements, so re-importing a
+ * file that carries opening stock would silently double every quantity.
  */
-export async function bulkInsertProducts(
+export async function importProducts(
   orgId: string,
-  rows: {
-    name: string;
-    sku?: string;
-    pricePaise: Paise;
-    taxBps: number;
-    hsn?: string;
-    openingMilli: number;
-  }[],
-): Promise<number> {
+  rows: ImportProductRow[],
+  mode: DuplicateMode,
+): Promise<ImportOutcome> {
   await ready();
   const now = new Date().toISOString();
+
+  const existing = await all<{ id: string; name: string; sku: string | null }>(
+    `SELECT id, name, sku FROM products WHERE org_id = ? AND deleted_at IS NULL`,
+    [orgId],
+  );
+  const bySku = new Map<string, string>();
+  const byName = new Map<string, string>();
+  for (const e of existing) {
+    if (e.sku) bySku.set(norm(e.sku), e.id);
+    byName.set(norm(e.name), e.id);
+  }
+
   const statements: { sql: string; params: (string | number | null)[] }[] = [];
+  const outcome: ImportOutcome = { inserted: 0, updated: 0, skipped: 0, skippedRows: [] };
 
   for (const r of rows) {
+    const match =
+      (r.sku ? bySku.get(norm(r.sku)) : undefined) ?? byName.get(norm(r.name));
+
+    if (match && mode === "skip") {
+      outcome.skipped++;
+      outcome.skippedRows.push(r.rowNumber);
+      continue;
+    }
+
+    if (match && mode === "update") {
+      statements.push({
+        sql: `UPDATE products
+              SET name = ?, sku = COALESCE(?, sku), price_paise = ?, tax_bps = ?,
+                  hsn = COALESCE(?, hsn), dirty = 1, updated_at = ?
+              WHERE id = ? AND org_id = ?`,
+        params: [
+          r.name,
+          r.sku ?? null,
+          r.pricePaise,
+          r.taxBps,
+          r.hsn ?? null,
+          now,
+          match,
+          orgId,
+        ],
+      });
+      outcome.updated++;
+      continue;
+    }
+
     const id = crypto.randomUUID();
     statements.push({
       sql: `INSERT INTO products
@@ -1497,34 +1572,160 @@ export async function bulkInsertProducts(
         params: [crypto.randomUUID(), id, "opening", r.openingMilli, "import", now, orgId, now],
       });
     }
+    // Later rows in the same file must see this one, or a file listing the
+    // same SKU twice would insert it twice under "skip".
+    if (r.sku) bySku.set(norm(r.sku), id);
+    byName.set(norm(r.name), id);
+    outcome.inserted++;
   }
 
-  await batch(statements);
-  return rows.length;
+  if (statements.length > 0) await batch(statements);
+  return outcome;
 }
 
-/** Insert many customers in one transaction — see bulkInsertProducts. */
-export async function bulkInsertCustomers(
+/**
+ * Import customers in one transaction. Matching is by phone (digits only, so
+ * "+91 98765 43210" and "9876543210" are the same person), falling back to name.
+ */
+export async function importCustomers(
   orgId: string,
-  rows: { name: string; phone?: string; gstin?: string }[],
-): Promise<number> {
+  rows: ImportCustomerRow[],
+  mode: DuplicateMode,
+): Promise<ImportOutcome> {
   await ready();
   const now = new Date().toISOString();
 
-  await batch(
-    rows.map((r) => ({
+  const existing = await all<{ id: string; name: string; phone: string | null }>(
+    `SELECT id, name, phone FROM customers WHERE org_id = ? AND deleted_at IS NULL`,
+    [orgId],
+  );
+  const byPhone = new Map<string, string>();
+  const byName = new Map<string, string>();
+  for (const e of existing) {
+    const d = digits(e.phone);
+    if (d) byPhone.set(d, e.id);
+    byName.set(norm(e.name), e.id);
+  }
+
+  const statements: { sql: string; params: (string | number | null)[] }[] = [];
+  const outcome: ImportOutcome = { inserted: 0, updated: 0, skipped: 0, skippedRows: [] };
+
+  for (const r of rows) {
+    const d = digits(r.phone);
+    const match = (d ? byPhone.get(d) : undefined) ?? byName.get(norm(r.name));
+
+    if (match && mode === "skip") {
+      outcome.skipped++;
+      outcome.skippedRows.push(r.rowNumber);
+      continue;
+    }
+
+    if (match && mode === "update") {
+      statements.push({
+        sql: `UPDATE customers
+              SET name = ?, phone = COALESCE(?, phone), gstin = COALESCE(?, gstin),
+                  dirty = 1, updated_at = ?
+              WHERE id = ? AND org_id = ?`,
+        params: [r.name, r.phone ?? null, r.gstin ?? null, now, match, orgId],
+      });
+      outcome.updated++;
+      continue;
+    }
+
+    const id = crypto.randomUUID();
+    statements.push({
       sql: `INSERT INTO customers
               (id, name, phone, gstin, org_id, updated_at, version, dirty)
             VALUES (?,?,?,?,?,?,0,1)`,
-      params: [
-        crypto.randomUUID(),
-        r.name,
-        r.phone ?? null,
-        r.gstin ?? null,
-        orgId,
-        now,
-      ] as (string | number | null)[],
-    })),
+      params: [id, r.name, r.phone ?? null, r.gstin ?? null, orgId, now],
+    });
+    if (d) byPhone.set(d, id);
+    byName.set(norm(r.name), id);
+    outcome.inserted++;
+  }
+
+  if (statements.length > 0) await batch(statements);
+  return outcome;
+}
+
+// --- Export ------------------------------------------------------------------
+
+export interface ProductExportRow {
+  name: string;
+  sku: string | null;
+  price_paise: number | null;
+  tax_bps: number | null;
+  hsn: string | null;
+  on_hand_milli: number;
+}
+
+/** Whole catalogue with live stock — the file a shop hands to their CA or a new tool. */
+export function exportProducts(orgId: string): Promise<ProductExportRow[]> {
+  return ready().then(() =>
+    all<ProductExportRow>(
+      `SELECT p.name, p.sku, p.price_paise, p.tax_bps, p.hsn,
+              COALESCE((
+                SELECT SUM(m.qty_milli) FROM stock_movements m
+                WHERE m.product_id = p.id AND m.deleted_at IS NULL
+              ), 0) AS on_hand_milli
+       FROM products p
+       WHERE p.org_id = ? AND p.deleted_at IS NULL
+       ORDER BY p.name`,
+      [orgId],
+    ),
   );
-  return rows.length;
+}
+
+export interface CustomerExportRow {
+  name: string;
+  phone: string | null;
+  gstin: string | null;
+  outstanding_paise: number;
+}
+
+/** Every customer with what they still owe — derived, never stored. */
+export function exportCustomers(orgId: string): Promise<CustomerExportRow[]> {
+  return ready().then(() =>
+    all<CustomerExportRow>(
+      `SELECT c.name, c.phone, c.gstin,
+              COALESCE((
+                SELECT SUM(i.total_paise - i.amount_paid_paise) FROM invoices i
+                WHERE i.customer_id = c.id AND i.deleted_at IS NULL
+                  AND i.amount_paid_paise < i.total_paise
+              ), 0) AS outstanding_paise
+       FROM customers c
+       WHERE c.org_id = ? AND c.deleted_at IS NULL
+       ORDER BY c.name`,
+      [orgId],
+    ),
+  );
+}
+
+export interface InvoiceExportRow {
+  number: string | null;
+  date: string;
+  customer_name: string | null;
+  customer_phone: string | null;
+  customer_gstin: string | null;
+  status: string;
+  subtotal_paise: number;
+  tax_paise: number;
+  total_paise: number;
+  amount_paid_paise: number;
+}
+
+/** Sales register — one row per invoice, with the party, for GST filing or Tally. */
+export function exportInvoices(orgId: string): Promise<InvoiceExportRow[]> {
+  return ready().then(() =>
+    all<InvoiceExportRow>(
+      `SELECT i.number, i.date, c.name AS customer_name, c.phone AS customer_phone,
+              c.gstin AS customer_gstin, i.status, i.subtotal_paise, i.tax_paise,
+              i.total_paise, i.amount_paid_paise
+       FROM invoices i
+       LEFT JOIN customers c ON c.id = i.customer_id
+       WHERE i.org_id = ? AND i.deleted_at IS NULL
+       ORDER BY i.date DESC, i.number DESC`,
+      [orgId],
+    ),
+  );
 }

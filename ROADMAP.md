@@ -39,6 +39,11 @@ That combination is the moat: a competitor can't copy it without rebuilding thei
 - [x] 4-tier support model — AI Chatbot → AI Assistant → Virtual Assistant → Physical Assistant
 - [x] Admin ticketing dashboard — Pending / In-progress / Completed status + open-source helpdesk integration (Chatwoot, FreeScout, osTicket, Zammad, Freshdesk) via server proxy
 - [x] Installable desktop app (Windows / Mac) download from the website
+- [x] Marketing website (Vyapar-style landing) + Windows .exe via GitHub Actions releases; web app deployed on Cloudflare Workers
+- [x] Estimates / Quotations & Delivery Challans — one-tap convert to invoice (`/quotes`)
+- [x] Payment reminders — overdue list with one-tap WhatsApp chase (`/reminders`)
+- [x] Invoice branding — shop address / GSTIN / phone / footer on every printed invoice
+- [x] Bulk import ETL wizard — items & customers from CSV (Vyapar/Tally header auto-mapping), atomic, offline (`/import`)
 
 ---
 
@@ -70,13 +75,13 @@ That combination is the moat: a competitor can't copy it without rebuilding thei
 
 ## Product depth — parity list ("one by one")
 
-- [ ] Estimates / Quotations
-- [ ] Delivery Challan
+- [x] Estimates / Quotations *(v1 shipped)*
+- [x] Delivery Challan *(v1 shipped — stock movement on challan pending)*
 - [ ] Credit / Debit Notes
 - [ ] Balance Sheet
-- [ ] Automated payment reminders
+- [x] Automated payment reminders *(v1 shipped — one-tap WhatsApp; scheduled sends need WhatsApp API)*
 - [ ] Barcode-in-Sales
-- [ ] Excel import / export
+- [x] Excel import / export — direct .xlsx upload (zero-dependency reader), CSV import with Vyapar/myBillBook/Tally header auto-mapping, duplicate skip/update/add on SKU or phone, skipped-rows CSV report, one-click export of Items / Customers / Sales register, in-context buttons on each module *(parity: Zoho Books / myBillBook — exceeded on offline)*
 - [ ] Online store
 - [ ] Loyalty
 - [ ] Staff roles & permissions

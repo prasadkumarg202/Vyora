@@ -124,9 +124,9 @@ export const NAV_ZONES: readonly NavZone[] = [
         phase: "Phase 7",
       },
       {
-        label: "Import Data",
+        label: "Import & Export",
         href: "/import",
-        summary: "Bulk-import items and customers from Excel/CSV, Vyapar or Tally exports.",
+        summary: "Bulk import from Excel/CSV (Vyapar, myBillBook, Tally) and one-click CSV export.",
         phase: "Phase 7",
       },
       {

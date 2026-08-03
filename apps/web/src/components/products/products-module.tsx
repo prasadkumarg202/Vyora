@@ -7,6 +7,7 @@ import {
   type Paise,
 } from "@vyora/core";
 import { Badge, Button, Card, EmptyState, Input, Label } from "@vyora/ui";
+import { ModuleDataActions } from "~/components/common/module-data-actions";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { listProducts, saveProduct, type ProductRow } from "~/lib/db/repository";
@@ -111,7 +112,10 @@ export function ProductsModule({
             Purchase and Inventory, on this device and once it syncs.
           </p>
         </div>
-        {config ? <Badge tone="primary">{config.label}</Badge> : null}
+        <div className="flex items-center gap-3">
+          <ModuleDataActions module="products" orgId={orgId} />
+          {config ? <Badge tone="primary">{config.label}</Badge> : null}
+        </div>
       </div>
 
       {/* Add product */}
