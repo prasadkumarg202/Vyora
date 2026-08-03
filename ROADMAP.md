@@ -39,6 +39,7 @@ That combination is the moat: a competitor can't copy it without rebuilding thei
 - [x] 4-tier support model — AI Chatbot → AI Assistant → Virtual Assistant → Physical Assistant
 - [x] Admin ticketing dashboard — Pending / In-progress / Completed status + open-source helpdesk integration (Chatwoot, FreeScout, osTicket, Zammad, Freshdesk) via server proxy
 - [x] Installable desktop app (Windows / Mac) download from the website
+- [x] Returns Desk — part-returns priced off the original bill, stock back on the shelf, receivable cleared
 - [x] Marketing website (Vyapar-style landing) + Windows .exe via GitHub Actions releases; web app deployed on Cloudflare Workers
 - [x] Estimates / Quotations & Delivery Challans — one-tap convert to invoice (`/quotes`)
 - [x] Payment reminders — overdue list with one-tap WhatsApp chase (`/reminders`)
@@ -76,8 +77,9 @@ That combination is the moat: a competitor can't copy it without rebuilding thei
 ## Product depth — parity list ("one by one")
 
 - [x] Estimates / Quotations *(v1 shipped)*
+- [x] Proforma bills & order booking *(share the sale-document engine; convert to invoice in one tap)*
 - [x] Delivery Challan *(v1 shipped — stock movement on challan pending)*
-- [ ] Credit / Debit Notes
+- [x] Credit Notes — Returns Desk: credit note + stock restored + customer credited in one transaction *(debit notes / purchase returns still to do; GSTR-1 credit-note reporting is filing-side)*
 - [ ] Balance Sheet
 - [x] Automated payment reminders *(v1 shipped — one-tap WhatsApp; scheduled sends need WhatsApp API)*
 - [ ] Barcode-in-Sales

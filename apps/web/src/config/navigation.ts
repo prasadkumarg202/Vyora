@@ -66,9 +66,15 @@ export const NAV_ZONES: readonly NavZone[] = [
         phase: "Phase 7",
       },
       {
-        label: "Quotes & Challans",
+        label: "Offers & Orders",
         href: "/quotes",
-        summary: "Estimates, quotations and delivery challans — convert to invoice in one tap.",
+        summary: "Quotations, proforma bills, confirmed orders and delivery notes — each becomes an invoice in one tap.",
+        phase: "Phase 7",
+      },
+      {
+        label: "Returns Desk",
+        href: "/returns",
+        summary: "Goods coming back: credit note, stock restored and the customer credited, together.",
         phase: "Phase 7",
       },
       {

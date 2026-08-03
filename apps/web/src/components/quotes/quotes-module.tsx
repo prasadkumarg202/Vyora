@@ -17,12 +17,16 @@ import {
 } from "~/lib/db/repository";
 
 /**
- * Estimates / Quotations & Delivery Challans.
+ * Offers & Orders — everything that comes before the bill.
  *
- * Both are pre-invoice documents: they price or accompany goods without touching
- * revenue, stock or GST. The one action that matters is Convert — the document's
- * lines become a real invoice in one tap, and from then on it behaves like any
- * sale. Local-first like everything else: saves offline, syncs when connected.
+ * Quotations, proforma bills, order bookings and delivery notes are the same
+ * document wearing four hats, so they share one screen and one table. None of
+ * them is revenue: a quotation must never show up in sales, GST or outstanding,
+ * which is exactly why they live apart from invoices. The one action that
+ * matters is Convert — the lines become a real invoice in a single tap, and
+ * from that moment it behaves like any other sale.
+ *
+ * Local-first like everything else: saves offline, syncs when connected.
  */
 
 interface DraftLine {
@@ -51,9 +55,41 @@ function paiseOf(rupees: string): Paise {
   }
 }
 
-const TABS: { type: SaleDocType; label: string; noun: string }[] = [
-  { type: "estimate", label: "Estimates & Quotations", noun: "estimate" },
-  { type: "challan", label: "Delivery Challans", noun: "challan" },
+/**
+ * Four kinds of paperwork that all end the same way — as an invoice. They differ
+ * only in what the shop is promising: a price, a bill in advance, a booking, or
+ * goods already on their way.
+ */
+const TABS: {
+  type: SaleDocType;
+  label: string;
+  noun: string;
+  blurb: string;
+}[] = [
+  {
+    type: "estimate",
+    label: "Quotation",
+    noun: "quotation",
+    blurb: "A price offered, nothing committed. Send it and follow up.",
+  },
+  {
+    type: "proforma",
+    label: "Proforma bill",
+    noun: "proforma bill",
+    blurb: "A bill raised before supply — for advances, exports and approvals.",
+  },
+  {
+    type: "order",
+    label: "Order booking",
+    noun: "order",
+    blurb: "The customer has said yes. Goods still to go out.",
+  },
+  {
+    type: "challan",
+    label: "Delivery note",
+    noun: "delivery note",
+    blurb: "Goods moving now, the bill following later.",
+  },
 ];
 
 export function QuotesModule({ orgId, userId }: { orgId: string; userId: string }) {
@@ -174,7 +210,8 @@ export function QuotesModule({ orgId, userId }: { orgId: string; userId: string 
   function shareWhatsApp(doc: SaleDocumentRow) {
     const cust = customers.find((c) => c.id === doc.customer_id);
     const phone = cust?.phone?.replace(/\D/g, "");
-    const noun = doc.doc_type === "estimate" ? "quotation" : "delivery challan";
+    const noun =
+      TABS.find((t) => t.type === doc.doc_type)?.noun ?? "document";
     const text = `Hello ${cust?.name ?? "Customer"},\n\nHere is your ${noun} ${doc.number ?? ""} for ${formatPaise(doc.total_paise as Paise)} dated ${doc.date}.\n\nThank you!`;
     const url = phone
       ? `https://wa.me/91${phone}?text=${encodeURIComponent(text)}`
@@ -185,10 +222,11 @@ export function QuotesModule({ orgId, userId }: { orgId: string; userId: string 
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-1">
-        <h1 className="text-h1">Quotes &amp; Challans</h1>
+        <h1 className="text-h1">Offers &amp; Orders</h1>
         <p className="text-body text-content-muted">
-          Price a job or accompany goods without billing — convert to a GST
-          invoice when the customer says yes.
+          Everything that comes before the bill — quote a price, raise a
+          proforma, book an order, send goods out. Each one becomes a GST
+          invoice the moment it should.
         </p>
       </div>
 
@@ -208,6 +246,8 @@ export function QuotesModule({ orgId, userId }: { orgId: string; userId: string 
           </button>
         ))}
       </div>
+
+      <p className="text-body text-content-muted">{tab.blurb}</p>
 
       {/* New document */}
       <Card className="flex flex-col gap-4 p-5">
@@ -296,12 +336,12 @@ export function QuotesModule({ orgId, userId }: { orgId: string; userId: string 
 
       {/* List */}
       <section className="flex flex-col gap-3">
-        <h2 className="text-h3">Recent {tab.label.toLowerCase()}</h2>
+        <h2 className="text-h3">Recent {tab.label.toLowerCase()}s</h2>
         {docs === null ? (
           <p className="text-body text-content-muted">Loading…</p>
         ) : docs.length === 0 ? (
           <EmptyState
-            title={`No ${tab.label.toLowerCase()} yet`}
+            title={`No ${tab.label.toLowerCase()}s yet`}
             description="Create one above — it stays on this device, connected or not, and converts to an invoice in one tap."
           />
         ) : (

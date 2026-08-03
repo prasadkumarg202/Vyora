@@ -1209,7 +1209,17 @@ export async function expensesSummary(
 
 // --- Estimates, quotations & delivery challans -------------------------------
 
-export type SaleDocType = "estimate" | "challan";
+/**
+ * The pre-sale and post-sale paperwork around an invoice. One table, one
+ * shape — what differs is intent, so the kind is data rather than five
+ * near-identical modules.
+ */
+export type SaleDocType =
+  | "estimate"   // quotation: a price, offered
+  | "proforma"   // a bill in advance of supply, for advances and imports
+  | "order"      // a confirmed booking, awaiting delivery
+  | "challan"    // goods moving, billed later
+  | "return";    // goods coming back — the GST credit note
 
 export interface SaleDocumentRow {
   id: string;
@@ -1222,6 +1232,7 @@ export interface SaleDocumentRow {
   tax_paise: number;
   total_paise: number;
   converted_invoice_id: string | null;
+  ref_invoice_id: string | null;
   updated_at: string;
   dirty: number;
 }
@@ -1234,6 +1245,8 @@ export interface NewSaleDocument {
   date: string;
   customerId?: string;
   note?: string;
+  /** The invoice this document answers to (a credit note's original bill). */
+  refInvoiceId?: string;
   subtotalPaise: Paise;
   taxPaise: Paise;
   totalPaise: Paise;
@@ -1254,8 +1267,9 @@ export async function saveSaleDocument(doc: NewSaleDocument): Promise<void> {
     {
       sql: `INSERT INTO sale_documents
               (id, doc_type, number, customer_id, date, status, subtotal_paise,
-               tax_paise, total_paise, note, created_by, org_id, updated_at, version, dirty)
-            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,0,1)`,
+               tax_paise, total_paise, note, ref_invoice_id, created_by, org_id,
+               updated_at, version, dirty)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,0,1)`,
       params: [
         doc.id,
         doc.docType,
@@ -1267,6 +1281,7 @@ export async function saveSaleDocument(doc: NewSaleDocument): Promise<void> {
         doc.taxPaise,
         doc.totalPaise,
         doc.note ?? null,
+        doc.refInvoiceId ?? null,
         doc.createdBy ?? null,
         doc.orgId,
         now,
@@ -1305,7 +1320,8 @@ export function listSaleDocuments(
   return ready().then(() =>
     all<SaleDocumentRow>(
       `SELECT id, doc_type, number, customer_id, date, status, subtotal_paise,
-              tax_paise, total_paise, converted_invoice_id, updated_at, dirty
+              tax_paise, total_paise, converted_invoice_id, ref_invoice_id,
+              updated_at, dirty
        FROM sale_documents
        WHERE org_id = ? AND doc_type = ? AND deleted_at IS NULL
        ORDER BY date DESC, updated_at DESC
@@ -1315,7 +1331,16 @@ export function listSaleDocuments(
   );
 }
 
-/** Display sequence per document kind (EST-0001 / DC-0001), like invoices. */
+/** Number series per kind — a shop's books read better when the prefix says what it is. */
+const DOC_PREFIX: Record<SaleDocType, string> = {
+  estimate: "QTN",
+  proforma: "PI",
+  order: "SO",
+  challan: "DN",
+  return: "CN",
+};
+
+/** Display sequence per document kind (QTN-0001, CN-0001…), like invoices. */
 export async function nextDocumentNumber(
   orgId: string,
   docType: SaleDocType,
@@ -1325,7 +1350,7 @@ export async function nextDocumentNumber(
     `SELECT COUNT(*) AS n FROM sale_documents WHERE org_id = ? AND doc_type = ?`,
     [orgId, docType],
   );
-  const prefix = docType === "estimate" ? "EST" : "DC";
+  const prefix = DOC_PREFIX[docType];
   return `${prefix}-${String((row?.n ?? 0) + 1).padStart(4, "0")}`;
 }
 
@@ -1346,7 +1371,8 @@ export async function convertDocumentToInvoice(args: {
 
   const doc = await get<SaleDocumentRow>(
     `SELECT id, doc_type, number, customer_id, date, status, subtotal_paise,
-            tax_paise, total_paise, converted_invoice_id, updated_at, dirty
+            tax_paise, total_paise, converted_invoice_id, ref_invoice_id,
+            updated_at, dirty
      FROM sale_documents
      WHERE id = ? AND org_id = ? AND deleted_at IS NULL`,
     [args.documentId, args.orgId],
@@ -1457,6 +1483,143 @@ export function listOverdueInvoices(
       [orgId, limit],
     ),
   );
+}
+
+/**
+ * Record goods coming back: the credit note, the stock, and the money — in one
+ * transaction.
+ *
+ * Three things must move together or the books lie. The note itself is a
+ * sale_document (kind "return") pointing at the original bill; every returned
+ * line puts its quantity back on the movement ledger; and the credit is applied
+ * against the invoice so the customer stops appearing in Reminders for money
+ * they no longer owe.
+ *
+ * What this does NOT do yet: reverse output GST in the filing summary (the note
+ * is recorded, but GSTR-1 credit-note reporting is a filing-side change), or
+ * hand back cash — a refund paid out is a payment in the Payments module, so
+ * the trail stays explicit rather than implied.
+ */
+export async function saveSaleReturn(args: {
+  orgId: string;
+  invoiceId: string;
+  customerId?: string | null;
+  number: string;
+  note?: string;
+  createdBy?: string;
+  subtotalPaise: Paise;
+  taxPaise: Paise;
+  totalPaise: Paise;
+  items: (InvoiceItemInput & { productId?: string })[];
+}): Promise<string> {
+  await ready();
+  const now = new Date().toISOString();
+  const docId = crypto.randomUUID();
+
+  const statements: { sql: string; params: (string | number | null)[] }[] = [
+    {
+      sql: `INSERT INTO sale_documents
+              (id, doc_type, number, customer_id, date, status, subtotal_paise,
+               tax_paise, total_paise, note, ref_invoice_id, created_by, org_id,
+               updated_at, version, dirty)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,0,1)`,
+      params: [
+        docId,
+        "return",
+        args.number,
+        args.customerId ?? null,
+        now.slice(0, 10),
+        "issued",
+        args.subtotalPaise,
+        args.taxPaise,
+        args.totalPaise,
+        args.note ?? null,
+        args.invoiceId,
+        args.createdBy ?? null,
+        args.orgId,
+        now,
+      ],
+    },
+  ];
+
+  for (const item of args.items) {
+    statements.push({
+      sql: `INSERT INTO sale_document_items
+              (id, document_id, product_id, description, qty_milli, rate_paise,
+               tax_bps, amount_paise, meta, org_id, updated_at, dirty)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,1)`,
+      params: [
+        crypto.randomUUID(),
+        docId,
+        item.productId ?? null,
+        item.description,
+        item.qtyMilli,
+        item.ratePaise,
+        item.taxBps,
+        item.amountPaise,
+        JSON.stringify(item.meta ?? {}),
+        args.orgId,
+        now,
+      ],
+    });
+    if (item.productId) {
+      statements.push({
+        sql: `INSERT INTO stock_movements
+                (id, product_id, type, qty_milli, ref_type, ref_id, created_at,
+                 org_id, updated_at, dirty)
+              VALUES (?,?,?,?,?,?,?,?,?,1)`,
+        // Positive: the goods are back on the shelf.
+        params: [
+          crypto.randomUUID(),
+          item.productId,
+          "return",
+          item.qtyMilli,
+          "return",
+          docId,
+          now,
+          args.orgId,
+          now,
+        ],
+      });
+    }
+  }
+
+  // The credit itself, recorded like any other settlement so Payments,
+  // Reminders and the party's outstanding all agree.
+  statements.push({
+    sql: `INSERT INTO payments
+            (id, direction, party_type, party_id, invoice_id, amount_paise,
+             method, date, created_by, org_id, updated_at, dirty)
+          VALUES (?,?,?,?,?,?,?,?,?,?,?,1)`,
+    params: [
+      crypto.randomUUID(),
+      "in",
+      "customer",
+      args.customerId ?? null,
+      args.invoiceId,
+      args.totalPaise,
+      "credit-note",
+      now.slice(0, 10),
+      args.createdBy ?? null,
+      args.orgId,
+      now,
+    ],
+  });
+  statements.push({
+    sql: `UPDATE invoices
+          SET amount_paid_paise = amount_paid_paise + ?,
+              status = CASE
+                WHEN amount_paid_paise + ? >= total_paise THEN 'paid'
+                ELSE 'partial'
+              END,
+              dirty = 1,
+              updated_at = ?
+          WHERE id = ? AND org_id = ?`,
+    params: [args.totalPaise, args.totalPaise, now, args.invoiceId, args.orgId],
+  });
+
+  await batch(statements);
+  return docId;
 }
 
 // --- Bulk import (the load step) & export -------------------------------------

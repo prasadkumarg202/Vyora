@@ -308,8 +308,23 @@ CREATE INDEX IF NOT EXISTS sale_documents_type_idx ON sale_documents(org_id, doc
 CREATE INDEX IF NOT EXISTS sale_document_items_doc_idx ON sale_document_items(document_id);
 `;
 
+
+/**
+ * Migration 5 — link a sale document back to an invoice.
+ *
+ * A credit note exists *because of* an earlier bill, and an order can be raised
+ * against a proforma. `converted_invoice_id` already says "what this became";
+ * this says "what this refers to". Additive and nullable, so v4 devices upgrade
+ * with no data movement.
+ */
+const MIGRATION_5 = `
+ALTER TABLE sale_documents ADD COLUMN ref_invoice_id TEXT;
+CREATE INDEX IF NOT EXISTS sale_documents_ref_idx
+  ON sale_documents(org_id, ref_invoice_id) WHERE ref_invoice_id IS NOT NULL;
+`;
+
 /** Append-only. Index = version - 1. */
-export const MIGRATIONS: readonly string[] = [MIGRATION_1, MIGRATION_2, MIGRATION_3, MIGRATION_4];
+export const MIGRATIONS: readonly string[] = [MIGRATION_1, MIGRATION_2, MIGRATION_3, MIGRATION_4, MIGRATION_5];
 
 /** Tables that sync. sync_state is local-only and deliberately absent. */
 export const SYNCED_TABLES = [
