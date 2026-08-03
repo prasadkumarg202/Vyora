@@ -194,6 +194,12 @@ export const NAV_ZONES: readonly NavZone[] = [
         phase: "Phase 7",
       },
       {
+        label: "Cash & Bank",
+        href: "/cash",
+        summary: "Counter cash, bank accounts, cheques and loans — with live balances.",
+        phase: "Phase 7",
+      },
+      {
         label: "Accounting",
         href: "/accounting",
         summary: "Ledgers, journals, chart of accounts, day book.",

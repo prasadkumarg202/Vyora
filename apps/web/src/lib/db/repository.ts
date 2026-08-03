@@ -2107,6 +2107,278 @@ export function listSupplierPayments(
   );
 }
 
+// --- Cash & bank: accounts, movements, cheques, loans -------------------------
+
+/** Where money sits. One table, four shapes. */
+export type AccountKind = "cash" | "bank" | "card" | "loan";
+
+export interface AccountRow {
+  id: string;
+  name: string;
+  kind: string;
+  bank_name: string | null;
+  account_number: string | null;
+  ifsc: string | null;
+  upi_id: string | null;
+  opening_paise: number;
+  principal_paise: number | null;
+  emi_paise: number | null;
+  is_default: number;
+  /**
+   * Live balance: opening, plus every movement, plus any invoice settlement
+   * assigned to this account. Derived on read — a stored balance is a bug
+   * waiting for two devices to bill at the same time.
+   */
+  balance_paise: number;
+  dirty: number;
+}
+
+export async function saveAccount(a: {
+  id: string;
+  orgId: string;
+  name: string;
+  kind: AccountKind;
+  bankName?: string;
+  accountNumber?: string;
+  ifsc?: string;
+  upiId?: string;
+  openingPaise?: Paise;
+  principalPaise?: Paise;
+  emiPaise?: Paise;
+  rateBps?: number;
+  note?: string;
+}): Promise<void> {
+  await ready();
+  const now = new Date().toISOString();
+  await batch([
+    {
+      sql: `INSERT INTO accounts
+              (id, name, kind, bank_name, account_number, ifsc, upi_id,
+               opening_paise, principal_paise, emi_paise, rate_bps, note,
+               org_id, updated_at, version, dirty)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,0,1)`,
+      params: [
+        a.id,
+        a.name,
+        a.kind,
+        a.bankName ?? null,
+        a.accountNumber ?? null,
+        a.ifsc ?? null,
+        a.upiId ?? null,
+        a.openingPaise ?? 0,
+        a.principalPaise ?? null,
+        a.emiPaise ?? null,
+        a.rateBps ?? null,
+        a.note ?? null,
+        a.orgId,
+        now,
+      ] as (string | number | null)[],
+    },
+  ]);
+}
+
+/**
+ * Accounts with live balances.
+ *
+ * A loan is the mirror of a bank account: the "balance" is what is still owed,
+ * so principal counts as money in and every repayment brings it down. Cheques
+ * that have not cleared are deliberately excluded — money promised is not money
+ * held, and a shopkeeper who spends against an uncleared cheque is the person
+ * this rule protects.
+ */
+export function listAccounts(orgId: string): Promise<AccountRow[]> {
+  return ready().then(() =>
+    all<AccountRow>(
+      `SELECT a.id, a.name, a.kind, a.bank_name, a.account_number, a.ifsc,
+              a.upi_id, a.opening_paise, a.principal_paise, a.emi_paise,
+              a.is_default, a.dirty,
+              a.opening_paise
+              + COALESCE((
+                  SELECT SUM(CASE WHEN e.direction = 'in' THEN e.amount_paise
+                                  ELSE -e.amount_paise END)
+                  FROM account_entries e
+                  WHERE e.account_id = a.id AND e.deleted_at IS NULL
+                    AND (e.cheque_status IS NULL OR e.cheque_status = 'cleared')
+                ), 0)
+              + COALESCE((
+                  SELECT SUM(CASE WHEN p.direction = 'in' THEN p.amount_paise
+                                  ELSE -p.amount_paise END)
+                  FROM payments p
+                  WHERE p.account_id = a.id AND p.deleted_at IS NULL
+                ), 0) AS balance_paise
+       FROM accounts a
+       WHERE a.org_id = ? AND a.deleted_at IS NULL
+       ORDER BY a.kind, a.name`,
+      [orgId],
+    ),
+  );
+}
+
+export interface AccountEntryRow {
+  id: string;
+  account_id: string;
+  account_name: string | null;
+  direction: string;
+  amount_paise: number;
+  date: string;
+  category: string | null;
+  note: string | null;
+  instrument: string | null;
+  cheque_no: string | null;
+  cheque_status: string | null;
+  due_date: string | null;
+  dirty: number;
+}
+
+/** Record money moving in or out of one account (including a cheque). */
+export async function saveAccountEntry(e: {
+  id?: string;
+  orgId: string;
+  accountId: string;
+  direction: "in" | "out";
+  amountPaise: Paise;
+  date?: string;
+  category?: string;
+  note?: string;
+  instrument?: string;
+  chequeNo?: string;
+  chequeStatus?: "pending" | "cleared" | "bounced";
+  dueDate?: string;
+  transferId?: string;
+  createdBy?: string;
+}): Promise<void> {
+  await ready();
+  const now = new Date().toISOString();
+  await batch([
+    {
+      sql: `INSERT INTO account_entries
+              (id, account_id, direction, amount_paise, date, category, note,
+               instrument, cheque_no, cheque_status, due_date, transfer_id,
+               created_by, org_id, updated_at, version, dirty)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,0,1)`,
+      params: [
+        e.id ?? crypto.randomUUID(),
+        e.accountId,
+        e.direction,
+        e.amountPaise,
+        e.date ?? now.slice(0, 10),
+        e.category ?? null,
+        e.note ?? null,
+        e.instrument ?? null,
+        e.chequeNo ?? null,
+        e.chequeStatus ?? null,
+        e.dueDate ?? null,
+        e.transferId ?? null,
+        e.createdBy ?? null,
+        e.orgId,
+        now,
+      ] as (string | number | null)[],
+    },
+  ]);
+}
+
+/**
+ * Move money between two accounts — cash banked, or a bank withdrawal.
+ *
+ * Two entries sharing a transfer_id, written together: a transfer that lands on
+ * one side only is how a cash book stops adding up.
+ */
+export async function transferBetweenAccounts(args: {
+  orgId: string;
+  fromAccountId: string;
+  toAccountId: string;
+  amountPaise: Paise;
+  note?: string;
+  createdBy?: string;
+}): Promise<void> {
+  await ready();
+  const now = new Date().toISOString();
+  const transferId = crypto.randomUUID();
+  const date = now.slice(0, 10);
+  const row = (accountId: string, direction: "in" | "out") => ({
+    sql: `INSERT INTO account_entries
+            (id, account_id, direction, amount_paise, date, category, note,
+             transfer_id, created_by, org_id, updated_at, version, dirty)
+          VALUES (?,?,?,?,?,?,?,?,?,?,?,0,1)`,
+    params: [
+      crypto.randomUUID(),
+      accountId,
+      direction,
+      args.amountPaise,
+      date,
+      "transfer",
+      args.note ?? null,
+      transferId,
+      args.createdBy ?? null,
+      args.orgId,
+      now,
+    ] as (string | number | null)[],
+  });
+
+  await batch([row(args.fromAccountId, "out"), row(args.toAccountId, "in")]);
+}
+
+/** Movements on one account (or all of them), newest first. */
+export function listAccountEntries(
+  orgId: string,
+  accountId?: string,
+  limit = 60,
+): Promise<AccountEntryRow[]> {
+  const where = accountId ? "AND e.account_id = ?" : "";
+  const params: (string | number)[] = accountId
+    ? [orgId, accountId, limit]
+    : [orgId, limit];
+  return ready().then(() =>
+    all<AccountEntryRow>(
+      `SELECT e.id, e.account_id, a.name AS account_name, e.direction,
+              e.amount_paise, e.date, e.category, e.note, e.instrument,
+              e.cheque_no, e.cheque_status, e.due_date, e.dirty
+       FROM account_entries e
+       LEFT JOIN accounts a ON a.id = e.account_id
+       WHERE e.org_id = ? AND e.deleted_at IS NULL ${where}
+       ORDER BY e.date DESC, e.updated_at DESC
+       LIMIT ?`,
+      params,
+    ),
+  );
+}
+
+/** Cheques written or received, newest first — pending ones first in the UI. */
+export function listCheques(orgId: string, limit = 60): Promise<AccountEntryRow[]> {
+  return ready().then(() =>
+    all<AccountEntryRow>(
+      `SELECT e.id, e.account_id, a.name AS account_name, e.direction,
+              e.amount_paise, e.date, e.category, e.note, e.instrument,
+              e.cheque_no, e.cheque_status, e.due_date, e.dirty
+       FROM account_entries e
+       LEFT JOIN accounts a ON a.id = e.account_id
+       WHERE e.org_id = ? AND e.deleted_at IS NULL AND e.cheque_status IS NOT NULL
+       ORDER BY CASE e.cheque_status WHEN 'pending' THEN 0 ELSE 1 END,
+                COALESCE(e.due_date, e.date) ASC
+       LIMIT ?`,
+      [orgId, limit],
+    ),
+  );
+}
+
+/** Clear or bounce a cheque. Only a cleared cheque counts toward a balance. */
+export async function setChequeStatus(args: {
+  orgId: string;
+  entryId: string;
+  status: "pending" | "cleared" | "bounced";
+}): Promise<void> {
+  await ready();
+  const now = new Date().toISOString();
+  await batch([
+    {
+      sql: `UPDATE account_entries
+            SET cheque_status = ?, dirty = 1, updated_at = ?
+            WHERE id = ? AND org_id = ?`,
+      params: [args.status, now, args.entryId, args.orgId],
+    },
+  ]);
+}
+
 // --- Bulk import (the load step) & export -------------------------------------
 
 /** What to do when an imported row matches a record that already exists. */

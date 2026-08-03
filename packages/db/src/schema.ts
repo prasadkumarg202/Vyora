@@ -370,6 +370,70 @@ CREATE INDEX IF NOT EXISTS purchase_documents_type_idx ON purchase_documents(org
 CREATE INDEX IF NOT EXISTS purchase_document_items_doc_idx ON purchase_document_items(document_id);
 `;
 
+
+/**
+ * Migration 7 — where the money actually sits.
+ *
+ * Until now money was tracked as payments against a party. A shop also needs to
+ * know *which pocket* it went into: the counter cash, one of two bank accounts,
+ * a cheque not yet cleared, or a loan being repaid. One `accounts` table covers
+ * all four (kind discriminates), and `account_entries` is the movement ledger —
+ * balances are always summed from movements, never stored, so two devices
+ * recording cash at once cannot disagree.
+ *
+ * payments gains account_id so an invoice settlement can say which account
+ * received it. Nullable: existing rows stay valid and simply count as
+ * unassigned until the shop says otherwise.
+ */
+const MIGRATION_7 = `
+CREATE TABLE IF NOT EXISTS accounts (
+  id             TEXT PRIMARY KEY,
+  name           TEXT NOT NULL,
+  kind           TEXT NOT NULL DEFAULT 'bank',
+  bank_name      TEXT,
+  account_number TEXT,
+  ifsc           TEXT,
+  upi_id         TEXT,
+  opening_paise  INTEGER NOT NULL DEFAULT 0,
+  -- Loan accounts only: what was borrowed, and the instalment.
+  principal_paise INTEGER,
+  emi_paise       INTEGER,
+  rate_bps        INTEGER,
+  note           TEXT,
+  is_default     INTEGER NOT NULL DEFAULT 0,
+  ${SYNC_COLUMNS}
+);
+
+CREATE TABLE IF NOT EXISTS account_entries (
+  id             TEXT PRIMARY KEY,
+  account_id     TEXT NOT NULL REFERENCES accounts(id),
+  direction      TEXT NOT NULL,
+  amount_paise   INTEGER NOT NULL,
+  date           TEXT NOT NULL,
+  category       TEXT,
+  note           TEXT,
+  -- Cheques live here too: a movement that has not settled yet.
+  instrument     TEXT,
+  cheque_no      TEXT,
+  cheque_status  TEXT,
+  due_date       TEXT,
+  party_type     TEXT,
+  party_id       TEXT,
+  transfer_id    TEXT,
+  ref_type       TEXT,
+  ref_id         TEXT,
+  created_by     TEXT,
+  ${SYNC_COLUMNS}
+);
+
+ALTER TABLE payments ADD COLUMN account_id TEXT;
+
+CREATE INDEX IF NOT EXISTS accounts_org_idx        ON accounts(org_id, deleted_at);
+CREATE INDEX IF NOT EXISTS account_entries_acc_idx ON account_entries(org_id, account_id, deleted_at);
+CREATE INDEX IF NOT EXISTS account_entries_chq_idx ON account_entries(org_id, cheque_status) WHERE cheque_status IS NOT NULL;
+CREATE INDEX IF NOT EXISTS payments_account_idx    ON payments(org_id, account_id) WHERE account_id IS NOT NULL;
+`;
+
 /** Append-only. Index = version - 1. */
 export const MIGRATIONS: readonly string[] = [
   MIGRATION_1,
@@ -378,6 +442,7 @@ export const MIGRATIONS: readonly string[] = [
   MIGRATION_4,
   MIGRATION_5,
   MIGRATION_6,
+  MIGRATION_7,
 ];
 
 /** Tables that sync. sync_state is local-only and deliberately absent. */
@@ -399,6 +464,8 @@ export const SYNCED_TABLES = [
   "sale_document_items",
   "purchase_documents",
   "purchase_document_items",
+  "accounts",
+  "account_entries",
 ] as const;
 
 export type SyncedTable = (typeof SYNCED_TABLES)[number];
