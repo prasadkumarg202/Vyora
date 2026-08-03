@@ -212,6 +212,12 @@ export const NAV_ZONES: readonly NavZone[] = [
         phase: "Phase 7",
       },
       {
+        label: "Report Library",
+        href: "/reports-hub",
+        summary: "13 reports across transactions, parties, stock, GST, expenses and cash — searchable, printable, exportable.",
+        phase: "Phase 7",
+      },
+      {
         label: "Reports",
         href: "/reports",
         summary: "Inventory, custom builder.",

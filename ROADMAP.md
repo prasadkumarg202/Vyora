@@ -39,6 +39,7 @@ That combination is the moat: a competitor can't copy it without rebuilding thei
 - [x] 4-tier support model — AI Chatbot → AI Assistant → Virtual Assistant → Physical Assistant
 - [x] Admin ticketing dashboard — Pending / In-progress / Completed status + open-source helpdesk integration (Chatwoot, FreeScout, osTicket, Zammad, Freshdesk) via server proxy
 - [x] Installable desktop app (Windows / Mac) download from the website
+- [x] Report Library — one engine, 13 reports (all transactions, cash flow, party outstanding & statement, stock summary, low stock, item-wise sales & profit, sales by HSN, sales by GST rate, expenses by category, account statement, loan statement) with FY presets, in-report search, CSV export and print
 - [x] Cash & Bank — cash-in-hand and bank accounts with live balances, transfers, cheques (uncleared never counted), loans with repayment tracking
 - [x] Supply Desk — supply orders that become purchase bills, supplier returns (debit notes), payments out
 - [x] Growth Studio — AI business briefing grounded in on-device numbers (offline rule-based fallback), WhatsApp price list, Google-listing helper
