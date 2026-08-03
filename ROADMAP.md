@@ -39,6 +39,9 @@ That combination is the moat: a competitor can't copy it without rebuilding thei
 - [x] 4-tier support model — AI Chatbot → AI Assistant → Virtual Assistant → Physical Assistant
 - [x] Admin ticketing dashboard — Pending / In-progress / Completed status + open-source helpdesk integration (Chatwoot, FreeScout, osTicket, Zammad, Freshdesk) via server proxy
 - [x] Installable desktop app (Windows / Mac) download from the website
+- [x] Supply Desk — supply orders that become purchase bills, supplier returns (debit notes), payments out
+- [x] Growth Studio — AI business briefing grounded in on-device numbers (offline rule-based fallback), WhatsApp price list, Google-listing helper
+- [x] Shared date-range picker — Indian FY (Apr–Mar) presets: today / yesterday / last 7 / this & last month / quarter / this & last FY / custom
 - [x] Returns Desk — part-returns priced off the original bill, stock back on the shelf, receivable cleared
 - [x] Marketing website (Vyapar-style landing) + Windows .exe via GitHub Actions releases; web app deployed on Cloudflare Workers
 - [x] Estimates / Quotations & Delivery Challans — one-tap convert to invoice (`/quotes`)
@@ -82,9 +85,9 @@ That combination is the moat: a competitor can't copy it without rebuilding thei
 - [x] Credit Notes — Returns Desk: credit note + stock restored + customer credited in one transaction *(debit notes / purchase returns still to do; GSTR-1 credit-note reporting is filing-side)*
 - [ ] Balance Sheet
 - [x] Automated payment reminders *(v1 shipped — one-tap WhatsApp; scheduled sends need WhatsApp API)*
-- [ ] Barcode-in-Sales
+- [ ] Barcode-in-Sales *(Scan & Sell covers the counter; label printing still to do)*
 - [x] Excel import / export — direct .xlsx upload (zero-dependency reader), CSV import with Vyapar/myBillBook/Tally header auto-mapping, duplicate skip/update/add on SKU or phone, skipped-rows CSV report, one-click export of Items / Customers / Sales register, in-context buttons on each module *(parity: Zoho Books / myBillBook — exceeded on offline)*
-- [ ] Online store
+- [ ] Online store — v1 shipped as a shareable WhatsApp price list; a hosted storefront with order capture still to build
 - [ ] Loyalty
 - [ ] Staff roles & permissions
 

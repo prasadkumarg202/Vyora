@@ -72,6 +72,12 @@ export const NAV_ZONES: readonly NavZone[] = [
         phase: "Phase 7",
       },
       {
+        label: "Growth Studio",
+        href: "/growth",
+        summary: "AI business briefing from your own numbers, shareable price list, and getting found online.",
+        phase: "Phase 7",
+      },
+      {
         label: "Returns Desk",
         href: "/returns",
         summary: "Goods coming back: credit note, stock restored and the customer credited, together.",
