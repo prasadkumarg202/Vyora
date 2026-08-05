@@ -27,19 +27,27 @@ export function resolveInvoice(config: BusinessTypeConfig): InvoiceConfig {
  * who must. Neither is recoverable at print time, so it throws.
  */
 export function isBillOfSupply(config: BusinessTypeConfig): boolean {
-  const composition = config.gst.composition !== undefined;
+  // Section 31(3)(c): a supplier issues a Bill of Supply instead of a tax
+  // invoice when it cannot charge tax on the face of the document — either
+  // because it is under composition, or because the supply itself is exempt.
+  // Two different reasons, one obligation.
+  const owed =
+    config.gst.composition !== undefined || config.gst.exempt === true;
   const titled =
     config.invoice.template.trim().toUpperCase() === BILL_OF_SUPPLY;
 
-  if (composition !== titled) {
+  if (owed !== titled) {
     throw new Error(
-      `Business type "${config.businessType}" is inconsistent: gst.composition is ` +
-        `${composition ? "present" : "absent"} but invoice.template is ` +
-        `"${config.invoice.template}". A composition scheme and a "${BILL_OF_SUPPLY}" ` +
-        `template must be declared together.`,
+      `Business type "${config.businessType}" is inconsistent: it ` +
+        `${owed ? "is" : "is not"} a Bill of Supply supplier (composition: ` +
+        `${config.gst.composition !== undefined}, exempt: ` +
+        `${config.gst.exempt === true}) but invoice.template is ` +
+        `"${config.invoice.template}". The two must be declared together — a ` +
+        `document titled "TAX INVOICE" that charges no tax is a compliance ` +
+        `defect, not a cosmetic one.`,
     );
   }
-  return composition;
+  return owed;
 }
 
 export function resolveReports(config: BusinessTypeConfig): string[] {

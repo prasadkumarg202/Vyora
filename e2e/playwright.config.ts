@@ -27,6 +27,19 @@ export default defineConfig({
     baseURL,
     trace: "on-first-retry",
   },
+  expect: {
+    /**
+     * Font hinting and sub-pixel antialiasing differ between a developer's
+     * machine and CI, so a byte-exact screenshot comparison fails for reasons
+     * that have nothing to do with the product. A small ratio catches a broken
+     * layout while tolerating a differently-rendered glyph.
+     */
+    toHaveScreenshot: {
+      maxDiffPixelRatio: 0.02,
+      animations: "disabled",
+      scale: "css",
+    },
+  },
   projects: [
     // Signs in once; the shell suite reuses the state.
     {
@@ -37,18 +50,38 @@ export default defineConfig({
       name: "chromium",
       use: { ...devices["Desktop Chrome"], storageState: STORAGE_STATE },
       dependencies: ["setup"],
-      testIgnore: /auth\.(setup|spec)\.ts/,
+      testIgnore: /(auth\.(setup|spec)|pricing-public\.spec)\.ts/,
     },
     {
       name: "mobile",
       use: { ...devices["Pixel 7"], storageState: STORAGE_STATE },
       dependencies: ["setup"],
-      testIgnore: /auth\.(setup|spec)\.ts/,
+      /**
+       * The billing specs are excluded here, not because they are desktop-only,
+       * but because they time-travel one shared workspace row. Running the same
+       * spec in two projects at once would have each one moving the calendar
+       * under the other, and the failures would look like product bugs.
+       */
+      testIgnore:
+        /(auth\.(setup|spec)|pricing-public\.spec|billing-[a-z]+\.spec)\.ts/,
+    },
+    // The public pricing page, signed out — half its assertions are that an
+    // anonymous visitor gets in at all.
+    {
+      name: "public",
+      use: {
+        ...devices["Desktop Chrome"],
+        storageState: { cookies: [], origins: [] },
+      },
+      testMatch: /pricing-public\.spec\.ts/,
     },
     // Auth drives sign-in itself, so it must start signed out.
     {
       name: "auth",
-      use: { ...devices["Desktop Chrome"], storageState: { cookies: [], origins: [] } },
+      use: {
+        ...devices["Desktop Chrome"],
+        storageState: { cookies: [], origins: [] },
+      },
       testMatch: /auth\.spec\.ts/,
     },
   ],

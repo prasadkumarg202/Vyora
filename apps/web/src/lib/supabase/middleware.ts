@@ -3,8 +3,26 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import { clientEnv } from "~/env";
 
-/** Routes reachable without a session. */
-const PUBLIC_PATHS = ["/login", "/auth", "/~offline", "/download"];
+/**
+ * Routes reachable without a session.
+ *
+ * Two of these are load-bearing rather than convenient:
+ *   - /pricing: a shop comparing us against Vyapar must reach the price list
+ *     without an account, and search engines have to be able to index it.
+ *   - /api/billing/webhook: the payment gateway posts here with no cookies. A
+ *     redirect to /login would be a non-2xx as far as Razorpay is concerned,
+ *     so it would retry forever and no payment would ever be recorded. The
+ *     route is not unprotected — it verifies an HMAC signature, which is
+ *     stronger authentication than a session cookie.
+ */
+const PUBLIC_PATHS = [
+  "/login",
+  "/auth",
+  "/~offline",
+  "/download",
+  "/pricing",
+  "/api/billing/webhook",
+];
 
 const isPublic = (pathname: string) =>
   // "/" is the public marketing landing page; the page itself sends

@@ -1,5 +1,5 @@
 /**
- * The 18 verticals, as executable metadata.
+ * The 19 verticals, as executable metadata.
  *
  * Hand-authored from `business-types.raw.json` (the design's verbatim data) and
  * deliberately NOT derived from it at runtime: the raw file is a display record,
@@ -1621,6 +1621,135 @@ export const BUSINESS_TYPES: readonly BusinessTypeConfig[] = [
       "Scheme cost",
       "Secondary sales",
       "Outstanding by retailer",
+    ],
+  },
+
+  {
+    // Not from the original design deck — added as a vertical in its own right.
+    // A diagnostic centre is the first seeded trade whose *output* is exempt
+    // rather than taxed, which is why GstConfig grew an `exempt` flag: healthcare
+    // services by a clinical establishment are exempt (Notification 12/2017,
+    // entry 74), so the document owed is a Bill of Supply and there is no tax to
+    // put on it. Modelling that as a composition scheme would have been the easy
+    // shortcut and would have filed the lab as something it is not.
+    businessType: "diagnostics",
+    label: "Diagnostic Centre",
+    sector: "Pathology & imaging",
+    letter: "Dx",
+    hue: 196,
+    fields: {
+      required: [
+        // Keys to `item_name` like every other vertical's headline field, so the
+        // catalogue lookup, the quick keys and item-wise reports work here
+        // without knowing a test from a packet of salt.
+        {
+          key: "item_name",
+          label: "Test / scan",
+          type: "text",
+          required: true,
+        },
+        {
+          key: "patient_name",
+          label: "Patient name",
+          type: "text",
+          required: true,
+        },
+        { key: "qty", label: "Qty", type: "number", required: true },
+        { key: "rate", label: "Rate", type: "currency", required: true },
+        { key: "gst", label: "GST", type: "percent", required: true },
+      ],
+      optional: [
+        {
+          key: "sample_id",
+          label: "Sample ID",
+          type: "scan",
+          required: false,
+          scanKind: "barcode",
+        },
+        {
+          key: "referred_by",
+          label: "Referred by",
+          type: "text",
+          required: false,
+        },
+        {
+          key: "collected_on",
+          label: "Collected on",
+          type: "date",
+          required: false,
+        },
+        {
+          key: "report_due",
+          label: "Report due",
+          type: "date",
+          required: false,
+        },
+        // SAC, not HSN: a diagnostic centre supplies services.
+        { key: "sac", label: "SAC", type: "text", required: false },
+      ],
+    },
+    validations: [
+      {
+        message: "Sample ID must be unique",
+        check: { kind: "unique", fields: ["sample_id"] },
+      },
+      {
+        message: "Report due cannot be before the collection date",
+        check: {
+          kind: "date_after",
+          field: "report_due",
+          than: "collected_on",
+          orEqual: true,
+        },
+      },
+      {
+        message: "Rate must be greater than 0",
+        check: { kind: "gt", field: "rate", value: 0 },
+      },
+      {
+        // Stated to the operator rather than enforced: the exemption is a
+        // property of the supply, and the engine already prices it at 0%.
+        message:
+          "Healthcare diagnostics are GST-exempt — issue a bill of supply, not a tax invoice",
+        check: { kind: "note" },
+      },
+      {
+        // No claim/TPA field exists in this vertical, so there is nothing to
+        // require against; the prompt is the useful part.
+        message: "Referring doctor required for a TPA or insurance claim",
+        check: { kind: "note" },
+      },
+    ],
+    gst: {
+      defaultLabel: "Exempt",
+      default: { kind: "fixed", bps: 0 },
+      // Not a composition scheme — see the note at the top of this entry.
+      exempt: true,
+      slabs: [
+        {
+          applies: "Diagnostic & pathology services",
+          rate: { kind: "fixed", bps: 0 },
+        },
+        {
+          applies: "Non-clinical services (reports, records)",
+          rate: { kind: "fixed", bps: 1800 },
+        },
+      ],
+    },
+    invoice: {
+      template: "BILL OF SUPPLY",
+      columns: ["Test", "Patient", "Qty", "Rate", "Amount"],
+      extras: [
+        "Referring doctor",
+        "Report collection date",
+        "Lab in-charge sign",
+      ],
+    },
+    reports: [
+      "Test-wise revenue",
+      "Referring doctor register",
+      "Pending reports",
+      "Daily collections",
     ],
   },
 ];

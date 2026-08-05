@@ -2,8 +2,9 @@
 
 import {
   coerceRecord,
-  computeTax,
+  computeDocument,
   formatPaise,
+  paiseToRupees,
   resolveFields,
   rupeesToPaise,
   validateRecord,
@@ -17,13 +18,27 @@ import {
 } from "@vyora/core";
 import { Badge, Button, Card, EmptyState, Input, Label } from "@vyora/ui";
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type KeyboardEvent,
+} from "react";
 
+import {
+  InvoiceExtras,
+  emptyExtras,
+  type Extras,
+} from "~/components/sales/invoice-extras";
+import { QuickKeys } from "~/components/sales/quick-keys";
 import {
   listInvoices,
   nextInvoiceNumber,
   saveInvoice,
+  searchProducts,
   type InvoiceRow,
+  type ProductPick,
 } from "~/lib/db/repository";
 
 /**
@@ -41,8 +56,23 @@ import {
  * invoice line so reports like "Expiry alerts" and "Salt-wise sales" can read it
  * back.
  *
+ * Above the lines sits the shop's own quick-key row — the four or five items a
+ * grocery bills all day, on the digits 1–9. It is derived from their catalogue
+ * rather than from a list we guessed for their trade, and its order is fixed
+ * until they change it.
+ *
+ * The item name is a lookup into the shop's own catalogue. Picking a product
+ * fills the HSN, the GST rate, the selling price and the MRP from the product
+ * record — the three things a shopkeeper otherwise retypes on every line and
+ * gets wrong on the one that matters. The filled values stay editable and the
+ * product itself is never written back: a one-off price on today's bill must
+ * not silently rewrite the catalogue.
+ *
  * Everything is local-first: a saved invoice is durable on this device and
- * marked dirty for the sync flush, online or not.
+ * marked dirty for the sync flush, online or not. That includes the product
+ * search, which runs against local SQLite — a lookup that needed the network
+ * would be slower than typing the HSN by hand, and useless at a counter with
+ * no signal.
  */
 
 interface DraftLine {
@@ -138,6 +168,18 @@ export function SalesModule({
   const [lines, setLines] = useState<DraftLine[]>(() =>
     config && plan ? [blankLine(config, plan)] : [],
   );
+  /**
+   * Which catalogue product each line came from, keyed by line.
+   *
+   * Kept beside the lines rather than inside them because it is not a captured
+   * *field* — it is provenance. It rides through to invoice_items.product_id,
+   * which is what lets stock, HSN-wise sales and item-wise profit join back to
+   * the catalogue even for a vertical whose form never shows an HSN box.
+   */
+  const [productByLine, setProductByLine] = useState<Record<string, string>>(
+    {},
+  );
+  const [extras, setExtras] = useState<Extras>(emptyExtras);
   const [invoices, setInvoices] = useState<InvoiceRow[] | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -161,15 +203,82 @@ export function SalesModule({
       ),
     );
 
-  const addLine = () =>
+  /**
+   * Fills a line from a catalogue product.
+   *
+   * Only writes a value the product actually has — a product with no HSN
+   * recorded must not blank an HSN the shopkeeper already typed. Everything
+   * written here stays editable afterwards; this is a starting point, not a
+   * lock.
+   */
+  const applyProduct = (lineKey: string, product: ProductPick) => {
     setLines((ls) =>
-      config && plan ? [...ls, blankLine(config, plan)] : ls,
+      ls.map((l) =>
+        l.key === lineKey
+          ? { ...l, values: fillFromProduct(l.values, product, plan) }
+          : l,
+      ),
     );
+    setProductByLine((m) => ({ ...m, [lineKey]: product.id }));
+  };
 
-  const removeLine = (key: string) =>
+  /**
+   * Bills a quick-key product in one keystroke.
+   *
+   * Reuses the empty line at the bottom instead of always appending, so
+   * pressing 1, 2, 3 in a row leaves three lines and not three lines plus a
+   * blank one the cashier has to notice and remove.
+   *
+   * Reads `lines` directly rather than through a state updater, because the
+   * new line's key is needed for `productByLine` too — and calling setState
+   * from inside another updater runs twice under StrictMode.
+   */
+  const addProductLine = useCallback(
+    (product: ProductPick) => {
+      if (!config || !plan) return;
+
+      const last = lines[lines.length - 1];
+      const reuseLast =
+        last !== undefined &&
+        !last.values.item_name?.trim() &&
+        safePaise(last.values.rate) === 0;
+
+      const target = reuseLast ? last : blankLine(config, plan);
+      const filled = {
+        ...target,
+        values: fillFromProduct(target.values, product, plan),
+      };
+
+      setLines((ls) =>
+        reuseLast ? [...ls.slice(0, -1), filled] : [...ls, filled],
+      );
+      setProductByLine((m) => ({ ...m, [filled.key]: product.id }));
+    },
+    [config, plan, lines],
+  );
+
+  /** Typing over the name means this line is no longer that product. */
+  const detachProduct = (lineKey: string) =>
+    setProductByLine((m) => {
+      if (!(lineKey in m)) return m;
+      const next = { ...m };
+      delete next[lineKey];
+      return next;
+    });
+
+  const addLine = () =>
+    setLines((ls) => (config && plan ? [...ls, blankLine(config, plan)] : ls));
+
+  const removeLine = (key: string) => {
     setLines((ls) => ls.filter((l) => l.key !== key));
+    detachProduct(key);
+  };
 
-  // Live GST plus the per-line amounts, all from the engine.
+  // Live GST plus the per-line amounts, all from the engine — including the
+  // document discount and any additional charges, because both change the
+  // taxable value and therefore the tax. Applying them after the tax is
+  // computed would put a number on the invoice that GSTR-1 will not agree
+  // with.
   const calc = useMemo(() => {
     if (!config || !plan) return null;
     const active = lines.filter((l) => isFillable(plan, l));
@@ -184,23 +293,32 @@ export function SalesModule({
       return item;
     });
 
-    let tax: TaxBreakup | null = null;
+    let doc: ReturnType<typeof computeDocument> | null = null;
     try {
-      tax = items.length
-        ? computeTax(config, items, {
-            supplierStateCode,
-            placeOfSupplyStateCode: supplierStateCode, // intra-state until customer capture
-            roundOff: true,
+      doc = items.length
+        ? computeDocument(config, {
+            lines: items,
+            discount: extras.discount ?? undefined,
+            charges: extras.charges,
+            ctx: {
+              supplierStateCode,
+              placeOfSupplyStateCode: supplierStateCode, // intra-state until customer capture
+              roundOff: extras.roundOff,
+            },
           })
         : null;
     } catch {
-      tax = null;
+      doc = null;
     }
 
+    const tax: TaxBreakup | null = doc?.tax ?? null;
+
+    // Only the leading lines map back to form rows; the rest are the charges,
+    // which have no row to highlight.
     const byKey = new Map<string, TaxBreakup["lines"][number]>();
-    if (tax) active.forEach((l, i) => byKey.set(l.key, tax!.lines[i]!));
-    return { active, tax, byKey };
-  }, [config, plan, lines, supplierStateCode]);
+    if (tax) active.forEach((l, i) => byKey.set(l.key, tax.lines[i]!));
+    return { active, tax, doc, byKey };
+  }, [config, plan, lines, supplierStateCode, extras]);
 
   async function handleSave() {
     if (!config || !plan || !calc?.tax || calc.active.length === 0) return;
@@ -222,7 +340,8 @@ export function SalesModule({
           ...validateRequired(config, l.values),
           ...validateRecord(config, record, { today }),
         ];
-        for (const issue of issues) problems.push(`Line ${i + 1}: ${issue.message}`);
+        for (const issue of issues)
+          problems.push(`Line ${i + 1}: ${issue.message}`);
       });
       if (problems.length > 0) {
         setError(problems.join(" · "));
@@ -239,21 +358,46 @@ export function SalesModule({
         number,
         date: today,
         createdBy: userId,
+        // The document-level facts ride in custom_fields rather than in new
+        // columns: they are per-invoice text and money that nothing queries
+        // on, and a column apiece would mean a migration on both the local
+        // SQLite schema and Postgres for something only the printed document
+        // reads back.
+        extras: {
+          notes: extras.notes,
+          terms: extras.terms,
+          discountPaise: calc.doc?.discountPaise ?? 0,
+          chargesPaise: calc.doc?.chargesPaise ?? 0,
+          charges: extras.charges,
+          roundOffPaise: calc.tax.roundOffPaise ?? 0,
+        },
         subtotalPaise: calc.tax.taxableValuePaise,
         taxPaise: calc.tax.totalTaxPaise,
         totalPaise: calc.tax.grandTotalPaise,
         items: calc.active.map((l, i) => ({
-          description:
-            (l.values.item_name || l.values.description || `Item ${i + 1}`).trim(),
+          description: (
+            l.values.item_name ||
+            l.values.description ||
+            `Item ${i + 1}`
+          ).trim(),
+          productId: productByLine[l.key],
           qtyMilli: Math.round(lineQty(plan, l) * 1000),
           ratePaise: safePaise(l.values.rate),
           taxBps: calc.tax!.lines[i]?.rateBps ?? lineGstBps(plan, l) ?? 0,
           amountPaise: calc.tax!.lines[i]?.totalPaise ?? (0 as Paise),
-          meta: safeCoerce(config, l.values),
+          // coerceRecord drops keys the vertical does not declare, which would
+          // throw away an HSN carried from the catalogue on the twelve
+          // verticals with no HSN box. Re-added here, because HSN belongs on a
+          // GST tax invoice regardless of which trade issued it.
+          meta: withHsn(safeCoerce(config, l.values), l.values.hsn),
         })),
       });
 
       setLines([blankLine(config, plan)]);
+      setProductByLine({});
+      // Notes, discount and charges are per-bill; the shop's standing terms
+      // are not, so they survive into the next invoice.
+      setExtras((e) => ({ ...e, notes: "", discount: null, charges: [] }));
       await refresh();
     } catch (err) {
       setError((err as Error).message);
@@ -262,8 +406,7 @@ export function SalesModule({
     }
   }
 
-  const canSave =
-    !!calc?.tax && (calc?.active.length ?? 0) > 0 && !saving;
+  const canSave = !!calc?.tax && (calc?.active.length ?? 0) > 0 && !saving;
 
   if (!config || !plan) {
     return (
@@ -297,6 +440,8 @@ export function SalesModule({
       </div>
 
       <Card className="flex flex-col gap-4 p-5">
+        <QuickKeys orgId={orgId} onPick={addProductLine} />
+
         <div className="flex flex-col gap-4">
           {lines.map((line, i) => {
             const lineTax = calc?.byKey.get(line.key);
@@ -307,14 +452,31 @@ export function SalesModule({
                 data-testid="sale-line"
               >
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-                  {plan.fields.map((field) => (
-                    <FieldControl
-                      key={field.key}
-                      field={field}
-                      value={line.values[field.key] ?? ""}
-                      onChange={(raw) => setLineValue(line.key, field.key, raw)}
-                    />
-                  ))}
+                  {plan.fields.map((field) =>
+                    field.key === "item_name" ? (
+                      <ProductPicker
+                        key={field.key}
+                        field={field}
+                        orgId={orgId}
+                        value={line.values[field.key] ?? ""}
+                        linked={Boolean(productByLine[line.key])}
+                        onChange={(raw) => {
+                          setLineValue(line.key, field.key, raw);
+                          detachProduct(line.key);
+                        }}
+                        onPick={(product) => applyProduct(line.key, product)}
+                      />
+                    ) : (
+                      <FieldControl
+                        key={field.key}
+                        field={field}
+                        value={line.values[field.key] ?? ""}
+                        onChange={(raw) =>
+                          setLineValue(line.key, field.key, raw)
+                        }
+                      />
+                    ),
+                  )}
                 </div>
                 <div className="mt-3 flex items-center justify-between border-t border-border pt-3">
                   <span className="text-caption normal-case text-content-muted">
@@ -352,12 +514,35 @@ export function SalesModule({
           </Button>
         </div>
 
+        <InvoiceExtras
+          value={extras}
+          onChange={setExtras}
+          grossPaise={calc?.doc?.grossPaise ?? (0 as Paise)}
+          discountPaise={calc?.doc?.discountPaise ?? (0 as Paise)}
+          chargesPaise={calc?.doc?.chargesPaise ?? (0 as Paise)}
+        />
+
         {calc?.tax ? (
           <div
             className="flex flex-col gap-1 border-t border-border pt-3"
             data-testid="totals"
           >
-            <Row label="Taxable" value={formatPaise(calc.tax.taxableValuePaise)} />
+            {calc.doc && calc.doc.discountPaise > 0 ? (
+              <Row
+                label="Discount"
+                value={`- ${formatPaise(calc.doc.discountPaise)}`}
+              />
+            ) : null}
+            {calc.doc && calc.doc.chargesPaise > 0 ? (
+              <Row
+                label="Additional charges"
+                value={formatPaise(calc.doc.chargesPaise)}
+              />
+            ) : null}
+            <Row
+              label="Taxable"
+              value={formatPaise(calc.tax.taxableValuePaise)}
+            />
             {calc.tax.igstPaise > 0 ? (
               <Row label="IGST" value={formatPaise(calc.tax.igstPaise)} />
             ) : (
@@ -367,7 +552,10 @@ export function SalesModule({
               </>
             )}
             {calc.tax.roundOffPaise !== 0 ? (
-              <Row label="Round off" value={formatPaise(calc.tax.roundOffPaise)} />
+              <Row
+                label="Round off"
+                value={formatPaise(calc.tax.roundOffPaise)}
+              />
             ) : null}
             <div className="flex items-baseline justify-between pt-1">
               <span className="text-body font-semibold">Total</span>
@@ -387,7 +575,11 @@ export function SalesModule({
           </p>
         ) : null}
 
-        <Button onClick={handleSave} disabled={!canSave} data-testid="save-invoice">
+        <Button
+          onClick={handleSave}
+          disabled={!canSave}
+          data-testid="save-invoice"
+        >
           {saving ? "Saving…" : "Save invoice"}
         </Button>
       </Card>
@@ -402,7 +594,10 @@ export function SalesModule({
             description="Fill the line above and save — it stays on this device, connected or not."
           />
         ) : (
-          <Card className="divide-y divide-border p-0" data-testid="invoice-list">
+          <Card
+            className="divide-y divide-border p-0"
+            data-testid="invoice-list"
+          >
             {invoices.map((inv) => (
               <div
                 key={inv.id}
@@ -445,6 +640,189 @@ export function SalesModule({
  * control. Adding a new vertical never touches this: it only adds fields to a
  * config.
  */
+/**
+ * Item name, backed by the shop's own catalogue.
+ *
+ * A combobox rather than a select: most shops have more products than a
+ * dropdown can hold, and a line item must still accept a name that is not in
+ * the catalogue at all — a one-off service, a repair charge, something bought
+ * this morning. So free text always wins; the list is an offer, never a
+ * requirement.
+ *
+ * The keyboard path is the one that matters. At a counter the fast way to bill
+ * is type-three-letters, arrow-down, Enter, and never touch the mouse.
+ */
+function ProductPicker({
+  field,
+  orgId,
+  value,
+  linked,
+  onChange,
+  onPick,
+}: {
+  field: FieldDef;
+  orgId: string;
+  value: string;
+  /** True once a catalogue product is behind this line. */
+  linked: boolean;
+  onChange: (raw: string) => void;
+  onPick: (product: ProductPick) => void;
+}) {
+  const [matches, setMatches] = useState<ProductPick[]>([]);
+  const [open, setOpen] = useState(false);
+  const [active, setActive] = useState(0);
+  const id = `f-${field.key}`;
+  const listId = `${id}-list`;
+
+  useEffect(() => {
+    if (!open) return;
+    const term = value.trim();
+    if (term.length < 2) {
+      setMatches([]);
+      return;
+    }
+
+    // Debounced, and guarded by `live`: on a slow device the query for "cro"
+    // can land after the query for "croc", and the older answer must not
+    // overwrite the newer one.
+    let live = true;
+    const timer = setTimeout(() => {
+      void searchProducts(orgId, term)
+        .then((rows) => {
+          if (!live) return;
+          setMatches(rows);
+          setActive(0);
+        })
+        .catch(() => {
+          // A failed lookup is not a failed sale. The typed name still bills.
+          if (live) setMatches([]);
+        });
+    }, 120);
+
+    return () => {
+      live = false;
+      clearTimeout(timer);
+    };
+  }, [orgId, value, open]);
+
+  const choose = (product: ProductPick) => {
+    onPick(product);
+    setOpen(false);
+    setMatches([]);
+  };
+
+  function onKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+    if (!open || matches.length === 0) return;
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      setActive((i) => (i + 1) % matches.length);
+    } else if (event.key === "ArrowUp") {
+      event.preventDefault();
+      setActive((i) => (i - 1 + matches.length) % matches.length);
+    } else if (event.key === "Enter") {
+      // Only swallow Enter when a suggestion is actually highlighted, so the
+      // key still submits for someone billing a name that is not in stock.
+      event.preventDefault();
+      const picked = matches[active];
+      if (picked) choose(picked);
+    } else if (event.key === "Escape") {
+      setOpen(false);
+    }
+  }
+
+  const labelText = field.label + (field.required ? " *" : "");
+
+  return (
+    <div className="relative col-span-2 flex flex-col gap-1">
+      <div className="flex items-baseline justify-between gap-2">
+        <Label htmlFor={id}>{labelText}</Label>
+        {linked ? (
+          <span
+            data-testid="line-from-catalogue"
+            className="text-caption normal-case text-success"
+          >
+            from catalogue
+          </span>
+        ) : null}
+      </div>
+
+      <Input
+        id={id}
+        role="combobox"
+        aria-expanded={open && matches.length > 0}
+        aria-controls={listId}
+        aria-autocomplete="list"
+        autoComplete="off"
+        value={value}
+        placeholder="Type a name, SKU or HSN…"
+        onChange={(e) => {
+          onChange(e.target.value);
+          setOpen(true);
+        }}
+        onFocus={() => setOpen(true)}
+        // Blur fires before click, so closing here would cancel the pick.
+        // Options commit on mousedown instead, and this only tidies up after.
+        onBlur={() => setTimeout(() => setOpen(false), 120)}
+        onKeyDown={onKeyDown}
+      />
+
+      {open && matches.length > 0 ? (
+        <ul
+          id={listId}
+          role="listbox"
+          data-testid="product-matches"
+          className="absolute top-full z-20 mt-1 max-h-64 w-full overflow-y-auto rounded-card border border-border bg-surface py-1 shadow-card"
+        >
+          {matches.map((product, i) => (
+            <li key={product.id}>
+              <button
+                type="button"
+                role="option"
+                aria-selected={i === active}
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  choose(product);
+                }}
+                onMouseEnter={() => setActive(i)}
+                className={
+                  "flex w-full flex-col gap-0.5 px-3 py-2 text-left transition-colors " +
+                  (i === active ? "bg-primary-tonal" : "hover:bg-canvas")
+                }
+              >
+                <span className="text-body text-content">{product.name}</span>
+                <span className="text-caption normal-case text-content-muted">
+                  {[
+                    product.sku ? `SKU ${product.sku}` : null,
+                    product.hsn ? `HSN ${product.hsn}` : null,
+                    product.tax_bps !== null
+                      ? `${product.tax_bps / 100}% GST`
+                      : null,
+                    product.price_paise !== null
+                      ? formatPaise(product.price_paise as Paise)
+                      : null,
+                    // Shown, never enforced here: "qty cannot exceed stock" is
+                    // the metadata engine's rule to apply at save, not a reason
+                    // to hide a product from the person holding it.
+                    `${(product.on_hand_milli / 1000).toLocaleString("en-IN")} in stock`,
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+
+      {open && value.trim().length >= 2 && matches.length === 0 ? (
+        <p className="text-caption normal-case text-content-muted">
+          Not in your catalogue — this will bill as a one-off item.
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
 function FieldControl({
   field,
   value,
@@ -461,7 +839,9 @@ function FieldControl({
   const span = wide ? "col-span-2" : "col-span-1";
 
   const labelText =
-    field.label + (field.unit ? ` (${field.unit})` : "") + (field.required ? " *" : "");
+    field.label +
+    (field.unit ? ` (${field.unit})` : "") +
+    (field.required ? " *" : "");
   const id = `f-${field.key}`;
 
   const numeric = (raw: string) => raw.replace(/[^\d.]/g, "");
@@ -563,4 +943,55 @@ function todayYmd(): string {
   const m = String(d.getMonth() + 1).padStart(2, "0");
   const day = String(d.getDate()).padStart(2, "0");
   return `${d.getFullYear()}-${m}-${day}`;
+}
+
+/**
+ * The line values a catalogue product implies.
+ *
+ * Only writes what the product actually has — a product with no HSN recorded
+ * must not blank an HSN the shopkeeper already typed. Everything written here
+ * stays editable afterwards; this is a starting point, not a lock.
+ *
+ * Shared by the item-name picker and the quick keys so the two cannot drift
+ * into filling a line differently.
+ */
+function fillFromProduct(
+  current: Record<string, string>,
+  product: ProductPick,
+  plan: FieldPlan | null,
+): Record<string, string> {
+  const values = { ...current, item_name: product.name };
+
+  // Carried whether or not this vertical renders an HSN box. Six of the
+  // eighteen declare one; for the rest the value is invisible on screen but
+  // still belongs on the tax invoice, and the print view reads it from meta.
+  if (product.hsn) values.hsn = product.hsn;
+
+  if (product.price_paise !== null) {
+    values.rate = String(paiseToRupees(product.price_paise as Paise));
+  }
+  if (plan?.fields.some((f) => f.key === "mrp") && product.mrp_paise !== null) {
+    values.mrp = String(paiseToRupees(product.mrp_paise as Paise));
+  }
+  if (plan?.hasGst && product.tax_bps !== null) {
+    values.gst = String(product.tax_bps / 100);
+  }
+  return values;
+}
+
+/**
+ * Puts the HSN back into a line's meta after coercion dropped it.
+ *
+ * `coerceRecord` deliberately keeps only the keys the vertical declares, which
+ * is right for everything except this one: HSN is a GST requirement on the
+ * invoice, not a per-trade preference, and only six of the eighteen verticals
+ * declare a box for it.
+ */
+function withHsn(
+  meta: Record<string, JsonValue>,
+  hsn: string | undefined,
+): Record<string, JsonValue> {
+  const trimmed = hsn?.trim();
+  if (!trimmed) return meta;
+  return { ...meta, hsn: trimmed };
 }

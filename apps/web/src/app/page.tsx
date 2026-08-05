@@ -174,6 +174,7 @@ export default async function IndexPage() {
           <nav className="flex items-center gap-5">
             <a href="#features" className="hidden text-body text-content-muted hover:text-primary md:block">Features</a>
             <a href="#industries" className="hidden text-body text-content-muted hover:text-primary md:block">Industries</a>
+            <Link href="/pricing" className="hidden text-body text-content-muted hover:text-primary md:block">Pricing</Link>
             <a href="#faq" className="hidden text-body text-content-muted hover:text-primary md:block">FAQ</a>
             <Link href="/download" className="hidden text-body text-content-muted hover:text-primary sm:block">Download</Link>
             <Link href="/login" className="text-body font-medium text-content-muted hover:text-primary">Login</Link>
@@ -461,6 +462,7 @@ export default async function IndexPage() {
             <h3 className="text-body font-semibold">Product</h3>
             <a href="#features" className="text-caption normal-case text-content-muted hover:text-primary">Features</a>
             <a href="#industries" className="text-caption normal-case text-content-muted hover:text-primary">Industries</a>
+            <Link href="/pricing" className="text-caption normal-case text-content-muted hover:text-primary">Pricing</Link>
             <Link href="/download" className="text-caption normal-case text-content-muted hover:text-primary">Download</Link>
           </div>
           <div className="flex flex-col gap-2">

@@ -1,6 +1,10 @@
 import "server-only";
 
-import { parseBusinessTypeConfig, type BusinessTypeConfig } from "@vyora/core";
+import {
+  parseBusinessTypeConfig,
+  stateCodeFor,
+  type BusinessTypeConfig,
+} from "@vyora/core";
 
 import { getTenantSession } from "~/lib/auth/session";
 import { createClient } from "~/lib/supabase/server";
@@ -33,7 +37,7 @@ export async function loadTenantContext(): Promise<TenantContext | null> {
 
   const { data: org } = await supabase
     .from("organizations")
-    .select("business_type_id, state")
+    .select("business_type_id, state, state_code")
     .eq("id", session.orgId)
     .single();
 
@@ -52,25 +56,26 @@ export async function loadTenantContext(): Promise<TenantContext | null> {
     userId: session.userId,
     orgRole: session.orgRole,
     config,
-    supplierStateCode: stateNameToCode(org?.state),
+    supplierStateCode: resolveStateCode(org?.state_code, org?.state),
   };
 }
 
 /**
- * GST state name -> two-digit code. Falls back to Telangana with the intra-state
- * path, correct for a single-state shop; customer place-of-supply capture (which
- * drives IGST) is a later invoice field.
+ * The supplier's GST state code.
+ *
+ * Prefers the code stored at onboarding: it is what the shop actually chose,
+ * and re-deriving one from a display name means a renamed state silently
+ * changes the tax. The name lookup is the fallback for workspaces created
+ * before the code column existed.
+ *
+ * Telangana is the last resort. It is a guess, and a guess about the supplier
+ * state is a guess about CGST/SGST versus IGST — so it is the branch to remove
+ * once every org has been backfilled, not one to lean on.
  */
-export function stateNameToCode(state: string | null | undefined): string {
-  const map: Record<string, string> = {
-    "Andhra Pradesh": "37",
-    Telangana: "36",
-    "Tamil Nadu": "33",
-    Karnataka: "29",
-    Kerala: "32",
-    Maharashtra: "27",
-    Delhi: "07",
-    "Uttar Pradesh": "09",
-  };
-  return (state && map[state]) || "36";
+export function resolveStateCode(
+  storedCode: string | null | undefined,
+  stateName: string | null | undefined,
+): string {
+  if (storedCode && /^\d{2}$/.test(storedCode.trim())) return storedCode.trim();
+  return stateCodeFor(stateName) ?? "36";
 }

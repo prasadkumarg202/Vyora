@@ -420,6 +420,15 @@ function parseGstConfig(raw: unknown, path: string): GstConfig {
       `${path}.composition`,
     );
   }
+  if (obj["exempt"] !== undefined) {
+    if (typeof obj["exempt"] !== "boolean") {
+      fail(
+        `${path}.exempt`,
+        `expected a boolean, got ${describe(obj["exempt"])}`,
+      );
+    }
+    gst.exempt = obj["exempt"];
+  }
   return gst;
 }
 

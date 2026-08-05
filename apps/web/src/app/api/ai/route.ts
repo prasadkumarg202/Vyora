@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+import { requireFeature } from "~/lib/billing/guard";
+
 /**
  * Server-side AI proxy for the Vyora copilot (POST /api/ai).
  *
@@ -19,10 +21,18 @@ interface HistoryTurn {
 }
 
 export async function POST(req: Request): Promise<Response> {
+  // Paid surface, and every call spends provider credit — so the plan is
+  // checked here, not only on the assistant screen.
+  const denied = await requireFeature("ai_assistant");
+  if (denied) return denied;
+
   const key = process.env.GEMINI_API_KEY;
   if (!key) {
     return NextResponse.json(
-      { error: "AI is not configured. Set GEMINI_API_KEY in the server environment." },
+      {
+        error:
+          "AI is not configured. Set GEMINI_API_KEY in the server environment.",
+      },
       { status: 400 },
     );
   }
@@ -32,7 +42,10 @@ export async function POST(req: Request): Promise<Response> {
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
+    return NextResponse.json(
+      { error: "Invalid request body." },
+      { status: 400 },
+    );
   }
   const { question, context, history } = (body ?? {}) as {
     question?: unknown;
@@ -57,7 +70,10 @@ export async function POST(req: Request): Promise<Response> {
   if (Array.isArray(history)) {
     for (const h of (history as HistoryTurn[]).slice(-6)) {
       if (h && typeof h.text === "string" && h.text.trim() && h.text !== "…") {
-        contents.push({ role: h.role === "user" ? "user" : "model", parts: [{ text: h.text.slice(0, 2000) }] });
+        contents.push({
+          role: h.role === "user" ? "user" : "model",
+          parts: [{ text: h.text.slice(0, 2000) }],
+        });
       }
     }
   }
@@ -77,15 +93,24 @@ export async function POST(req: Request): Promise<Response> {
     });
     if (!r.ok) {
       const detail = (await r.text()).slice(0, 300);
-      return NextResponse.json({ error: `Gemini error ${r.status}`, detail }, { status: 502 });
+      return NextResponse.json(
+        { error: `Gemini error ${r.status}`, detail },
+        { status: 502 },
+      );
     }
     const data = (await r.json()) as {
       candidates?: { content?: { parts?: { text?: string }[] } }[];
     };
     const text =
-      data.candidates?.[0]?.content?.parts?.map((p) => p.text ?? "").join("").trim() ?? "";
+      data.candidates?.[0]?.content?.parts
+        ?.map((p) => p.text ?? "")
+        .join("")
+        .trim() ?? "";
     return NextResponse.json({ text });
   } catch (err) {
-    return NextResponse.json({ error: (err as Error).message }, { status: 502 });
+    return NextResponse.json(
+      { error: (err as Error).message },
+      { status: 502 },
+    );
   }
 }

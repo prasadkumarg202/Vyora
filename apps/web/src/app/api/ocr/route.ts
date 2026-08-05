@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+import { requireFeature } from "~/lib/billing/guard";
+
 /**
  * Server-side OCR for supplier bills (POST /api/ocr).
  *
@@ -14,10 +16,18 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function POST(req: Request): Promise<Response> {
+  // Paid surface, and every call spends provider credit — so the plan is
+  // checked here, not only on the Snap Bill screen.
+  const denied = await requireFeature("snap_bill");
+  if (denied) return denied;
+
   const key = process.env.GEMINI_API_KEY;
   if (!key) {
     return NextResponse.json(
-      { error: "AI is not configured. Set GEMINI_API_KEY in the server environment." },
+      {
+        error:
+          "AI is not configured. Set GEMINI_API_KEY in the server environment.",
+      },
       { status: 400 },
     );
   }
@@ -27,13 +37,20 @@ export async function POST(req: Request): Promise<Response> {
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
+    return NextResponse.json(
+      { error: "Invalid request body." },
+      { status: 400 },
+    );
   }
-  const { imageBase64, mimeType } = (body ?? {}) as { imageBase64?: unknown; mimeType?: unknown };
+  const { imageBase64, mimeType } = (body ?? {}) as {
+    imageBase64?: unknown;
+    mimeType?: unknown;
+  };
   if (typeof imageBase64 !== "string" || imageBase64.length < 32) {
     return NextResponse.json({ error: "No image provided." }, { status: 400 });
   }
-  const mime = typeof mimeType === "string" && mimeType ? mimeType : "image/jpeg";
+  const mime =
+    typeof mimeType === "string" && mimeType ? mimeType : "image/jpeg";
 
   const instruction =
     "You are reading a purchase / supplier bill or invoice for an Indian shop. " +
@@ -54,18 +71,34 @@ export async function POST(req: Request): Promise<Response> {
         contents: [
           {
             role: "user",
-            parts: [{ text: instruction }, { inlineData: { mimeType: mime, data: imageBase64 } }],
+            parts: [
+              { text: instruction },
+              { inlineData: { mimeType: mime, data: imageBase64 } },
+            ],
           },
         ],
-        generationConfig: { temperature: 0.1, maxOutputTokens: 2048, responseMimeType: "application/json" },
+        generationConfig: {
+          temperature: 0.1,
+          maxOutputTokens: 2048,
+          responseMimeType: "application/json",
+        },
       }),
     });
     if (!r.ok) {
       const detail = (await r.text()).slice(0, 300);
-      return NextResponse.json({ error: `Gemini error ${r.status}`, detail }, { status: 502 });
+      return NextResponse.json(
+        { error: `Gemini error ${r.status}`, detail },
+        { status: 502 },
+      );
     }
-    const data = (await r.json()) as { candidates?: { content?: { parts?: { text?: string }[] } }[] };
-    const text = data.candidates?.[0]?.content?.parts?.map((p) => p.text ?? "").join("").trim() ?? "";
+    const data = (await r.json()) as {
+      candidates?: { content?: { parts?: { text?: string }[] } }[];
+    };
+    const text =
+      data.candidates?.[0]?.content?.parts
+        ?.map((p) => p.text ?? "")
+        .join("")
+        .trim() ?? "";
     let parsed: unknown = null;
     try {
       parsed = JSON.parse(text);
@@ -81,10 +114,16 @@ export async function POST(req: Request): Promise<Response> {
       }
     }
     if (!parsed) {
-      return NextResponse.json({ error: "Could not read the bill. Try a clearer, well-lit photo." }, { status: 422 });
+      return NextResponse.json(
+        { error: "Could not read the bill. Try a clearer, well-lit photo." },
+        { status: 422 },
+      );
     }
     return NextResponse.json({ data: parsed });
   } catch (err) {
-    return NextResponse.json({ error: (err as Error).message }, { status: 502 });
+    return NextResponse.json(
+      { error: (err as Error).message },
+      { status: 502 },
+    );
   }
 }

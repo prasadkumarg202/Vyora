@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import type { BusinessTypeConfig, FieldDef } from "../types.js";
 import { parseRate } from "../gst/rate.js";
+import { isBillOfSupply } from "../invoice.js";
 import { BUSINESS_TYPES } from "./business-types.js";
 import rawJson from "./business-types.raw.json";
 
@@ -49,9 +50,9 @@ const byId = (id: string): BusinessTypeConfig => {
 };
 
 describe("BUSINESS_TYPES", () => {
-  it("covers exactly the 18 verticals the raw design data defines", () => {
-    expect(BUSINESS_TYPES).toHaveLength(18);
-    expect(RAW).toHaveLength(18);
+  it("covers exactly the 19 verticals the raw seed data defines", () => {
+    expect(BUSINESS_TYPES).toHaveLength(19);
+    expect(RAW).toHaveLength(19);
     expect(BUSINESS_TYPES.map((b) => b.businessType)).toEqual(
       RAW.map((entry) => entry.id),
     );
@@ -237,6 +238,28 @@ describe("the design's awkward corners", () => {
       if (config.businessType === "kirana") continue;
       expect(config.gst.composition, config.businessType).toBeUndefined();
     }
+  });
+
+  it("issues a bill of supply for the exempt vertical, and charges nothing", () => {
+    const dx = BUSINESS_TYPES.find((b) => b.businessType === "diagnostics")!;
+
+    // Exempt is not composition. Filing a clinic as a composition dealer would
+    // be a different tax treatment wearing the same document title.
+    expect(dx.gst.exempt).toBe(true);
+    expect(dx.gst.composition).toBeUndefined();
+    expect(dx.gst.default).toEqual({ kind: "fixed", bps: 0 });
+    expect(dx.invoice.template).toBe("BILL OF SUPPLY");
+    expect(isBillOfSupply(dx)).toBe(true);
+  });
+
+  it("refuses a bill-of-supply vertical that calls itself a tax invoice", () => {
+    const dx = BUSINESS_TYPES.find((b) => b.businessType === "diagnostics")!;
+    expect(() =>
+      isBillOfSupply({
+        ...dx,
+        invoice: { ...dx.invoice, template: "TAX INVOICE" },
+      }),
+    ).toThrow(/Bill of Supply/i);
   });
 
   it("defaults Furniture to 18%, not to its first (12%) slab", () => {

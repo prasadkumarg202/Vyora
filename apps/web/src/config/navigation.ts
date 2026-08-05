@@ -1,3 +1,4 @@
+import type { FeatureKey } from "@vyora/core";
 import type { Route } from "next";
 
 /**
@@ -21,6 +22,14 @@ export interface NavModule {
   readonly summary: string;
   /** Roadmap phase that implements this module. */
   readonly phase: string;
+  /**
+   * The entitlement this module needs, when it is not part of the free plan.
+   *
+   * Named here rather than inside each screen so the sidebar, the page guard
+   * and the pricing page all read the same fact. Absent means free forever —
+   * which is most of this list, on purpose.
+   */
+  readonly feature?: FeatureKey;
 }
 
 export interface NavZone {
@@ -50,6 +59,7 @@ export const NAV_ZONES: readonly NavZone[] = [
         href: "/assistant",
         summary: "Copilot chat, suggestions, OCR capture, ask reports.",
         phase: "Phase 5",
+        feature: "ai_assistant",
       },
     ],
   },
@@ -68,19 +78,23 @@ export const NAV_ZONES: readonly NavZone[] = [
       {
         label: "Offers & Orders",
         href: "/quotes",
-        summary: "Quotations, proforma bills, confirmed orders and delivery notes — each becomes an invoice in one tap.",
+        summary:
+          "Quotations, proforma bills, confirmed orders and delivery notes — each becomes an invoice in one tap.",
         phase: "Phase 7",
       },
       {
         label: "Growth Studio",
         href: "/growth",
-        summary: "AI business briefing from your own numbers, shareable price list, and getting found online.",
+        summary:
+          "AI business briefing from your own numbers, shareable price list, and getting found online.",
         phase: "Phase 7",
+        feature: "growth_studio",
       },
       {
         label: "Returns Desk",
         href: "/returns",
-        summary: "Goods coming back: credit note, stock restored and the customer credited, together.",
+        summary:
+          "Goods coming back: credit note, stock restored and the customer credited, together.",
         phase: "Phase 7",
       },
       {
@@ -88,18 +102,21 @@ export const NAV_ZONES: readonly NavZone[] = [
         href: "/crm",
         summary: "Leads, pipeline, activities, follow-ups.",
         phase: "Phase 7",
+        feature: "crm",
       },
       {
         label: "Marketing",
         href: "/marketing",
         summary: "Campaigns, broadcasts, templates, coupons, segments.",
         phase: "Phase 7",
+        feature: "marketing",
       },
       {
         label: "Promotions",
         href: "/promotions",
         summary: "Festival & offer templates, AI writer, WhatsApp send.",
         phase: "Phase 7",
+        feature: "promotions",
       },
     ],
   },
@@ -118,7 +135,8 @@ export const NAV_ZONES: readonly NavZone[] = [
       {
         label: "Supply Desk",
         href: "/supply",
-        summary: "Supply orders, supplier returns (debit notes) and money paid out.",
+        summary:
+          "Supply orders, supplier returns (debit notes) and money paid out.",
         phase: "Phase 7",
       },
       {
@@ -144,7 +162,8 @@ export const NAV_ZONES: readonly NavZone[] = [
       {
         label: "Import & Export",
         href: "/import",
-        summary: "Bulk import from Excel/CSV (Vyapar, myBillBook, Tally) and one-click CSV export.",
+        summary:
+          "Bulk import from Excel/CSV (Vyapar, myBillBook, Tally) and one-click CSV export.",
         phase: "Phase 7",
       },
       {
@@ -196,7 +215,8 @@ export const NAV_ZONES: readonly NavZone[] = [
       {
         label: "Cash & Bank",
         href: "/cash",
-        summary: "Counter cash, bank accounts, cheques and loans — with live balances.",
+        summary:
+          "Counter cash, bank accounts, cheques and loans — with live balances.",
         phase: "Phase 7",
       },
       {
@@ -214,7 +234,8 @@ export const NAV_ZONES: readonly NavZone[] = [
       {
         label: "Report Library",
         href: "/reports-hub",
-        summary: "13 reports across transactions, parties, stock, GST, expenses and cash — searchable, printable, exportable.",
+        summary:
+          "13 reports across transactions, parties, stock, GST, expenses and cash — searchable, printable, exportable.",
         phase: "Phase 7",
       },
       {
@@ -266,38 +287,47 @@ export const NAV_ZONES: readonly NavZone[] = [
       {
         label: "Scan & Sell",
         href: "/scan-sell",
-        summary: "Your camera is the barcode scanner + POS. Scan, charge, collect by UPI.",
+        summary:
+          "Your camera is the barcode scanner + POS. Scan, charge, collect by UPI.",
         phase: "Phase 7",
+        feature: "scan_sell",
       },
       {
         label: "Voice Billing",
         href: "/voice-bill",
         summary: "Speak the sale in your language — it becomes an invoice.",
         phase: "Phase 7",
+        feature: "voice_billing",
       },
       {
         label: "Snap Bill",
         href: "/snap-bill",
-        summary: "Photograph a supplier bill — AI reads it & books the purchase.",
+        summary:
+          "Photograph a supplier bill — AI reads it & books the purchase.",
         phase: "Phase 7",
+        feature: "snap_bill",
       },
       {
         label: "Credit Radar",
         href: "/credit-radar",
         summary: "Bharosa score & safe udhaar limit for every customer.",
         phase: "Phase 7",
+        feature: "credit_radar",
       },
       {
         label: "Stock Radar",
         href: "/stock-radar",
         summary: "Dead & slow stock, capital stuck, clearance actions.",
         phase: "Phase 7",
+        feature: "stock_radar",
       },
       {
         label: "UPI Auto-Match",
         href: "/reconcile",
-        summary: "Paste a UPI/bank statement — credits auto-match to invoices & mark paid.",
+        summary:
+          "Paste a UPI/bank statement — credits auto-match to invoices & mark paid.",
         phase: "Phase 7",
+        feature: "upi_auto_match",
       },
     ],
   },
