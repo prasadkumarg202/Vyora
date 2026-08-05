@@ -536,7 +536,7 @@ export const COMPARISON: readonly ComparisonRow[] = [
   },
   {
     claim: "Cheapest paid plan",
-    vyora: "₹291/month billed yearly, or ₹399 month-to-month",
+    vyora: "₹74/month billed yearly, or ₹99 month-to-month",
     vyapar: "≈₹283/month, annual licence only",
     mybillbook: "₹291/month, annual billing only",
     zoho: "₹749/month billed yearly, plus GST",

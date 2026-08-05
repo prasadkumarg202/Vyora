@@ -48,15 +48,13 @@ test.describe("public pricing page", () => {
     await expect(toggle).toBeVisible();
 
     await toggle.getByRole("radio", { name: /Monthly/ }).click();
-    await expect(page.getByText("₹399").first()).toBeVisible();
+    await expect(page.getByText("₹99").first()).toBeVisible();
 
     await toggle.getByRole("radio", { name: /Yearly/ }).click();
-    // ₹3,499 a year is ₹291 a month — the number the incumbents advertise, so
+    // ₹899 a year is ₹74 a month — the number the incumbents advertise, so
     // ours has to be the comparable one.
-    await expect(page.getByText("₹291").first()).toBeVisible();
-    await expect(
-      page.getByText("₹3,499 billed yearly, incl. GST"),
-    ).toBeVisible();
+    await expect(page.getByText("₹74").first()).toBeVisible();
+    await expect(page.getByText("₹899 billed yearly, incl. GST")).toBeVisible();
   });
 
   test("states the 90 + 30 terms before anyone pays", async ({ page }) => {

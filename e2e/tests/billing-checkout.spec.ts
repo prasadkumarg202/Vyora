@@ -86,10 +86,10 @@ test("the receipt splits GST so it adds up exactly", async () => {
   const receipt = receipts[0]!;
   expect(receipt.plan_id).toBe("pro");
   expect(receipt.cycle).toBe("yearly");
-  expect(receipt.total_paise).toBe(349_900);
-  // ₹3,499 inclusive of 18% is ₹2,965.25 + ₹533.75.
-  expect(receipt.base_paise).toBe(296_525);
-  expect(receipt.tax_paise).toBe(53_375);
+  expect(receipt.total_paise).toBe(89_900);
+  // ₹899 inclusive of 18% is ₹761.86 + ₹137.14.
+  expect(receipt.base_paise).toBe(76_186);
+  expect(receipt.tax_paise).toBe(13_714);
   expect(receipt.base_paise + receipt.tax_paise).toBe(receipt.total_paise);
   expect(receipt.number).toMatch(/^VYORA\/\d{4}-\d{2}\/\d{6}$/);
 });
@@ -100,7 +100,7 @@ test("the receipt is visible to the shop", async ({ page }) => {
   const table = page.getByRole("table");
   await expect(table).toBeVisible();
   await expect(table.getByText(/^VYORA\//)).toBeVisible();
-  await expect(table.getByText("₹3,499")).toBeVisible();
+  await expect(table.getByText("₹899")).toBeVisible();
 });
 
 test("a redelivered webhook does not charge or extend twice", async ({
@@ -170,8 +170,8 @@ test("checkout will not price a plan from the request body", async ({
     amountPaise: number;
     catalogueAmountPaise: number;
   };
-  expect(order.amountPaise).toBe(649_900);
-  expect(order.catalogueAmountPaise).toBe(649_900);
+  expect(order.amountPaise).toBe(159_900);
+  expect(order.catalogueAmountPaise).toBe(159_900);
 });
 
 test("checkout rejects a plan that is not for sale", async ({ request }) => {

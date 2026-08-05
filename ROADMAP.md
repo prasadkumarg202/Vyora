@@ -51,7 +51,7 @@ That combination is the moat: a competitor can't copy it without rebuilding thei
 - [x] Payment reminders — overdue list with one-tap WhatsApp chase (`/reminders`)
 - [x] Invoice branding — shop address / GSTIN / phone / footer on every printed invoice
 - [x] Bulk import ETL wizard — items & customers from CSV (Vyapar/Tally header auto-mapping), atomic, offline (`/import`)
-- [x] Pricing & subscriptions — two paid plans (Pro ₹399 mo · ₹3,499 yr / Business ₹799 mo · ₹6,499 yr, incl. GST), a 90-day full-feature trial and a 30-day Basic wind-down before the workspace closes on day 120, public `/pricing` page with a feature matrix and an incumbent comparison, in-app plan & receipts screen
+- [x] Pricing & subscriptions — two paid plans (Pro ₹99 mo · ₹899 yr / Business ₹175 mo · ₹1,599 yr, incl. GST), a 90-day full-feature trial and a 30-day Basic wind-down before the workspace closes on day 120, public `/pricing` page with a feature matrix and an incumbent comparison, in-app plan & receipts screen
 - [x] Entitlement engine — one catalogue in `@vyora/core` (`plans`, `features`, `entitlement`), a `useEntitlement()` hook, a single `UpgradeGate`, a shell-level `WorkspaceLocked` gate, server re-checks on every gated page and on the AI API routes, and export that outlives the lock
 - [x] Billing backend — Supabase migration (typed plan state on the org, subscriptions, GST receipts with a numbered sequence, webhook event log), select-only RLS, and a provider interface with a mock Razorpay that signs and delivers real webhooks
 - [x] Billing e2e — Playwright suite over the whole lifecycle: public `/pricing` signed out, day 1 / day 60 / day 91 / day 121, mock purchase → signed webhook → plan active → receipt, plus forged-signature, redelivery and client-priced-order attempts. Chromium snapshots for the pricing page, the upgrade gate, the lock screen and the paid subscription screen (`pnpm --filter @vyora/e2e test:e2e:billing`)
@@ -116,12 +116,12 @@ One user, one device, no cloud sync. This is not a free tier — it is the
 feature level a workspace runs at for the 30 days between the trial ending and
 the workspace closing.
 
-**Pro — ₹399/month or ₹3,499/year, incl. GST.** Cloud sync, unlimited devices,
+**Pro — ₹99/month or ₹899/year, incl. GST.** Cloud sync, unlimited devices,
 3 users, automatic backup, and the whole Vyora Edge set: voice billing, Snap
 Bill, Scan & Sell, the assistant, Credit Radar, Stock Radar, UPI auto-match,
 Growth Studio, promotions, marketing, CRM, invoice branding.
 
-**Business — ₹799/month or ₹6,499/year, incl. GST.** Unlimited users, and the
+**Business — ₹175/month or ₹1,599/year, incl. GST.** Unlimited users, and the
 compliance and scale rails as they land: staff roles, branches & godowns,
 e-way bill, e-invoicing, Tally export, loyalty, online store, barcode labels,
 API, CA portal.
@@ -132,7 +132,7 @@ The reasoning:
   ration e-way bills on entry tiers; Zoho Books gives away a genuinely full
   free plan but stops it at ₹25 lakh annual revenue. Keeping the bookkeeping
   core free with no ceiling is the one thing none of them do.
-- Yearly is ~27–32% cheaper than monthly, and monthly exists at all — neither
+- Yearly is ~24% cheaper than monthly, and monthly exists at all — neither
   Vyapar nor myBillBook sells a monthly plan, which is a real friction point
   for a shop that does not want a year's commitment up front.
 - Prices are GST-inclusive because that is the number a shopkeeper expects;

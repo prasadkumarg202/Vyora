@@ -12,7 +12,7 @@ import { PricingTables } from "~/components/marketing/pricing-tables";
 export const metadata: Metadata = {
   title: "Pricing — Vyora",
   description:
-    "90 days of the entire product, free, with no card — then 30 more days of GST billing, stock and reports. Paid plans from ₹291 a month. No invoice cap, no turnover ceiling, on any plan.",
+    "90 days of the entire product, free, with no card — then 30 more days of GST billing, stock and reports. Paid plans from ₹74 a month. No invoice cap, no turnover ceiling, on any plan.",
 };
 
 const FAQ: readonly { q: string; a: string }[] = [

@@ -102,7 +102,7 @@ export const PLANS: Readonly<Record<PlanId, PlanDef>> = {
     name: "Vyora Pro",
     tagline: "The cloud, the counter and the AI.",
     audience: "A shop with a helper or two, and more than one phone.",
-    price: { monthly: 39_900 as Paise, yearly: 349_900 as Paise },
+    price: { monthly: 9_900 as Paise, yearly: 89_900 as Paise },
     limits: {
       maxUsers: 3,
       maxDevices: null,
@@ -118,7 +118,7 @@ export const PLANS: Readonly<Record<PlanId, PlanDef>> = {
     name: "Vyora Business",
     tagline: "Many hands, many counters, full compliance.",
     audience: "Multi-counter shops, distributors and small chains.",
-    price: { monthly: 79_900 as Paise, yearly: 649_900 as Paise },
+    price: { monthly: 17_500 as Paise, yearly: 159_900 as Paise },
     limits: {
       maxUsers: null,
       maxDevices: null,
@@ -174,8 +174,8 @@ export function priceOf(id: PlanId, cycle: BillingCycle): Paise {
  * A yearly plan expressed as "₹x/month, billed yearly" — the number every
  * competitor advertises, so ours has to be comparable at a glance.
  *
- * Floored to whole rupees, and floored rather than rounded: ₹291 understates
- * the true ₹291.58 by a few paise, and if the headline figure has to be wrong
+ * Floored to whole rupees, and floored rather than rounded: ₹74 understates
+ * the true ₹74.92 by a few paise, and if the headline figure has to be wrong
  * in one direction it should be the direction that cannot surprise the buyer.
  * The exact yearly amount is printed directly underneath either way.
  */

@@ -4,7 +4,7 @@ import { formatPaise, type Paise } from "@vyora/core";
  * Price formatting for the pricing surfaces.
  *
  * `formatPaise` always prints two decimals, which is right on an invoice and
- * wrong on a pricing card — "₹399.00 / month" reads like a rounding artefact.
+ * wrong on a pricing card — "₹99.00 / month" reads like a rounding artefact.
  * Whole rupees drop the paise; anything with a fraction keeps it, so a future
  * ₹99.50 tier is not silently displayed as ₹99.
  */
