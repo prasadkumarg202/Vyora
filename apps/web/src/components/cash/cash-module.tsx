@@ -164,14 +164,21 @@ export function CashModule({
     setBusy(true);
     setError(null);
     try {
+      const bank = bankName.trim();
+      const accountNumber = accountNo.trim();
+      const code = ifsc.trim().toUpperCase();
       await saveAccount({
         id: crypto.randomUUID(),
         orgId,
         name: name.trim(),
         kind,
-        bankName: bankName.trim() || undefined,
-        accountNumber: accountNo.trim() || undefined,
-        ifsc: ifsc.trim().toUpperCase() || undefined,
+        // Left out entirely rather than set to undefined. Under
+        // exactOptionalPropertyTypes an absent optional field and one holding
+        // undefined are different types, and "the shop did not fill this in"
+        // means absent.
+        ...(bank ? { bankName: bank } : {}),
+        ...(accountNumber ? { accountNumber } : {}),
+        ...(code ? { ifsc: code } : {}),
         openingPaise: paiseOf(opening),
       });
       setName("");

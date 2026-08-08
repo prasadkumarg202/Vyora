@@ -307,7 +307,9 @@ export async function createWorkspace(
   }
 
   revalidatePath("/", "layout");
-  return { ok: true, orgId: typeof data === "string" ? data : undefined };
+  // Same reason as everywhere else: an optional field is omitted, not set
+  // to undefined.
+  return { ok: true, ...(typeof data === "string" ? { orgId: data } : {}) };
 }
 
 function decodeClaim(jwt: string, claim: string): string | null {
