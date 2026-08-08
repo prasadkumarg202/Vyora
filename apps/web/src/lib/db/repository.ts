@@ -404,9 +404,9 @@ export async function recordInvoicePayment(args: {
   invoiceId: string;
   amountPaise: Paise;
   method: string;
-  createdBy?: string;
+  createdBy?: string | undefined;
   /** Bank UTR/RRN, when reconciling a statement — makes the write idempotent. */
-  reference?: string | null;
+  reference?: string | null | undefined;
 }): Promise<void> {
   await ready();
   const now = new Date().toISOString();
@@ -525,8 +525,8 @@ export async function saveCampaign(args: {
   orgId: string;
   name: string;
   channel: string;
-  message?: string;
-  createdBy?: string;
+  message?: string | undefined;
+  createdBy?: string | undefined;
 }): Promise<void> {
   await ready();
   const now = new Date().toISOString();
@@ -616,8 +616,8 @@ export async function saveCustomer(customer: {
   id: string;
   orgId: string;
   name: string;
-  phone?: string;
-  gstin?: string;
+  phone?: string | undefined;
+  gstin?: string | undefined;
 }): Promise<void> {
   await ready();
   const now = new Date().toISOString();
@@ -1239,8 +1239,8 @@ export async function saveSupplier(supplier: {
   id: string;
   orgId: string;
   name: string;
-  phone?: string;
-  gstin?: string;
+  phone?: string | undefined;
+  gstin?: string | undefined;
 }): Promise<void> {
   await ready();
   const now = new Date().toISOString();
@@ -1562,7 +1562,7 @@ export async function nextDocumentNumber(
 export async function convertDocumentToInvoice(args: {
   orgId: string;
   documentId: string;
-  createdBy?: string;
+  createdBy?: string | undefined;
 }): Promise<string | null> {
   await ready();
 
@@ -1704,10 +1704,10 @@ export function listOverdueInvoices(
 export async function saveSaleReturn(args: {
   orgId: string;
   invoiceId: string;
-  customerId?: string | null;
+  customerId?: string | null | undefined;
   number: string;
-  note?: string;
-  createdBy?: string;
+  note?: string | undefined;
+  createdBy?: string | undefined;
   subtotalPaise: Paise;
   taxPaise: Paise;
   totalPaise: Paise;
@@ -2145,10 +2145,10 @@ export async function getPurchaseDetail(
 export async function savePurchaseReturn(args: {
   orgId: string;
   purchaseId: string;
-  supplierId?: string | null;
+  supplierId?: string | null | undefined;
   number: string;
-  note?: string;
-  createdBy?: string;
+  note?: string | undefined;
+  createdBy?: string | undefined;
   subtotalPaise: Paise;
   taxPaise: Paise;
   totalPaise: Paise;
@@ -2258,8 +2258,8 @@ export async function recordSupplierPayment(args: {
   supplierId: string;
   amountPaise: Paise;
   method: string;
-  createdBy?: string;
-  reference?: string | null;
+  createdBy?: string | undefined;
+  reference?: string | null | undefined;
 }): Promise<void> {
   await ready();
   const now = new Date().toISOString();
@@ -2346,15 +2346,15 @@ export async function saveAccount(a: {
   orgId: string;
   name: string;
   kind: AccountKind;
-  bankName?: string;
-  accountNumber?: string;
-  ifsc?: string;
-  upiId?: string;
-  openingPaise?: Paise;
-  principalPaise?: Paise;
-  emiPaise?: Paise;
-  rateBps?: number;
-  note?: string;
+  bankName?: string | undefined;
+  accountNumber?: string | undefined;
+  ifsc?: string | undefined;
+  upiId?: string | undefined;
+  openingPaise?: Paise | undefined;
+  principalPaise?: Paise | undefined;
+  emiPaise?: Paise | undefined;
+  rateBps?: number | undefined;
+  note?: string | undefined;
 }): Promise<void> {
   await ready();
   const now = new Date().toISOString();
@@ -2440,20 +2440,20 @@ export interface AccountEntryRow {
 
 /** Record money moving in or out of one account (including a cheque). */
 export async function saveAccountEntry(e: {
-  id?: string;
+  id?: string | undefined;
   orgId: string;
   accountId: string;
   direction: "in" | "out";
   amountPaise: Paise;
-  date?: string;
-  category?: string;
-  note?: string;
-  instrument?: string;
-  chequeNo?: string;
-  chequeStatus?: "pending" | "cleared" | "bounced";
-  dueDate?: string;
-  transferId?: string;
-  createdBy?: string;
+  date?: string | undefined;
+  category?: string | undefined;
+  note?: string | undefined;
+  instrument?: string | undefined;
+  chequeNo?: string | undefined;
+  chequeStatus?: "pending" | "cleared" | "bounced" | undefined;
+  dueDate?: string | undefined;
+  transferId?: string | undefined;
+  createdBy?: string | undefined;
 }): Promise<void> {
   await ready();
   const now = new Date().toISOString();
@@ -2496,8 +2496,8 @@ export async function transferBetweenAccounts(args: {
   fromAccountId: string;
   toAccountId: string;
   amountPaise: Paise;
-  note?: string;
-  createdBy?: string;
+  note?: string | undefined;
+  createdBy?: string | undefined;
 }): Promise<void> {
   await ready();
   const now = new Date().toISOString();
