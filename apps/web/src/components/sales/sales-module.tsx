@@ -960,7 +960,10 @@ function fillFromProduct(
   product: ProductPick,
   plan: FieldPlan | null,
 ): Record<string, string> {
-  const values = { ...current, item_name: product.name };
+  // Annotated, not inferred: spreading a Record<string, string> into an
+  // object literal narrows to just the literal's own keys, so the optional
+  // writes below (hsn, rate, mrp, gst) have nowhere to land.
+  const values: Record<string, string> = { ...current, item_name: product.name };
 
   // Carried whether or not this vertical renders an HSN box. Six of the
   // eighteen declare one; for the rest the value is invisible on screen but
