@@ -9,6 +9,8 @@ import type { BusinessTypeConfig, InvoiceConfig } from "./types";
 
 /** The GST title a composition dealer must print instead of a tax invoice. */
 const BILL_OF_SUPPLY = "BILL OF SUPPLY";
+/** Named so the error can say which title the vertical should carry. */
+const TAX_INVOICE = "TAX INVOICE";
 
 export function resolveInvoice(config: BusinessTypeConfig): InvoiceConfig {
   return config.invoice;
@@ -42,9 +44,10 @@ export function isBillOfSupply(config: BusinessTypeConfig): boolean {
         `${owed ? "is" : "is not"} a Bill of Supply supplier (composition: ` +
         `${config.gst.composition !== undefined}, exempt: ` +
         `${config.gst.exempt === true}) but invoice.template is ` +
-        `"${config.invoice.template}". The two must be declared together — a ` +
-        `document titled "TAX INVOICE" that charges no tax is a compliance ` +
-        `defect, not a cosmetic one.`,
+        `"${config.invoice.template}", not ` +
+        `"${owed ? BILL_OF_SUPPLY : TAX_INVOICE}". The two must be declared ` +
+        `together — a document titled "${TAX_INVOICE}" that charges no tax is ` +
+        `a compliance defect, not a cosmetic one.`,
     );
   }
   return owed;
