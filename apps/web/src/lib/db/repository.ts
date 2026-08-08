@@ -60,7 +60,7 @@ export interface InvoiceExtrasInput {
   discountPaise?: number | undefined;
   chargesPaise?: number | undefined;
   charges?:
-    | readonly { label: string; amountPaise: number; gstBps?: number }[]
+    | readonly { label: string; amountPaise: number; gstBps?: number | undefined }[]
     | undefined;
   roundOffPaise?: number | undefined;
 }
@@ -1711,7 +1711,7 @@ export async function saveSaleReturn(args: {
   subtotalPaise: Paise;
   taxPaise: Paise;
   totalPaise: Paise;
-  items: (InvoiceItemInput & { productId?: string })[];
+  items: (InvoiceItemInput & { productId?: string | undefined })[];
 }): Promise<string> {
   await ready();
   const now = new Date().toISOString();
@@ -1866,7 +1866,7 @@ export interface NewPurchaseDocument {
   taxPaise: Paise;
   totalPaise: Paise;
   createdBy?: string | undefined;
-  items: (InvoiceItemInput & { productId?: string })[];
+  items: (InvoiceItemInput & { productId?: string | undefined })[];
 }
 
 /** Next number in the series (PO-0001, DBN-0001). */
@@ -2152,7 +2152,7 @@ export async function savePurchaseReturn(args: {
   subtotalPaise: Paise;
   taxPaise: Paise;
   totalPaise: Paise;
-  items: (InvoiceItemInput & { productId?: string })[];
+  items: (InvoiceItemInput & { productId?: string | undefined })[];
 }): Promise<string> {
   await ready();
   const now = new Date().toISOString();

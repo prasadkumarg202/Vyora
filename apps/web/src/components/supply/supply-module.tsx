@@ -264,7 +264,10 @@ export function SupplyModule({ orgId, userId }: { orgId: string; userId: string 
         totalPaise: retTotals.total as Paise,
         items: returning.map((p) => ({
           description: p.line.item.description ?? "Item",
-          productId: p.line.item.product_id ?? undefined,
+          // Spread, not `?? undefined`: exactOptionalPropertyTypes treats an
+          // absent optional field and one holding undefined as different
+          // types, and a line with no linked product means absent.
+          ...(p.line.item.product_id ? { productId: p.line.item.product_id } : {}),
           qtyMilli: Math.round(p.capped * 1000),
           ratePaise: p.line.item.rate_paise as Paise,
           taxBps: p.line.item.tax_bps,
