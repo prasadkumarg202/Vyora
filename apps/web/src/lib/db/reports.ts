@@ -468,7 +468,9 @@ export async function runReport(
           avgCost == null ? null : Math.round((avgCost * qtyMilli) / 1000);
         const revenue = r.revenue as number;
         return {
-          item: r.item,
+          // Coalesced, not cast: an indexed read is `| undefined` under
+          // noUncheckedIndexedAccess, and a report row is `string | number | null`.
+          item: (r.item as string | null) ?? null,
           qty: milliToQty(qtyMilli),
           revenue,
           cost,
@@ -514,7 +516,7 @@ export async function runReport(
         [orgId, from, to],
       );
       const mapped = rows.map((r) => ({
-        hsn: r.hsn,
+        hsn: (r.hsn as string | null) ?? null,
         qty: milliToQty(r.qty_milli as number),
         taxable: r.taxable as number,
         tax: (r.total as number) - (r.taxable as number),

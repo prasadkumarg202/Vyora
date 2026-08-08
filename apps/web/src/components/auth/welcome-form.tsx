@@ -6,7 +6,7 @@ import {
   gstinStateCode,
   isValidGstin,
   isValidPan,
-  rupeesToPaise,
+  parseRupees,
   stateCodeFor,
 } from "@vyora/core";
 import { Button, Card, Input, Label } from "@vyora/ui";
@@ -404,7 +404,7 @@ function FirstItems({
           id: crypto.randomUUID(),
           orgId,
           name: row.name.trim(),
-          pricePaise: rupeesToPaise(row.price.trim()),
+          pricePaise: parseRupees(row.price),
           taxBps: gstEnabled ? Math.round(Number(row.gst || "0") * 100) : 0,
           openingMilli: 0,
         });

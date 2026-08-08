@@ -2,7 +2,7 @@
 
 import {
   formatPaise,
-  rupeesToPaise,
+  parseRupees,
   type DocumentCharge,
   type DocumentDiscount,
   type Paise,
@@ -102,7 +102,7 @@ export function InvoiceExtras({
         discount:
           kind === "percent"
             ? { kind: "percent", bps: Math.round(Number(trimmed) * 100) }
-            : { kind: "amount", amountPaise: rupeesToPaise(trimmed) },
+            : { kind: "amount", amountPaise: parseRupees(trimmed) },
       });
     } catch {
       // Half-typed "12." is not an error, it is someone still typing.
@@ -234,7 +234,7 @@ function ChargeEditor({
     const text = amount.trim();
     if (!name || !text) return;
     try {
-      onChange([...charges, { label: name, amountPaise: rupeesToPaise(text) }]);
+      onChange([...charges, { label: name, amountPaise: parseRupees(text) }]);
       setLabel("");
       setAmount("");
     } catch {
