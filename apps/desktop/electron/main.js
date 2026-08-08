@@ -18,6 +18,16 @@ const APP_URL =
 
 const APP_ORIGIN = new URL(APP_URL).origin;
 
+/**
+ * Where the window opens.
+ *
+ * Not "/" — that is the public marketing page, and a shopkeeper who has already
+ * installed Vyora should not be met by a "Download for Windows" button. The
+ * dashboard is the honest front door: middleware sends them to sign-in if they
+ * are not signed in, and straight to their counter if they are.
+ */
+const START_URL = `${APP_ORIGIN}/dashboard`;
+
 /** Minimal inline page shown only if the very first load ever fails offline. */
 const OFFLINE_HTML = `data:text/html;charset=utf-8,${encodeURIComponent(`
 <!doctype html><html><head><meta charset="utf-8"><title>Vyora — offline</title>
@@ -31,7 +41,7 @@ const OFFLINE_HTML = `data:text/html;charset=utf-8,${encodeURIComponent(`
 </style></head><body><div class="card">
 <h1>You're offline</h1>
 <p>Vyora needs internet for its first launch. Once loaded, it works fully offline.</p>
-<button onclick="location.href='${APP_URL}'">Try again</button>
+<button onclick="location.href='${APP_ORIGIN}/dashboard'">Try again</button>
 </div></body></html>`)}`;
 
 let mainWindow = null;
@@ -82,7 +92,7 @@ function createWindow() {
     }
   });
 
-  mainWindow.loadURL(APP_URL);
+  mainWindow.loadURL(START_URL);
   mainWindow.on("closed", () => {
     mainWindow = null;
   });
