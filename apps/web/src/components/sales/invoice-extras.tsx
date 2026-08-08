@@ -63,12 +63,25 @@ export function InvoiceExtras({
   );
   const [discountText, setDiscountText] = useState("");
 
-  // The shop's standing terms come from preferences, so they are already there
-  // on the first bill rather than being typed again every time.
+  // The shop's standing notes, terms and round-off habit come from preferences,
+  // so they are already right on the first bill rather than being set again
+  // every time. Fetched together and applied in one update: three sequential
+  // setStates against the same object would each overwrite the last.
   useEffect(() => {
     let live = true;
-    void getPreference("invoiceTerms").then((terms) => {
-      if (live && terms) onChange({ ...value, terms });
+    void Promise.all([
+      getPreference("invoiceNotes"),
+      getPreference("invoiceTerms"),
+      getPreference("roundOffTotal"),
+    ]).then(([notes, terms, roundOff]) => {
+      if (!live) return;
+      onChange({
+        ...value,
+        // Empty preferences leave the field alone rather than blanking it.
+        ...(notes ? { notes } : {}),
+        ...(terms ? { terms } : {}),
+        roundOff,
+      });
     });
     return () => {
       live = false;

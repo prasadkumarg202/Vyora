@@ -2,6 +2,7 @@ import { allocate, applyBps, sumPaise } from "../money";
 import type {
   Bps,
   BusinessTypeConfig,
+  GstRate,
   LineItem,
   Paise,
   TaxBreakup,
@@ -112,13 +113,20 @@ export function computeDocument(
 
   const fallbackRate = highestRate(config, discountedLines, ctx);
 
-  const chargeLines: LineItem[] = charges.map((charge) => ({
-    qty: 1,
-    unitPricePaise: charge.amountPaise,
-    gstBps: charge.gstBps ?? fallbackRate,
-    // Named so the printed line reads "Delivery" rather than a blank row.
-    fields: { item_name: charge.label },
-  }));
+  const chargeLines: LineItem[] = charges.map((charge) => {
+    const bps = charge.gstBps ?? fallbackRate;
+    return {
+      qty: 1,
+      unitPricePaise: charge.amountPaise,
+      // No rate to be had? Leave the line unrated and let the engine speak. It
+      // resolves slabs and the vertical default itself, and where it truly
+      // cannot it throws naming the line — far better than a charge quietly
+      // billed at 0%.
+      ...(bps !== undefined ? { gstBps: bps } : {}),
+      // Named so the printed line reads "Delivery" rather than a blank row.
+      fields: { item_name: charge.label },
+    };
+  });
 
   const tax = computeTax(config, [...discountedLines, ...chargeLines], ctx);
 
@@ -161,13 +169,17 @@ function resolveDiscount(
  * principal supply. Taking the highest rate present is the conservative read
  * of that: it never under-charges tax, which is the direction that costs the
  * shop a penalty rather than a customer a rupee.
+ *
+ * `undefined` means "no rate can be established here" — an empty bill in a
+ * vertical whose rate comes from the item's HSN, for instance. The caller
+ * leaves the charge unrated rather than inventing a figure.
  */
 function highestRate(
   config: BusinessTypeConfig,
   lines: LineItem[],
   ctx: TaxContext,
-): Bps {
-  if (lines.length === 0) return config.gst.default.bps;
+): Bps | undefined {
+  if (lines.length === 0) return defaultBps(config.gst.default);
   try {
     const breakup = computeTax(config, lines, {
       ...ctx,
@@ -179,6 +191,18 @@ function highestRate(
     );
   } catch {
     // A half-typed line should not stop a charge from being priced at all.
-    return config.gst.default.bps;
+    return defaultBps(config.gst.default);
   }
+}
+
+/**
+ * The vertical's default as a number, where it is one.
+ *
+ * `hsn`, `igst` and `none` are not rates — they are instructions to look at the
+ * item, the state pair, or nothing at all. Reading a `bps` off them is what the
+ * type system refuses, and rightly: a jeweller's "As per HSN" default silently
+ * read as 0% is an under-collection the shop pays for at the annual return.
+ */
+function defaultBps(rate: GstRate): Bps | undefined {
+  return rate.kind === "fixed" || rate.kind === "range" ? rate.bps : undefined;
 }

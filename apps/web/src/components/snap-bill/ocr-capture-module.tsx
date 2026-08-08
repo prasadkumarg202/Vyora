@@ -215,7 +215,22 @@ export function OcrCaptureModule({ orgId, config }: { orgId: string; config: Bus
             />
           </label>
           {status === "reading" && preview ? (
-            <img src={preview} alt="bill" className="max-h-56 rounded-card border border-border" />
+            /*
+             * A plain <img>, deliberately. `preview` is a blob: object URL for
+             * a photo taken on this device a moment ago. next/image cannot put
+             * a blob: URL through the optimizer, and it requires a fixed width
+             * and height — which would squash a portrait bill into whatever box
+             * we guessed. `max-h-56` with automatic width is the right
+             * treatment for an image of unknown aspect ratio, and there is
+             * nothing for the optimizer to do with a local file that was never
+             * served over the network.
+             */
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={preview}
+              alt="The bill being read"
+              className="max-h-56 rounded-card border border-border"
+            />
           ) : null}
           <p className="text-caption normal-case text-content-muted">
             Needs the AI key configured on the server. Everything else in Vyora works offline.

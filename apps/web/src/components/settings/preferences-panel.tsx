@@ -188,6 +188,7 @@ export function PreferencesPanel() {
               onChange={(e) => void update("reminderTemplate", e.target.value)}
               className="rounded-input border border-border bg-surface px-3 py-2 text-body text-content outline-none focus-visible:border-primary focus-visible:shadow-focus"
             />
+            <Placeholders names={["{party}", "{number}", "{date}", "{total}", "{due}", "{days}"]} />
           </div>
           <div className="flex flex-col gap-1">
             <Label htmlFor="p-invoiceMessageTemplate">
@@ -201,12 +202,13 @@ export function PreferencesPanel() {
               onChange={(e) => void update("invoiceMessageTemplate", e.target.value)}
               className="rounded-input border border-border bg-surface px-3 py-2 text-body text-content outline-none focus-visible:border-primary focus-visible:shadow-focus"
             />
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-caption normal-case text-content-muted">You can use:</span>
-            {["{party}", "{number}", "{date}", "{total}", "{due}"].map((t) => (
-              <Badge key={t} tone="primary">{t}</Badge>
-            ))}
+            {/*
+              A shorter list on purpose. An invoice is sent the moment it is
+              raised, so there is no age to report and nothing outstanding yet —
+              offering {due} and {days} here would only produce a message that
+              says nothing.
+            */}
+            <Placeholders names={["{party}", "{number}", "{date}", "{total}"]} />
           </div>
           <Button
             variant="outline"
@@ -225,10 +227,22 @@ export function PreferencesPanel() {
         <div className="grid gap-2 sm:grid-cols-2">
           {toggle("printLogo", "Shop name & logo", "The header block at the top of the bill.")}
           {toggle("printGstin", "Your GSTIN", "Taken from Invoice branding above.")}
-          {toggle("printBankDetails", "Bank details", "For customers paying by NEFT, RTGS or IMPS.")}
+          {toggle("printBankDetails", "Bank details", "Your default bank account from Cash & Bank, for customers paying by NEFT, RTGS or IMPS.")}
           {toggle("printSignature", "Signature line", "“For <shop name>”, with room to sign.")}
         </div>
       ) : null}
     </Card>
+  );
+}
+
+/** The placeholders a given template actually understands. */
+function Placeholders({ names }: { names: readonly string[] }) {
+  return (
+    <div className="flex flex-wrap items-center gap-2 pt-1">
+      <span className="text-caption normal-case text-content-muted">You can use:</span>
+      {names.map((t) => (
+        <Badge key={t} tone="primary">{t}</Badge>
+      ))}
+    </div>
   );
 }

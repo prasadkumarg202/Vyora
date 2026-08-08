@@ -14,9 +14,17 @@ import { UpiPay } from "~/components/sales/upi-pay";
 import {
   getInvoicePrintData,
   getSetting,
+  listAccounts,
+  type AccountRow,
   type InvoiceItemRow,
   type InvoicePrintData,
 } from "~/lib/db/repository";
+import {
+  DEFAULTS,
+  fillTemplate,
+  loadPreferences,
+  type Preferences,
+} from "~/lib/settings";
 
 /**
  * Printable tax invoice (route: /invoice/[id]).
@@ -96,6 +104,17 @@ export function InvoicePrintView({
 
   // Shop branding, saved on-device in Settings -> Invoice branding.
   const [brand, setBrand] = useState<{ address: string; gstin: string; phone: string; footer: string }>({ address: "", gstin: "", phone: "", footer: "" });
+  // What the shop has chosen to print, from Settings -> Preferences. Defaults
+  // stand in until the read lands, so the first paint is the shop's usual bill
+  // rather than a stripped-down one that then fills in.
+  const [prefs, setPrefs] = useState<Preferences>(DEFAULTS);
+  /**
+   * Bank details for the NEFT/RTGS/IMPS block come from Cash & Bank, not from a
+   * second copy typed into Settings. One account, one set of digits — an IFSC
+   * that is right in one screen and stale in the other is how a customer's
+   * payment ends up somewhere it cannot be traced.
+   */
+  const [bank, setBank] = useState<AccountRow | null>(null);
   useEffect(() => {
     void (async () => {
       setBrand({
@@ -104,8 +123,12 @@ export function InvoicePrintView({
         phone: (await getSetting("shop_phone")) ?? "",
         footer: (await getSetting("invoice_footer")) ?? "",
       });
+      setPrefs(await loadPreferences());
+      const accounts = await listAccounts(orgId);
+      const banks = accounts.filter((a) => a.kind === "bank");
+      setBank(banks.find((a) => a.is_default === 1) ?? banks[0] ?? null);
     })();
-  }, []);
+  }, [orgId]);
 
   // Vertical columns: meta keys present on any line, minus the core ones.
   const verticalKeys = useMemo(() => {
@@ -133,7 +156,16 @@ export function InvoicePrintView({
   function shareWhatsApp() {
     if (!data?.invoice) return;
     const phone = data.customer?.phone?.replace(/\D/g, "");
-    const text = `Hello ${data.customer?.name ?? "Customer"},\n\nHere is your invoice ${data.invoice.number ?? ""} for ${rupee(data.invoice.total_paise)} dated ${data.invoice.date}.\n\nThank you for your business — ${businessName}.`;
+    // The shop's own wording from Settings, with its name appended only if the
+    // template does not already carry it.
+    const body = fillTemplate(prefs.invoiceMessageTemplate, {
+      party: data.customer?.name ?? "Customer",
+      number: data.invoice.number ?? "",
+      date: data.invoice.date,
+      total: rupee(data.invoice.total_paise),
+    });
+    const text =
+      body + (businessName && !body.includes(businessName) ? `\n— ${businessName}` : "");
     const url = phone
       ? `https://wa.me/91${phone}?text=${encodeURIComponent(text)}`
       : `https://wa.me/?text=${encodeURIComponent(text)}`;
@@ -166,11 +198,15 @@ export function InvoicePrintView({
         {/* Header */}
         <div className="flex items-start justify-between border-b-2 pb-4" style={{ borderColor: "oklch(0.52 0.2 285)" }}>
           <div className="flex flex-col gap-0.5">
-            <h1 className="text-2xl font-bold" style={{ color: "oklch(0.42 0.2 285)" }}>{businessName}</h1>
-            {config ? <span className="text-[12px] text-gray-600">{config.label} · State code {stateCode}</span> : null}
-            {brand.address ? <span className="text-[12px] text-gray-600">{brand.address}</span> : null}
-            {brand.phone ? <span className="text-[12px] text-gray-600">Phone: {brand.phone}</span> : null}
-            {brand.gstin ? <span className="text-[12px] font-medium text-gray-700">GSTIN: {brand.gstin}</span> : null}
+            {prefs.printLogo ? (
+              <>
+                <h1 className="text-2xl font-bold" style={{ color: "oklch(0.42 0.2 285)" }}>{businessName}</h1>
+                {config ? <span className="text-[12px] text-gray-600">{config.label} · State code {stateCode}</span> : null}
+                {brand.address ? <span className="text-[12px] text-gray-600">{brand.address}</span> : null}
+                {brand.phone ? <span className="text-[12px] text-gray-600">Phone: {brand.phone}</span> : null}
+              </>
+            ) : null}
+            {prefs.printGstin && brand.gstin ? <span className="text-[12px] font-medium text-gray-700">GSTIN: {brand.gstin}</span> : null}
           </div>
           <div className="flex flex-col items-end gap-0.5">
             <span className="text-xl font-bold tracking-wide">{config?.invoice.template ?? "TAX INVOICE"}</span>
@@ -209,7 +245,7 @@ export function InvoicePrintView({
               <th className="p-2">#</th>
               <th className="p-2">Item</th>
               {verticalKeys.map((k) => <th key={k} className="p-2">{label(k)}</th>)}
-              <th className="p-2">HSN</th>
+              {prefs.hsnEnabled ? <th className="p-2">HSN</th> : null}
               <th className="p-2 text-right">Qty</th>
               <th className="p-2 text-right">Rate</th>
               <th className="p-2 text-right">Taxable</th>
@@ -226,7 +262,7 @@ export function InvoicePrintView({
                   <td className="p-2">{i + 1}</td>
                   <td className="p-2 font-medium">{it.description || (typeof it.meta.item_name === "string" ? it.meta.item_name : "Item")}</td>
                   {verticalKeys.map((k) => <td key={k} className="p-2">{fmtMeta(k, it.meta[k] ?? null)}</td>)}
-                  <td className="p-2">{typeof it.meta.hsn === "string" && it.meta.hsn ? it.meta.hsn : "—"}</td>
+                  {prefs.hsnEnabled ? <td className="p-2">{typeof it.meta.hsn === "string" && it.meta.hsn ? it.meta.hsn : "—"}</td> : null}
                   <td className="p-2 text-right font-mono">{milliToQty(it.qty_milli)}</td>
                   <td className="p-2 text-right font-mono">{rupee(it.rate_paise)}</td>
                   <td className="p-2 text-right font-mono">{rupee(line.taxable)}</td>
@@ -261,13 +297,28 @@ export function InvoicePrintView({
           </div>
         ) : null}
 
+        {/* Bank details, for a customer paying by NEFT, RTGS or IMPS */}
+        {prefs.printBankDetails && bank ? (
+          <div className="mt-4 rounded border border-gray-300 p-3 text-[12px]">
+            <span className="text-[11px] font-semibold uppercase text-gray-500">Bank details</span>
+            <div className="flex flex-wrap gap-x-6 gap-y-0.5 pt-1">
+              <span>{bank.bank_name ?? bank.name}</span>
+              {bank.account_number ? <span>A/c: <span className="font-mono">{bank.account_number}</span></span> : null}
+              {bank.ifsc ? <span>IFSC: <span className="font-mono">{bank.ifsc}</span></span> : null}
+              {bank.upi_id ? <span>UPI: <span className="font-mono">{bank.upi_id}</span></span> : null}
+            </div>
+          </div>
+        ) : null}
+
         {/* Footer */}
         <div className="mt-6 flex items-end justify-between border-t pt-4 text-[12px] text-gray-600">
           <span>Thank you for your business.</span>
           <div className="flex flex-col items-end gap-6">
-            <span className="font-semibold text-black">For {businessName}</span>
+            {prefs.printSignature ? (
+              <span className="font-semibold text-black">For {businessName}</span>
+            ) : null}
             {brand.footer ? <span className="text-[11px] text-gray-500">{brand.footer}</span> : null}
-            <span>Authorised signatory</span>
+            {prefs.printSignature ? <span>Authorised signatory</span> : null}
           </div>
         </div>
       </div>
