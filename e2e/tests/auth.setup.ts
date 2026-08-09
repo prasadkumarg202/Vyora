@@ -28,11 +28,19 @@ setup("authenticate the fixture tenant", async ({ page }) => {
 
   // Resume at the verify step: the send itself is Supabase's, and its built-in
   // SMTP allows ~2 mails an hour per project.
+  //
+  // `channel` is not optional here. Sign-in defaults to SMS, and the form would
+  // otherwise try to read this address as a phone number, normalise it to
+  // nothing, and fail verification against an empty string.
   await page.addInitScript(
     ([key, value]) => window.sessionStorage.setItem(key!, value!),
     [
       "vyora.login.pending",
-      JSON.stringify({ step: "verify", email: FIXTURE_EMAIL }),
+      JSON.stringify({
+        step: "verify",
+        email: FIXTURE_EMAIL,
+        channel: "email",
+      }),
     ],
   );
   await page.goto("/login");

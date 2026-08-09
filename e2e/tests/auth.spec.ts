@@ -69,7 +69,12 @@ const uniqueEmail = () =>
 async function startAtVerifyStep(page: import("@playwright/test").Page, email: string) {
   await page.addInitScript(
     ([key, value]) => window.sessionStorage.setItem(key!, value!),
-    ["vyora.login.pending", JSON.stringify({ step: "verify", email })],
+    [
+      "vyora.login.pending",
+      // Sign-in is SMS-first; these fixtures verify an email address, so the
+      // channel has to be stated or the form reads the address as a number.
+      JSON.stringify({ step: "verify", email, channel: "email" }),
+    ],
   );
 }
 
@@ -112,14 +117,26 @@ test.describe("authentication", () => {
     await expect(page.getByRole("heading", { name: "Sign in to Vyora" })).toBeVisible();
   });
 
-  test("rejects a malformed code without calling the server", async ({ page }) => {
+  test("rejects a malformed address without calling the server", async ({ page }) => {
     await page.goto("/login");
+    // The screen opens on mobile; the email field is one tap away.
+    await page.getByRole("button", { name: /use your email/i }).click();
     await page.getByLabel("Email address").fill("not-an-email");
     // Native validation blocks submit; the field must report invalid.
     const valid = await page
       .getByLabel("Email address")
       .evaluate((el: HTMLInputElement) => el.checkValidity());
     expect(valid).toBe(false);
+  });
+
+  test("the mobile field takes ten digits and nothing else", async ({ page }) => {
+    await page.goto("/login");
+    const field = page.getByLabel("Mobile number");
+    await field.fill("");
+    await field.type("098765 43210abc");
+    // Non-digits are dropped and the value is capped, so what Supabase gets is
+    // always a number it can normalise.
+    await expect(field).toHaveValue("0987654321");
   });
 
   test("full flow: OTP -> workspace -> app -> sign out", async ({ page }) => {
