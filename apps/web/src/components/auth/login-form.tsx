@@ -20,7 +20,9 @@ const PENDING_KEY = "vyora.login.pending";
 
 interface Pending {
   step: Step;
+  /** The mobile number or email address the code went to. */
   email: string;
+  channel?: "sms" | "email";
 }
 
 /**
@@ -44,8 +46,19 @@ export function LoginForm() {
   const urlError = params.get("error");
 
   const [step, setStep] = useState<Step>("identify");
+  // SMS is what a shopkeeper expects; email stays reachable because SMS is the
+  // more fragile channel — a carrier or DLT rejection must not lock an owner
+  // out of their own books.
+  const [channel, setChannel] = useState<"sms" | "email">("sms");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
+  /**
+   * Seconds until another code may be requested. A resend link with no cooldown
+   * invites impatient double-taps, and every one of those is a paid SMS and a
+   * step closer to Supabase's rate limit — at which point the shopkeeper is
+   * locked out for minutes with no explanation.
+   */
+  const [cooldown, setCooldown] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -54,6 +67,12 @@ export function LoginForm() {
       setError(urlError);
     }
   }, [urlError]);
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const id = window.setTimeout(() => setCooldown((n) => n - 1), 1000);
+    return () => window.clearTimeout(id);
+  }, [cooldown]);
 
   // A code has already been sent and the user reloads, or switches back to the
   // tab after fetching it. Losing their place would make them request a second
@@ -65,6 +84,9 @@ export function LoginForm() {
       const saved = JSON.parse(raw) as Pending;
       if (saved.step === "verify" && saved.email) {
         setEmail(saved.email);
+        if (saved.channel === "email" || saved.channel === "sms") {
+          setChannel(saved.channel);
+        }
         setStep("verify");
       }
     } catch {
@@ -81,15 +103,20 @@ export function LoginForm() {
     }
   }
 
-  function handleSend(e: React.FormEvent) {
-    e.preventDefault();
+  function handleSend(e?: React.FormEvent) {
+    e?.preventDefault();
     setError(null);
     startTransition(async () => {
       try {
-        const result = await sendOtp(email);
+        const result = await sendOtp(email, channel);
         if (result.ok) {
           setStep("verify");
-          remember({ step: "verify", email: email.trim().toLowerCase() });
+          setCooldown(30);
+          remember({
+            step: "verify",
+            email: channel === "sms" ? email.trim() : email.trim().toLowerCase(),
+            channel,
+          });
         } else {
           setError(result.error ?? "Could not send the code.");
         }
@@ -107,7 +134,7 @@ export function LoginForm() {
     setError(null);
     startTransition(async () => {
       try {
-        const result = await verifyOtp(email, code);
+        const result = await verifyOtp(email, code, channel);
         if (result.ok) {
           remember(null);
           // refresh() so middleware re-runs with the new session cookies before
@@ -128,18 +155,44 @@ export function LoginForm() {
       {step === "identify" ? (
         <form onSubmit={handleSend} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="email">Email address</Label>
-            <Input
-              id="email"
-              type="email"
-              name="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              autoFocus
-              autoComplete="email"
-              placeholder="you@business.in"
-            />
+            <Label htmlFor="identifier">
+              {channel === "sms" ? "Mobile number" : "Email address"}
+            </Label>
+            {channel === "sms" ? (
+              <div className="flex items-stretch gap-0">
+                {/* Fixed +91 so ten digits is all anyone types. */}
+                <span className="flex items-center rounded-l-input border border-r-0 border-border bg-canvas px-3 font-mono text-body text-content-muted">
+                  +91
+                </span>
+                <Input
+                  id="identifier"
+                  type="tel"
+                  name="phone"
+                  value={email}
+                  onChange={(e) =>
+                    setEmail(e.target.value.replace(/\D/g, "").slice(0, 10))
+                  }
+                  required
+                  autoFocus
+                  inputMode="numeric"
+                  autoComplete="tel-national"
+                  placeholder="98765 43210"
+                  className="rounded-l-none font-mono"
+                />
+              </div>
+            ) : (
+              <Input
+                id="identifier"
+                type="email"
+                name="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                autoFocus
+                autoComplete="email"
+                placeholder="you@business.in"
+              />
+            )}
           </div>
 
           {error ? <ErrorNote message={error} /> : null}
@@ -148,18 +201,36 @@ export function LoginForm() {
             {pending ? "Sending…" : "Send code"}
           </Button>
 
-          <p className="text-caption normal-case text-content-muted">
-            Production signs in by phone. Email is used in development because
-            SMS needs a paid provider — the code flow is identical.
-          </p>
+          <button
+            type="button"
+            onClick={() => {
+              setChannel(channel === "sms" ? "email" : "sms");
+              setEmail("");
+              setError(null);
+            }}
+            className="text-caption font-medium normal-case text-primary hover:underline"
+          >
+            {channel === "sms"
+              ? "No SMS? Use your email instead"
+              : "Use your mobile number instead"}
+          </button>
         </form>
       ) : (
         <form onSubmit={handleVerify} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1">
             <span className="text-body font-medium">Enter the code</span>
             <span className="text-body text-content-muted">
-              Sent to {email}. It expires in 5 minutes.
+              Sent to {channel === "sms" ? `+91 ${email}` : email}. It expires in 5
+              minutes.
             </span>
+            <button
+              type="button"
+              onClick={handleSend}
+              disabled={pending || cooldown > 0}
+              className="self-start text-caption font-medium normal-case text-primary hover:underline disabled:cursor-not-allowed disabled:text-content-muted disabled:no-underline"
+            >
+              {cooldown > 0 ? `Send it again in ${cooldown}s` : "Send it again"}
+            </button>
           </div>
 
           <div className="flex flex-col gap-1.5">
@@ -179,7 +250,7 @@ export function LoginForm() {
               required
               autoFocus
               autoComplete="one-time-code"
-              placeholder="Code from your email"
+              placeholder={channel === "sms" ? "Code from the SMS" : "Code from your email"}
               className="text-center font-mono text-h3 tracking-[0.3em]"
             />
           </div>
@@ -200,7 +271,7 @@ export function LoginForm() {
               remember(null);
             }}
           >
-            Use a different address
+            {channel === "sms" ? "Use a different number" : "Use a different address"}
           </Button>
         </form>
       )}

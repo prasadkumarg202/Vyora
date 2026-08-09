@@ -49,7 +49,11 @@ export function WelcomeForm({
   email,
 }: {
   businessTypes: BusinessType[];
-  /** From the OTP just verified. Shown, never edited. */
+  /**
+   * A phone number already verified on the account, if there is one. Sign-in is
+   * by email code, so for almost every shop this is null and the field below is
+   * theirs to fill in.
+   */
   phone: string | null;
   email: string | null;
 }) {
@@ -74,6 +78,9 @@ export function WelcomeForm({
   const [pincode, setPincode] = useState("");
 
   const gstinWarnings = checkGstin(gstin, pan, state);
+  // Editable unless the account already carries a verified number.
+  const [phoneInput, setPhoneInput] = useState(phone ?? "");
+
   const canContinue = name.trim().length >= 2 && Boolean(type);
 
   function submitProfile() {
@@ -82,7 +89,7 @@ export function WelcomeForm({
       const result = await createWorkspace({
         name,
         businessTypeKey: type || undefined,
-        phone: phone ?? undefined,
+        phone: (phone ?? phoneInput.trim()) || undefined,
         email: contactEmail || undefined,
         gstin: gstin.trim().toUpperCase() || undefined,
         pan: pan.trim().toUpperCase() || undefined,
@@ -131,19 +138,29 @@ export function WelcomeForm({
             </Field>
 
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Phone Number" htmlFor="phone" required>
+              <Field label="Phone Number" htmlFor="phone">
                 <Input
                   id="phone"
-                  value={phone ?? ""}
-                  readOnly
+                  value={phoneInput}
+                  onChange={(e) =>
+                    setPhoneInput(e.target.value.replace(/[^\d+]/g, "").slice(0, 15))
+                  }
+                  readOnly={Boolean(phone)}
+                  inputMode="tel"
+                  autoComplete="tel"
+                  placeholder="10-digit mobile"
                   aria-describedby="phone-note"
-                  className="bg-canvas text-content-muted"
+                  className={
+                    phone ? "bg-canvas font-mono text-content-muted" : "font-mono"
+                  }
                 />
                 <span
                   id="phone-note"
                   className="text-caption normal-case text-content-muted"
                 >
-                  Verified by OTP — this is the number that owns the account.
+                  {phone
+                    ? "Verified on your account — this is the number that owns it."
+                    : "Printed on your bills, and where customers reply. You can add it later."}
                 </span>
               </Field>
 

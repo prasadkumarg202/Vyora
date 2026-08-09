@@ -15,18 +15,60 @@ export interface ActionResult {
 /**
  * Step 1 of the login flow: send a one-time code.
  *
- * The spec's channel is SMS. Supabase cloud sends no SMS without a paid
- * provider, so development uses email and production switches the channel —
- * the verify step and everything downstream is identical either way.
+ * SMS is the channel a shopkeeper expects — it is how every till app in India
+ * signs in, and it needs no inbox. Email stays available as a fallback because
+ * SMS is the more fragile of the two: DLT template rejections, carrier
+ * filtering and a per-message cost all fail in ways email does not, and an
+ * owner locked out of their own books at the counter is not an acceptable
+ * failure mode.
  */
-export async function sendOtp(email: string): Promise<ActionResult> {
-  const address = email.trim().toLowerCase();
+/**
+ * Ten digits become +91XXXXXXXXXX. Supabase wants E.164 and nothing else, and
+ * a shopkeeper types the number the way it appears on their phone — spaces,
+ * a leading zero, sometimes the country code already there.
+ */
+function toE164(input: string): string | null {
+  const digits = input.replace(/\D/g, "");
+  const local = digits.startsWith("91") && digits.length === 12
+    ? digits.slice(2)
+    : digits.startsWith("0") && digits.length === 11
+      ? digits.slice(1)
+      : digits;
+  // Indian mobile numbers are ten digits and never begin 0-5.
+  if (!/^[6-9]\d{9}$/.test(local)) return null;
+  return `+91${local}`;
+}
+
+export async function sendOtp(
+  identifier: string,
+  channel: "sms" | "email" = "sms",
+): Promise<ActionResult> {
+  const supabase = await createClient();
+
+  if (channel === "sms") {
+    const phone = toE164(identifier);
+    if (!phone) {
+      return { ok: false, error: "Enter a 10-digit mobile number." };
+    }
+
+    const { error } = await supabase.auth.signInWithOtp({
+      phone,
+      options: { shouldCreateUser: true },
+    });
+
+    if (error) {
+      logAuthError("sendOtp:sms", error);
+      return { ok: false, error: describeSendFailure(error) };
+    }
+    return { ok: true };
+  }
+
+  const address = identifier.trim().toLowerCase();
 
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(address)) {
     return { ok: false, error: "Enter a valid email address." };
   }
 
-  const supabase = await createClient();
   const requestHeaders = await headers();
   const origin = requestHeaders.get("origin");
   const emailRedirectTo = origin ? `${origin}/auth/callback` : undefined;
@@ -40,7 +82,7 @@ export async function sendOtp(email: string): Promise<ActionResult> {
   });
 
   if (error) {
-    logAuthError("sendOtp", error);
+    logAuthError("sendOtp:email", error);
     return { ok: false, error: describeSendFailure(error) };
   }
 
@@ -56,8 +98,17 @@ export async function sendOtp(email: string): Promise<ActionResult> {
  * which is exactly how a whole evening disappeared into a working auth flow.
  */
 function describeSendFailure(error: AuthError): string {
-  if (error.code === "over_email_send_rate_limit" || error.status === 429) {
+  if (
+    error.code === "over_email_send_rate_limit" ||
+    error.code === "over_sms_send_rate_limit" ||
+    error.status === 429
+  ) {
     return "Too many codes requested. Wait a few minutes and try again.";
+  }
+
+  // What an unregistered DLT template or a rejected Twilio send looks like.
+  if (error.code === "sms_send_failed") {
+    return "We couldn't send the SMS. Try email instead, or try again shortly.";
   }
 
   // 500 + unexpected_failure is what a rejected SMTP send looks like from here.
@@ -94,29 +145,34 @@ function logAuthError(where: string, error: AuthError): void {
  *   - a device row bound to this session, so it can be listed and revoked
  */
 export async function verifyOtp(
-  email: string,
+  identifier: string,
   token: string,
+  channel: "sms" | "email" = "sms",
 ): Promise<ActionResult> {
-  const address = email.trim().toLowerCase();
   const code = token.trim();
 
-  // Length is NOT fixed at 6. The spec says "6-digit code", but that describes
-  // the SMS channel; Supabase's email OTP is 8 digits by default, and both are
-  // configurable per project. Hardcoding 6 rejected every real code. Validate
-  // the shape only and let the auth server judge the value.
+  // Length is NOT fixed at 6. SMS codes are 6 digits, Supabase's email OTP is
+  // 8 by default, and both are project settings. Validate the shape only and
+  // let the auth server judge the value.
   if (!/^\d{4,10}$/.test(code)) {
     return { ok: false, error: "Enter the code we sent you." };
   }
 
   const supabase = await createClient();
-  const { data, error } = await supabase.auth.verifyOtp({
-    email: address,
-    token: code,
-    type: "email",
-  });
+
+  const credentials =
+    channel === "sms"
+      ? { phone: toE164(identifier) ?? "", token: code, type: "sms" as const }
+      : {
+          email: identifier.trim().toLowerCase(),
+          token: code,
+          type: "email" as const,
+        };
+
+  const { data, error } = await supabase.auth.verifyOtp(credentials);
 
   if (error) {
-    logAuthError("verifyOtp", error);
+    logAuthError(`verifyOtp:${channel}`, error);
     return { ok: false, error: error.message || "Could not verify the code." };
   }
 
@@ -125,7 +181,7 @@ export async function verifyOtp(
     return { ok: false, error: "Verification returned no user." };
   }
 
-  await ensureProfile(user.id, address);
+  await ensureProfile(user.id, user.email ?? null);
   await registerDevice(user.id);
 
   return { ok: true };
@@ -142,7 +198,10 @@ export async function verifyOtp(
  * Guarded by RLS (insert_own_profile: with check id = auth.uid()), so a client
  * cannot forge a row for anyone else even if it calls this directly.
  */
-async function ensureProfile(userId: string, email: string): Promise<void> {
+async function ensureProfile(
+  userId: string,
+  email: string | null,
+): Promise<void> {
   const supabase = await createClient();
 
   const { error } = await supabase
@@ -307,8 +366,8 @@ export async function createWorkspace(
   }
 
   revalidatePath("/", "layout");
-  // Same reason as everywhere else: an optional field is omitted, not set
-  // to undefined.
+  // An optional field is omitted, not set to undefined —
+  // exactOptionalPropertyTypes treats those as different types.
   return { ok: true, ...(typeof data === "string" ? { orgId: data } : {}) };
 }
 
