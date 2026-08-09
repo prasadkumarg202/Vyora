@@ -13,6 +13,23 @@ const PORT = 3100;
 const baseURL = `http://localhost:${PORT}`;
 
 /**
+ * Whether a real Supabase project is reachable.
+ *
+ * Everything behind sign-in needs one: the setup project mints an OTP through
+ * the admin API and saves a session the shell suite reuses. With no project —
+ * a fork, a clean CI runner, a contributor without credentials — that setup
+ * skips, and every dependent project then dies on a storage-state file that
+ * was never written. Ninety red tests, none of them about the product.
+ *
+ * So those projects are not registered at all when there is nothing to sign in
+ * to. The public suite still runs, and the report says "3 tests" rather than
+ * lying with a wall of failures.
+ */
+const CAN_SIGN_IN = Boolean(
+  process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY,
+);
+
+/**
  * Critical-flow e2e per the Testing Strategy spec. The offline and sync suites
  * arrive with Phase 6, once there is an outbox to interrupt.
  */
@@ -41,6 +58,8 @@ export default defineConfig({
     },
   },
   projects: [
+    ...(CAN_SIGN_IN
+      ? ([
     // Signs in once; the shell suite reuses the state.
     {
       name: "setup",
@@ -65,6 +84,17 @@ export default defineConfig({
       testIgnore:
         /(auth\.(setup|spec)|pricing-public\.spec|billing-[a-z]+\.spec)\.ts/,
     },
+    // Auth drives sign-in itself, so it must start signed out.
+    {
+      name: "auth",
+      use: {
+        ...devices["Desktop Chrome"],
+        storageState: { cookies: [], origins: [] },
+      },
+      testMatch: /auth\.spec\.ts/,
+    },
+        ] as const)
+      : []),
     // The public pricing page, signed out — half its assertions are that an
     // anonymous visitor gets in at all.
     {
@@ -74,15 +104,6 @@ export default defineConfig({
         storageState: { cookies: [], origins: [] },
       },
       testMatch: /pricing-public\.spec\.ts/,
-    },
-    // Auth drives sign-in itself, so it must start signed out.
-    {
-      name: "auth",
-      use: {
-        ...devices["Desktop Chrome"],
-        storageState: { cookies: [], origins: [] },
-      },
-      testMatch: /auth\.spec\.ts/,
     },
   ],
   webServer: {
