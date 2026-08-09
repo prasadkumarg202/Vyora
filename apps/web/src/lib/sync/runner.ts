@@ -487,6 +487,34 @@ export function subscribeSync(l: Listener): () => void {
 interface Retry { attempts: number; nextAt: number; error: string; }
 const retry = new Map<string, Retry>();
 
+/**
+ * The workspace this device is currently signed in to, read from the access
+ * token's org_id claim.
+ *
+ * One browser profile keeps one local database, but a person can sign out and
+ * into a different workspace — or the workspace they were in can be deleted.
+ * Either way the local file is left holding rows stamped with an org_id that
+ * the current token knows nothing about. Pushing those is not merely useless:
+ * RLS rejects every one, forever, and the pill sits on "1 pending" describing
+ * a row that can never land.
+ */
+let currentOrgId: string | null = null;
+
+function orgIdFromJwt(jwt: string): string | null {
+  try {
+    const payload = jwt.split(".")[1];
+    if (!payload) return null;
+    const claims = JSON.parse(atob(payload.replace(/-/g, "+").replace(/_/g, "/"))) as Record<
+      string,
+      unknown
+    >;
+    const org = claims["org_id"];
+    return typeof org === "string" && org.length > 0 ? org : null;
+  } catch {
+    return null;
+  }
+}
+
 // --- The push loop -----------------------------------------------------------
 
 let flushing = false;
@@ -501,18 +529,36 @@ async function flushOnce(): Promise<void> {
   const { data: sess } = await supabase.auth.getSession();
   if (!sess?.session) return; // not signed in
 
+  currentOrgId = orgIdFromJwt(sess.session.access_token);
+
   await ready();
   const now = Date.now();
 
   for (const d of DESCS) {
-    const rows = await all<LocalRow>(
-      `SELECT * FROM ${d.local} WHERE dirty = 1 AND deleted_at IS NULL LIMIT 200`,
-      [],
-    );
+    // Scoped to the signed-in workspace. Rows left behind by a previous
+    // workspace on this device are not ours to push and RLS would refuse them
+    // anyway; leaving them out is the difference between "nothing to do" and
+    // "one row pending, forever".
+    const rows = currentOrgId
+      ? await all<LocalRow>(
+          `SELECT * FROM ${d.local}
+           WHERE dirty = 1 AND deleted_at IS NULL AND org_id = ? LIMIT 200`,
+          [currentOrgId],
+        )
+      : await all<LocalRow>(
+          `SELECT * FROM ${d.local} WHERE dirty = 1 AND deleted_at IS NULL LIMIT 200`,
+          [],
+        );
     for (const row of rows) {
       const id = String(row.id);
       const r = retry.get(id);
-      if (r && r.attempts < MAX_ATTEMPTS && r.nextAt > now) continue; // backing off
+      if (r) {
+        // Given up on. It stays dirty and counted as failed, and only a
+        // deliberate "retry" from the pill clears the backoff and tries again.
+        if (r.attempts >= MAX_ATTEMPTS) continue;
+        // Still inside its backoff window.
+        if (r.nextAt > now) continue;
+      }
 
       try {
         const payload = d.map(row);
@@ -563,10 +609,18 @@ async function updateCounts(): Promise<void> {
     // has moved on, a worker that answered badly — used to abort the whole
     // tally, and because this ran outside the try below it wedged the runner.
     try {
-      const row = await get<{ n: number }>(
-        `SELECT COUNT(*) AS n FROM ${d.local} WHERE dirty = 1 AND deleted_at IS NULL`,
-        [],
-      );
+      // Counted the same way it is pushed, or the badge would advertise work
+      // the runner has correctly decided not to do.
+      const row = currentOrgId
+        ? await get<{ n: number }>(
+            `SELECT COUNT(*) AS n FROM ${d.local}
+             WHERE dirty = 1 AND deleted_at IS NULL AND org_id = ?`,
+            [currentOrgId],
+          )
+        : await get<{ n: number }>(
+            `SELECT COUNT(*) AS n FROM ${d.local} WHERE dirty = 1 AND deleted_at IS NULL`,
+            [],
+          );
       pending += row?.n ?? 0;
     } catch {
       // A count is a number on a badge. It is never worth stopping sync for.
@@ -647,9 +701,18 @@ async function runFlush(): Promise<void> {
   }
 }
 
-/** Manual "retry now": clear backoff on failed rows and flush immediately. */
+/**
+ * Manual "retry now": forgive everything and flush immediately.
+ *
+ * Attempts are reset, not just the backoff clock — a row that has been given up
+ * on is exactly the row someone taps this button for, and leaving its attempt
+ * count at the limit would make the tap do nothing.
+ */
 export function retrySync(): void {
-  for (const r of retry.values()) r.nextAt = 0;
+  for (const r of retry.values()) {
+    r.attempts = 0;
+    r.nextAt = 0;
+  }
   void runFlush();
 }
 
