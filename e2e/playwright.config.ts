@@ -59,7 +59,7 @@ export default defineConfig({
   },
   projects: [
     ...(CAN_SIGN_IN
-      ? ([
+      ? [
     // Signs in once; the shell suite reuses the state.
     {
       name: "setup",
@@ -93,7 +93,7 @@ export default defineConfig({
       },
       testMatch: /auth\.spec\.ts/,
     },
-        ] as const)
+        ]
       : []),
     // The public pricing page, signed out — half its assertions are that an
     // anonymous visitor gets in at all.
