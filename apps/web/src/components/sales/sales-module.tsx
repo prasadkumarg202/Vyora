@@ -40,6 +40,7 @@ import {
   type InvoiceRow,
   type ProductPick,
 } from "~/lib/db/repository";
+import { requestSync } from "~/lib/sync/runner";
 
 /**
  * The Sales till — metadata-driven.
@@ -399,6 +400,14 @@ export function SalesModule({
       // are not, so they survive into the next invoice.
       setExtras((e) => ({ ...e, notes: "", discount: null, charges: [] }));
       await refresh();
+
+      // Push it now rather than waiting out the 30-second heartbeat.
+      // requestSync() returns void and never throws — it kicks the flush and
+      // returns, so the counter is free to take the next customer while the
+      // upload happens. If it fails, or we are offline, the row simply stays
+      // dirty and the heartbeat picks it up. That is the whole point of
+      // writing locally first.
+      requestSync();
     } catch (err) {
       setError((err as Error).message);
     } finally {

@@ -2,7 +2,7 @@
 
 import { backoffMs, MAX_ATTEMPTS } from "@vyora/sync";
 
-import { all, get, run } from "~/lib/db/client";
+import { all, batch, get, run } from "~/lib/db/client";
 import { ready } from "~/lib/db/repository";
 import { createClient } from "~/lib/supabase/client";
 
@@ -18,8 +18,9 @@ import { createClient } from "~/lib/supabase/client";
  * connection returns.
  *
  * Push first: a device is the source of truth for its own edits (last-write
- * wins on its rows). Pull + the conflict engine (for a second device) layer on
- * top of this same loop next.
+ * wins on its rows). Pull runs straight after, so a second device — or the same
+ * shop opening the web app instead of the installed one — starts from what the
+ * server already holds rather than from an empty database.
  */
 
 export interface SyncStatus {
@@ -70,6 +71,386 @@ const DESCS: EntityDesc[] = [
   { local: "expenses", server: "expenses", hasVersion: true, map: (r) => ({ id: r.id, org_id: r.org_id, category: r.category, amount: paise(r.amount_paise), date: r.date, note: r.note, recurring: r.recurring ? true : false, created_by: r.created_by ?? null, updated_at: r.updated_at }) },
   { local: "stock_movements", server: "stock_movements", hasVersion: false, map: (r) => ({ id: r.id, org_id: r.org_id, product_id: r.product_id, type: r.type, qty_delta: milli(r.qty_milli), ref_type: r.ref_type ?? null, ref_id: r.ref_id ?? null, created_at: r.created_at }) },
 ];
+
+// --- Pull: bringing the server's rows down -----------------------------------
+
+/**
+ * The other half of the loop. Without it a device only ever *contributes* to the
+ * workspace and never joins it: sign in on a second machine, or in the browser
+ * next to the installed app, and the screen is empty even though the data is
+ * sitting in Postgres. That is not an offline-first app, it is a one-way upload.
+ *
+ * Three rules keep it safe:
+ *
+ *   1. A locally dirty row is never overwritten. The `WHERE <table>.dirty = 0`
+ *      on the upsert means an edit this device has not yet pushed always wins
+ *      over the copy it is pulling — losing a bill someone just wrote because a
+ *      background fetch landed first is the one failure nobody forgives.
+ *   2. Parents before children, because the local schema runs with
+ *      `PRAGMA foreign_keys = ON`.
+ *   3. Progress is remembered per table in `sync_state`, so the second run
+ *      fetches what changed rather than the whole workspace again.
+ */
+
+type ServerRow = Record<string, unknown>;
+type Param = string | number | null;
+
+const toPaise = (v: unknown): number => (v == null ? 0 : Math.round(Number(v) * 100));
+const toMilli = (v: unknown): number => (v == null ? 0 : Math.round(Number(v) * 1000));
+const toBps = (v: unknown): number => (v == null ? 0 : Math.round(Number(v) * 100));
+const orNull = (v: unknown, f: (x: unknown) => number): number | null =>
+  v == null ? null : f(v);
+const text = (v: unknown): string | null => (v == null ? null : String(v));
+
+/**
+ * Local `updated_at` is TEXT and is written as ISO everywhere else in the app,
+ * while Postgres hands back `2026-08-09 12:56:40.655+00`. Normalising on the way
+ * in keeps one format in the column, so anything that sorts or compares it does
+ * not silently order two devices' rows differently.
+ */
+function iso(v: unknown): string {
+  const d = new Date(String(v ?? ""));
+  return Number.isNaN(d.getTime()) ? new Date().toISOString() : d.toISOString();
+}
+
+/** jsonb comes back parsed; the local column is TEXT. */
+function jsonText(v: unknown): string {
+  if (v == null) return "{}";
+  return typeof v === "string" ? v : JSON.stringify(v);
+}
+
+interface ChildDesc {
+  local: string;
+  server: string;
+  /** The column pointing back at the parent this child was fetched for. */
+  fk: string;
+  toLocal: (r: ServerRow) => Record<string, Param>;
+}
+
+interface PullDesc {
+  local: string;
+  server: string;
+  /**
+   * The column the incremental fetch filters and orders on. `invoice_items` and
+   * `purchase_items` have no timestamp at all on the server, so they cannot be
+   * pulled this way — they ride down with their parent instead.
+   */
+  cursorCol: "updated_at" | "created_at";
+  toLocal: (r: ServerRow) => Record<string, Param>;
+  children?: ChildDesc[];
+}
+
+const PULLS: PullDesc[] = [
+  {
+    local: "customers",
+    server: "customers",
+    cursorCol: "updated_at",
+    toLocal: (r) => ({
+      id: String(r.id),
+      name: String(r.name ?? ""),
+      phone: text(r.phone),
+      gstin: text(r.gstin),
+      address: jsonText(r.address),
+      balance_paise: toPaise(r.balance),
+      loyalty_points: Number(r.loyalty_points ?? 0),
+      custom_fields: jsonText(r.custom_fields),
+      org_id: String(r.org_id),
+      version: Number(r.version ?? 0),
+      updated_at: iso(r.updated_at),
+      dirty: 0,
+      deleted_at: null,
+    }),
+  },
+  {
+    local: "suppliers",
+    server: "suppliers",
+    cursorCol: "updated_at",
+    toLocal: (r) => ({
+      id: String(r.id),
+      name: String(r.name ?? ""),
+      phone: text(r.phone),
+      gstin: text(r.gstin),
+      address: jsonText(r.address),
+      balance_paise: toPaise(r.balance),
+      custom_fields: jsonText(r.custom_fields),
+      org_id: String(r.org_id),
+      version: Number(r.version ?? 0),
+      updated_at: iso(r.updated_at),
+      dirty: 0,
+      deleted_at: null,
+    }),
+  },
+  {
+    local: "products",
+    server: "products",
+    cursorCol: "updated_at",
+    toLocal: (r) => ({
+      id: String(r.id),
+      name: String(r.name ?? ""),
+      sku: text(r.sku),
+      // Deliberately dropped. `categories` is not in the synced set, so a
+      // category id from the server has nothing to point at locally and the
+      // foreign key would reject the whole page.
+      category_id: null,
+      unit: text(r.unit),
+      mrp_paise: orNull(r.mrp, toPaise),
+      price_paise: orNull(r.sale_price, toPaise),
+      tax_bps: orNull(r.tax_rate, toBps),
+      hsn: text(r.hsn),
+      custom_fields: jsonText(r.custom_fields),
+      org_id: String(r.org_id),
+      version: Number(r.version ?? 0),
+      updated_at: iso(r.updated_at),
+      dirty: 0,
+      deleted_at: null,
+    }),
+  },
+  {
+    local: "invoices",
+    server: "invoices",
+    cursorCol: "updated_at",
+    toLocal: (r) => ({
+      id: String(r.id),
+      number: text(r.number),
+      customer_id: text(r.customer_id),
+      date: String(r.date),
+      status: String(r.status ?? "draft"),
+      subtotal_paise: toPaise(r.subtotal),
+      tax_paise: toPaise(r.tax),
+      total_paise: toPaise(r.total),
+      amount_paid_paise: toPaise(r.amount_paid),
+      custom_fields: jsonText(r.custom_fields),
+      created_by: text(r.created_by),
+      org_id: String(r.org_id),
+      version: Number(r.version ?? 0),
+      updated_at: iso(r.updated_at),
+      dirty: 0,
+      deleted_at: null,
+    }),
+    children: [
+      {
+        local: "invoice_items",
+        server: "invoice_items",
+        fk: "invoice_id",
+        toLocal: (r) => ({
+          id: String(r.id),
+          invoice_id: String(r.invoice_id),
+          product_id: text(r.product_id),
+          description: text(r.description),
+          qty_milli: toMilli(r.qty),
+          rate_paise: toPaise(r.rate),
+          tax_bps: toBps(r.tax_rate),
+          amount_paise: toPaise(r.amount),
+          meta: jsonText(r.meta),
+          org_id: String(r.org_id),
+          version: 0,
+          // The server keeps no timestamp on line items. Stamping them as they
+          // arrive is honest about what we know: this is when this device
+          // learned of the line, not when it was written.
+          updated_at: new Date().toISOString(),
+          dirty: 0,
+          deleted_at: null,
+        }),
+      },
+    ],
+  },
+  {
+    local: "payments",
+    server: "payments",
+    cursorCol: "updated_at",
+    toLocal: (r) => ({
+      id: String(r.id),
+      direction: String(r.direction),
+      party_type: String(r.party_type),
+      party_id: text(r.party_id),
+      invoice_id: text(r.invoice_id),
+      amount_paise: toPaise(r.amount),
+      method: String(r.method ?? "cash"),
+      date: String(r.date),
+      created_by: text(r.created_by),
+      org_id: String(r.org_id),
+      version: Number(r.version ?? 0),
+      updated_at: iso(r.updated_at),
+      dirty: 0,
+      deleted_at: null,
+    }),
+  },
+  {
+    local: "purchases",
+    server: "purchases",
+    cursorCol: "updated_at",
+    toLocal: (r) => ({
+      id: String(r.id),
+      number: text(r.number),
+      supplier_id: text(r.supplier_id),
+      date: String(r.date),
+      status: String(r.status ?? "draft"),
+      subtotal_paise: toPaise(r.subtotal),
+      tax_paise: toPaise(r.tax),
+      total_paise: toPaise(r.total),
+      custom_fields: jsonText(r.custom_fields),
+      org_id: String(r.org_id),
+      version: Number(r.version ?? 0),
+      updated_at: iso(r.updated_at),
+      dirty: 0,
+      deleted_at: null,
+    }),
+    children: [
+      {
+        local: "purchase_items",
+        server: "purchase_items",
+        fk: "purchase_id",
+        toLocal: (r) => ({
+          id: String(r.id),
+          purchase_id: String(r.purchase_id),
+          product_id: text(r.product_id),
+          qty_milli: toMilli(r.qty),
+          rate_paise: toPaise(r.rate),
+          tax_bps: toBps(r.tax_rate),
+          amount_paise: toPaise(r.amount),
+          meta: jsonText(r.meta),
+          org_id: String(r.org_id),
+          version: 0,
+          updated_at: new Date().toISOString(),
+          dirty: 0,
+          deleted_at: null,
+        }),
+      },
+    ],
+  },
+  {
+    local: "expenses",
+    server: "expenses",
+    cursorCol: "updated_at",
+    toLocal: (r) => ({
+      id: String(r.id),
+      category: text(r.category),
+      amount_paise: toPaise(r.amount),
+      date: String(r.date),
+      note: text(r.note),
+      receipt_url: text(r.receipt_url),
+      recurring: r.recurring ? 1 : 0,
+      custom_fields: jsonText(r.custom_fields),
+      created_by: text(r.created_by),
+      org_id: String(r.org_id),
+      version: Number(r.version ?? 0),
+      updated_at: iso(r.updated_at),
+      dirty: 0,
+      deleted_at: null,
+    }),
+  },
+  {
+    local: "stock_movements",
+    server: "stock_movements",
+    // Append-only, and the only synced table whose server side has no
+    // updated_at — created_at is both the cursor and the fact.
+    cursorCol: "created_at",
+    toLocal: (r) => ({
+      id: String(r.id),
+      product_id: String(r.product_id),
+      type: String(r.type),
+      qty_milli: toMilli(r.qty_delta),
+      ref_type: text(r.ref_type),
+      ref_id: text(r.ref_id),
+      created_at: iso(r.created_at),
+      org_id: String(r.org_id),
+      version: 0,
+      updated_at: iso(r.created_at),
+      dirty: 0,
+      deleted_at: null,
+    }),
+  },
+];
+
+/** One page per table per pass — enough to catch up quickly, small enough that
+ *  a first sync on a big workspace does not block the UI thread for a minute. */
+const PULL_PAGE = 500;
+
+const EPOCH = "1970-01-01T00:00:00Z";
+
+async function cursorGet(table: string): Promise<string> {
+  const row = await get<{ value: string }>(
+    `SELECT value FROM sync_state WHERE key = ?`,
+    [`pull:${table}`],
+  );
+  return row?.value ?? EPOCH;
+}
+
+async function cursorSet(table: string, value: string): Promise<void> {
+  await run(
+    `INSERT INTO sync_state (key, value) VALUES (?, ?)
+     ON CONFLICT(key) DO UPDATE SET value = excluded.value`,
+    [`pull:${table}`, value],
+  );
+}
+
+/**
+ * INSERT … ON CONFLICT(id) DO UPDATE … WHERE <table>.dirty = 0.
+ *
+ * The WHERE is the whole safety story: an existing row that this device has
+ * edited and not yet pushed is left exactly as it is.
+ */
+function upsertSql(table: string, row: Record<string, Param>): {
+  sql: string;
+  params: Param[];
+} {
+  const cols = Object.keys(row);
+  const setters = cols
+    .filter((c) => c !== "id")
+    .map((c) => `${c} = excluded.${c}`)
+    .join(", ");
+  return {
+    sql:
+      `INSERT INTO ${table} (${cols.join(", ")}) ` +
+      `VALUES (${cols.map(() => "?").join(", ")}) ` +
+      `ON CONFLICT(id) DO UPDATE SET ${setters} WHERE ${table}.dirty = 0`,
+    params: cols.map((c) => row[c] ?? null),
+  };
+}
+
+type Client = ReturnType<typeof createClient>;
+
+async function pullOnce(supabase: Client): Promise<number> {
+  let received = 0;
+
+  for (const d of PULLS) {
+    const since = await cursorGet(d.local);
+    const { data, error } = await supabase
+      .from(d.server)
+      .select("*")
+      .gt(d.cursorCol, since)
+      .order(d.cursorCol, { ascending: true })
+      .limit(PULL_PAGE);
+    if (error) throw new Error(`pull ${d.server}: ${error.message}`);
+
+    const rows = (data ?? []) as ServerRow[];
+    if (rows.length === 0) continue;
+
+    // One transaction per page: either the whole page lands or none of it does,
+    // and the cursor only moves after it has.
+    await batch(rows.map((r) => upsertSql(d.local, d.toLocal(r))));
+    received += rows.length;
+
+    for (const child of d.children ?? []) {
+      const ids = rows.map((r) => String(r.id));
+      const { data: kids, error: kidErr } = await supabase
+        .from(child.server)
+        .select("*")
+        .in(child.fk, ids);
+      if (kidErr) throw new Error(`pull ${child.server}: ${kidErr.message}`);
+      const kidRows = (kids ?? []) as ServerRow[];
+      if (kidRows.length === 0) continue;
+      await batch(kidRows.map((r) => upsertSql(child.local, child.toLocal(r))));
+      received += kidRows.length;
+    }
+
+    // Only now, once everything for this page is committed locally.
+    const last = rows[rows.length - 1];
+    if (last) await cursorSet(d.local, String(last[d.cursorCol]));
+  }
+
+  return received;
+}
 
 // --- Observable status -------------------------------------------------------
 
@@ -147,6 +528,15 @@ async function flushOnce(): Promise<void> {
         status.lastError = (err as Error).message;
       }
     }
+  }
+
+  // Push first, then pull. In this order a row this device just uploaded is
+  // already clean before the fetch sees it, so it is not read straight back
+  // down and re-applied on top of itself.
+  try {
+    await pullOnce(supabase);
+  } catch (err) {
+    status.lastError = (err as Error).message;
   }
 }
 
