@@ -458,12 +458,27 @@ type Listener = (s: SyncStatus) => void;
 const listeners = new Set<Listener>();
 const status: SyncStatus = { online: true, pending: 0, syncing: false, failed: 0 };
 
+/**
+ * Every notification carries a fresh object, never `status` itself.
+ *
+ * `status` is a single module-level object mutated in place, and handing that
+ * same reference to a React setState is a silent no-op: React bails out of the
+ * re-render when the next state is Object.is-equal to the current one. So the
+ * pill rendered once, on the first notification, and then froze — permanently
+ * reading "Syncing…" while the runner behind it flushed, succeeded and idled
+ * exactly as it should. Every symptom pointed at the sync engine; the engine
+ * was fine and the component was deaf.
+ *
+ * One snapshot shared by all listeners is enough: what matters is that it is a
+ * new reference each time, not a new one per subscriber.
+ */
 function emit() {
-  for (const l of listeners) l(status);
+  const snapshot: SyncStatus = { ...status };
+  for (const l of listeners) l(snapshot);
 }
 export function subscribeSync(l: Listener): () => void {
   listeners.add(l);
-  l(status);
+  l({ ...status });
   return () => listeners.delete(l);
 }
 
