@@ -1,6 +1,6 @@
 {
   "name": "@vyora/desktop",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "private": true,
   "description": "Vyora desktop app — Electron shell around the Vyora web app, packaged as a Windows installer (.exe).",
   "main": "electron/main.js",

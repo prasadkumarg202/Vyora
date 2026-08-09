@@ -29,6 +29,22 @@ nsis:
   deleteAppDataOnUninstall: false
   shortcutName: Vyora
 
+  # Both shortcuts, stated rather than inherited. electron-builder does create
+  # them by default for a one-click install, but a default is not a promise —
+  # and a shop that cannot find the app after installing it has, as far as they
+  # are concerned, not installed it. `always` re-creates the desktop icon on
+  # every reinstall, so repairing a broken install also repairs the shortcut.
+  createDesktopShortcut: always
+  createStartMenuShortcut: true
+  # Its own folder in Start, so Vyora is found by name rather than by scrolling
+  # an alphabetical list of everything on the machine.
+  menuCategory: Vyora
+  # A shop should not be choosing an install path. Reinstalling over an
+  # existing copy then repairs it in place, and deleteAppDataOnUninstall above
+  # keeps the offline ledger, so an update never costs them their data.
+  allowToChangeInstallationDirectory: false
+  runAfterFinish: true
+
 # `electron-builder --publish always` uploads the installer to a GitHub
 # Release for the current tag (needs GH_TOKEN in the environment).
 publish:

@@ -106,16 +106,27 @@ export function LoginForm() {
   function handleSend(e?: React.FormEvent) {
     e?.preventDefault();
     setError(null);
+
+    // What was typed decides the channel, not what the toggle happens to say.
+    // Someone who pastes their email address into the mobile field means "mail
+    // me the code" — refusing them because a switch is in the wrong position is
+    // the app being pedantic about its own UI. An "@" cannot appear in an
+    // Indian mobile number, so the test is unambiguous in the other direction
+    // too, and the toggle still governs an empty or half-typed field.
+    const typed = email.trim();
+    const sendVia: "sms" | "email" = typed.includes("@") ? "email" : channel;
+    if (sendVia !== channel) setChannel(sendVia);
+
     startTransition(async () => {
       try {
-        const result = await sendOtp(email, channel);
+        const result = await sendOtp(typed, sendVia);
         if (result.ok) {
           setStep("verify");
           setCooldown(30);
           remember({
             step: "verify",
-            email: channel === "sms" ? email.trim() : email.trim().toLowerCase(),
-            channel,
+            email: sendVia === "sms" ? typed : typed.toLowerCase(),
+            channel: sendVia,
           });
         } else {
           setError(result.error ?? "Could not send the code.");
