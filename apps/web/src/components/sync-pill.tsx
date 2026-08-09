@@ -47,6 +47,10 @@ export function SyncPill() {
     onClick = requestSync;
   }
 
+  // The tooltip carries any error from the last pass, not only ones that
+  // reached the failed state. A pass that timed out, or could not read the
+  // local database, otherwise leaves the pill saying "Synced" — the app being
+  // reassuring instead of honest.
   return (
     <button
       type="button"
@@ -54,7 +58,7 @@ export function SyncPill() {
       disabled={!onClick}
       data-sync-state={!s.online ? "offline" : s.syncing ? "syncing" : s.failed ? "failed" : s.pending ? "pending" : "synced"}
       aria-live="polite"
-      title={s.lastError && s.failed ? s.lastError : undefined}
+      title={s.lastError ?? undefined}
       className="rounded-pill outline-none focus-visible:shadow-focus disabled:cursor-default"
     >
       <Badge tone={tone} dot>

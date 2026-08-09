@@ -544,37 +544,92 @@ async function updateCounts(): Promise<void> {
   await ready();
   let pending = 0;
   for (const d of DESCS) {
-    const row = await get<{ n: number }>(
-      `SELECT COUNT(*) AS n FROM ${d.local} WHERE dirty = 1 AND deleted_at IS NULL`,
-      [],
-    );
-    pending += row?.n ?? 0;
+    // Per table, not per pass. One table that cannot be counted — a schema that
+    // has moved on, a worker that answered badly — used to abort the whole
+    // tally, and because this ran outside the try below it wedged the runner.
+    try {
+      const row = await get<{ n: number }>(
+        `SELECT COUNT(*) AS n FROM ${d.local} WHERE dirty = 1 AND deleted_at IS NULL`,
+        [],
+      );
+      pending += row?.n ?? 0;
+    } catch {
+      // A count is a number on a badge. It is never worth stopping sync for.
+    }
   }
   status.pending = pending;
   status.failed = [...retry.values()].filter((r) => r.attempts >= MAX_ATTEMPTS).length;
   status.online = typeof navigator !== "undefined" ? navigator.onLine : true;
 }
 
+/**
+ * A pass that never finishes must not mean a runner that never runs again.
+ *
+ * `flushing` is the re-entry guard, so whatever happens it has to be cleared —
+ * and the only way to guarantee that is a `finally`. Without one, a throw
+ * anywhere after the old try block left `flushing` true and `syncing` true for
+ * the life of the tab: the pill sat on "Syncing…" forever and every later
+ * trigger returned at the guard on the first line. That is the bug this
+ * function existed to cause.
+ */
+const FLUSH_TIMEOUT_MS = 60_000;
+
+function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const t = setTimeout(
+      () => reject(new Error(`sync timed out after ${Math.round(ms / 1000)}s`)),
+      ms,
+    );
+    p.then(
+      (v) => {
+        clearTimeout(t);
+        resolve(v);
+      },
+      (e: unknown) => {
+        clearTimeout(t);
+        reject(e as Error);
+      },
+    );
+  });
+}
+
 async function runFlush(): Promise<void> {
   if (flushing) return;
+
   if (typeof navigator !== "undefined" && !navigator.onLine) {
-    await updateCounts();
+    try {
+      await updateCounts();
+    } catch {
+      // Offline is not the moment to care why a count failed.
+    }
     emit();
     return;
   }
+
   flushing = true;
   status.syncing = true;
+  // Each pass reports its own outcome. Carrying an error across a later clean
+  // pass would leave the pill accusing a problem that has already been fixed.
+  // `delete` rather than `= undefined`: exactOptionalPropertyTypes is on.
+  delete status.lastError;
   emit();
   try {
-    await flushOnce();
+    // A hung request is indistinguishable from a slow one until it is not.
+    // The timeout turns "wedged forever" into "failed, try again in 30s".
+    await withTimeout(flushOnce(), FLUSH_TIMEOUT_MS);
   } catch (err) {
     status.lastError = (err as Error).message;
+  } finally {
+    try {
+      await updateCounts();
+    } catch (err) {
+      status.lastError = (err as Error).message;
+    }
+    status.syncing = false;
+    status.lastSyncedAt = Date.now();
+    flushing = false;
+    emit();
   }
-  await updateCounts();
-  status.syncing = false;
-  status.lastSyncedAt = Date.now();
-  flushing = false;
-  emit();
 }
 
 /** Manual "retry now": clear backoff on failed rows and flush immediately. */

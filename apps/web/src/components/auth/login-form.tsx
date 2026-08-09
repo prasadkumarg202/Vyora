@@ -18,6 +18,22 @@ type Step = "identify" | "verify";
  */
 const PENDING_KEY = "vyora.login.pending";
 
+/**
+ * How long a code actually lasts, per channel.
+ *
+ * These are NOT ours to decide — they mirror two settings that live outside the
+ * codebase: the SMS template's own wording and Supabase's OTP expiry for each
+ * provider. They are named here so the promise is made in exactly one place. It
+ * was previously a "5 minutes" buried in the JSX while the SMS said three, which
+ * is how a shopkeeper ends up staring at a code the app swore was still good.
+ *
+ * Change one of these only together with the matching dashboard setting:
+ *   SMS   — Authentication → Sign In / Providers → Phone → SMS message + OTP expiry
+ *   Email — Authentication → Sign In / Providers → Email → Email OTP expiration
+ */
+const SMS_OTP_MINUTES = 3;
+const EMAIL_OTP_MINUTES = 5;
+
 interface Pending {
   step: Step;
   /** The mobile number or email address the code went to. */
@@ -231,8 +247,8 @@ export function LoginForm() {
           <div className="flex flex-col gap-1">
             <span className="text-body font-medium">Enter the code</span>
             <span className="text-body text-content-muted">
-              Sent to {channel === "sms" ? `+91 ${email}` : email}. It expires in 5
-              minutes.
+              Sent to {channel === "sms" ? `+91 ${email}` : email}. It expires in{" "}
+              {channel === "sms" ? SMS_OTP_MINUTES : EMAIL_OTP_MINUTES} minutes.
             </span>
             <button
               type="button"
