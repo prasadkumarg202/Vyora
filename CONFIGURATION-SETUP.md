@@ -206,18 +206,39 @@ If you rotate keys here, update Cloudflare (§3) and rebuild.
 
 ### 4.2 Authentication → Providers
 
-Vyora signs in **one way only**: email, one-time code. `lib/auth/actions.ts`
-calls `signInWithOtp` with `shouldCreateUser: true`, so the same flow both
-registers and signs in — there is no separate sign-up form.
+Vyora signs in **mobile-first, with email as the fallback**. `lib/auth/actions.ts`
+calls `signInWithOtp` with `shouldCreateUser: true` on whichever channel is
+asked for, so the same flow both registers and signs in — there is no separate
+sign-up form. The login screen picks the channel from what was typed: an entry
+containing `@` goes by email, anything else is normalised to E.164 (`+91` plus
+ten digits starting 6–9) and goes by SMS. **Both providers must be enabled**,
+or half your users cannot get in.
 
-- **Email** — enabled. This is the only provider the app uses.
+- **Phone** — enabled, and the primary path.
+  - *SMS provider* — Twilio. Needs the **Account SID** (starts `AC…`), its
+    **Auth Token**, and a **Messaging Service SID** (`MG…`) belonging to the
+    same account. An API Key SID (`SK…`) in the Account SID field, or a
+    messaging service living in a different subaccount, both fail with Twilio
+    error **20003 — Permission Denied**, which appears in the Supabase auth log
+    as `422 sms_send_failed`. Verify a pair before trusting it:
+    `curl -X GET "https://api.twilio.com/2010-04-01/Accounts/ACxxxx.json" -u ACxxxx:auth_token`
+  - *Enable phone confirmations* — on.
+  - *SMS OTP expiry* — must agree with `SMS_OTP_MINUTES` in
+    `components/auth/login-form.tsx` (currently **3**) and with the wording of
+    the SMS template. Three places, one promise.
+  - *Test Phone Numbers and OTPs* — **empty in production.** Any number listed
+    here never receives a real message; Supabase accepts the fixed code you
+    registered instead. It is the usual reason for "SMS is configured but
+    nothing arrives".
+  - India: delivery to Indian numbers also requires **DLT registration** of the
+    sender ID and template on the Twilio account. A DLT problem is a delivery
+    error, not a 20003 — fix authentication first, then look at delivery.
+- **Email** — enabled, as the fallback behind "No SMS? Use your email instead".
   - *Confirm email* — on. First-time users get the Confirm-signup template.
-  - *Email OTP Expiration* — default 3600s. Anything above 86400 is rejected
-    by Supabase as a brute-force risk. The UI tells the user "expires in 5
-    minutes", so consider setting 300 to match what the screen promises.
+  - *Email OTP Expiration* — default 3600s; above 86400 Supabase rejects it as a
+    brute-force risk. Must agree with `EMAIL_OTP_MINUTES` in `login-form.tsx`
+    (currently **5**), so set 300 unless you change the constant.
   - *Secure email change* — leave on.
-- **Phone** — off. No SMS provider is wired up, and turning it on without one
-  produces sign-in attempts that fail silently.
 - **Google / GitHub / any OAuth** — off. Nothing in the app calls
   `signInWithOAuth`. If you enable one later you must also add its callback to
   the redirect allow list in §4.3, and add a button — the provider being
@@ -269,14 +290,54 @@ Supabase's built-in mailer is rate-limited and not for production volume. Once
 you have real users, configure a custom SMTP sender under Project Settings →
 Authentication → SMTP, or codes will start silently not arriving.
 
+### 4.4b Authentication → Phone → SMS message
+
+The SMS template is separate from the email ones and uses a different
+placeholder: `{{ .Code }}`, not `{{ .Token }}`. Keep it short — one segment —
+and keep the stated validity in step with the OTP expiry and with
+`SMS_OTP_MINUTES`:
+
+```
+{{ .Code }} is your Vyora code. Valid 3 minutes.
+```
+
 ### 4.5 Database
 
-Migrations live in `supabase/`. A new project needs them applied before the app
-will work, along with the row-level security policies — without RLS the anon
-key really would be a hole.
+Migrations live in `supabase/migrations/`. A new project needs them applied
+before the app will work, along with the row-level security policies — without
+RLS the anon key really would be a hole.
+
+**Apply them with the CLI, not by pasting into the SQL editor.** Pasting works
+once and then leaves `supabase_migrations.schema_migrations` empty, so the
+project has a schema nobody is tracking: the next migration is silently never
+applied, and the first symptom is a runtime error like *"Could not find the
+function public.create_workspace_profile … in the schema cache"* — the function
+exists in the repo and not in the database.
+
+```bash
+supabase link --project-ref <ref>
+supabase db push
+```
+
+If a project has drifted this way, tell the history what is already applied
+rather than re-running it:
+
+```bash
+supabase migration repair --status applied <version>   # one per applied file
+```
+
+**Run the security advisor after any migration that adds a function.** Supabase
+grants `EXECUTE` on every new function in `public` to `anon` and `authenticated`
+through default privileges, and `REVOKE ... FROM public` does *not* remove those
+role grants. That is how `apply_subscription` — the function that moves a
+workspace onto a paid plan — ended up callable from any signed-in browser at
+`/rest/v1/rpc/apply_subscription`. Migrations `20260809104855` and
+`20260809105218` close it; the pattern to copy is
+`revoke all on function ... from anon, authenticated, public`, plus
+`set search_path = ''` on anything `security definer`.
 
 **If you move to a different Supabase project**, update the three variables in
-§3, re-run the migrations, and redo §4.2 through §4.4 on the new project. None
+§3, re-run the migrations, and redo §4.2 through §4.4b on the new project. None
 of it carries over.
 
 ---
@@ -298,6 +359,22 @@ git tag v0.1.5 && git push origin v0.1.5
 Verify at `https://github.com/<owner>/<repo>/releases` that the new tag is
 marked **Latest** and carries `Vyora-Setup.exe` dated today. A green workflow
 alone is not proof.
+
+**Shortcuts.** `electron-builder.yml` states `createDesktopShortcut: always`,
+`createStartMenuShortcut: true` and `menuCategory: Vyora`, rather than relying
+on the one-click defaults. A shop that cannot find the app after installing it
+has, as far as they are concerned, not installed it.
+
+**The installer is not code-signed.** Windows and Chrome treat an unsigned
+`.exe` from a publisher with no reputation as suspect: the download parks itself
+as `Unconfirmed NNNNNN.crdownload` until the user clicks *Keep*, and running it
+raises SmartScreen's "Windows protected your PC". Nothing is wrong with the
+build — this is the absence of a certificate. The fix is an **OV or EV
+code-signing certificate** (EV gets clean SmartScreen treatment immediately; OV
+has to earn reputation first), added as `win.certificateFile` /
+`certificateSubjectName`, or via Azure Trusted Signing, with the credentials in
+GitHub Actions secrets. Until then, expect to lose customers at the download
+step, and say so on the download page.
 
 `releaseType: release` in `electron-builder.yml` publishes immediately.
 Without it electron-builder leaves a draft, and drafts are invisible to
@@ -414,3 +491,81 @@ Type them straight from their source dashboard into Cloudflare's secret field.
 Do not route them through a file, a chat window, a screenshot, or a commit. If
 one is ever exposed, rotate it at the source — changing it in Cloudflare alone
 leaves the exposed key valid.
+
+---
+
+## 10. Sync — what it does, and what it does not
+
+Sync is not configured anywhere: there are no settings, no toggles and no
+"sync now" menu item. It is driven entirely by `apps/web/src/lib/sync/runner.ts`
+and starts when the sync pill mounts in the app header. Knowing its shape saves
+a lot of misdiagnosis.
+
+**How it runs.** Push first, then pull, on four triggers: coming back online,
+the tab regaining focus, a 30-second heartbeat, and on demand — the pill when it
+shows pending or failed, and immediately after a bill is saved. A pass is
+wrapped in a 60-second watchdog and its cleanup sits in a `finally`, so a hung
+request degrades to "try again in 30 seconds" rather than wedging the runner.
+
+**What the pill means.** *Synced*, *Syncing…*, *N pending*, *N failed · retry*,
+*Offline · N to sync*. It is a button whenever there is something to do, and its
+tooltip carries the last pass's error. A row that fails `MAX_ATTEMPTS` times is
+given up on and counted as failed until someone taps retry — it is not retried
+on every heartbeat.
+
+**Scoped to the signed-in workspace.** The push reads the `org_id` claim out of
+the access token and only sends rows matching it. One browser profile keeps one
+local database, so a device that has been signed into a previous workspace still
+holds that workspace's rows; those are not ours to push, RLS would refuse them,
+and without the scope the pill sits on "1 pending" for ever.
+
+**Pull.** Each table keeps a cursor in the local `sync_state` table under
+`pull:<table>`, so the first pass fetches the workspace and later passes fetch
+only what changed. Tables come down parents-first because the local database
+runs with `PRAGMA foreign_keys = ON`. `invoice_items` and `purchase_items` have
+no timestamp column on the server, so they ride down with their parent. A
+locally dirty row is never overwritten — every upsert ends
+`ON CONFLICT(id) DO UPDATE ... WHERE <table>.dirty = 0`.
+
+**Limits, all deliberate and all worth knowing:**
+
+- **Deletes do not propagate**, in either direction. The server tables have no
+  tombstone column, and the push filters on `deleted_at IS NULL`. Delete a bill
+  on one device and every other device keeps it. Fixing this means a migration
+  adding `deleted_at` to the synced tables.
+- **Ten of nineteen tables sync.** Quotations, delivery challans, returns
+  documents and the whole Cash & Bank module do not — and `sale_documents`,
+  `purchase_documents`, `accounts` and `account_entries` have no Supabase table
+  at all, so they could not sync even if they were mapped.
+- **Invoice extras do not travel.** Notes, terms, document discount, additional
+  charges and round-off are stored locally in `custom_fields` but are not in the
+  push mapper, so the cloud copy of a bill has `custom_fields: {}`.
+- **Product categories are dropped on pull** (`category_id` set to null),
+  because `categories` is not in the synced set and the local foreign key would
+  reject the page.
+- **`ROADMAP.md` overstates this.** It lists cloud sync as shipped "with an
+  IndexedDB outbox and conflict engine". `packages/sync/` does contain both,
+  tested — and the runner does not use them. It keeps its own retry map in
+  memory, which resets on reload.
+
+---
+
+## 11. Building and deploying
+
+```powershell
+pnpm turbo run check-types lint build --force
+```
+
+`--force` matters. Turborepo caches aggressively, and a run that reports a
+**full cache hit** after you have edited source files has not compiled your
+changes — it replayed old logs, and deploying afterwards ships the previous
+bundle. If a hit still appears, clear the caches:
+
+```powershell
+Remove-Item -Recurse -Force .turbo, apps\web\.next -ErrorAction SilentlyContinue
+```
+
+Cloudflare builds on push, so `git push` is the deploy. The desktop app is an
+Electron window onto the hosted site, which means **a web deploy updates the
+installed app too** — reinstalling is only needed when the shell itself changes
+(shortcuts, icons, the start URL).

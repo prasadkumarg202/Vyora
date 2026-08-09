@@ -40,7 +40,7 @@ import {
   type InvoiceRow,
   type ProductPick,
 } from "~/lib/db/repository";
-import { requestSync } from "~/lib/sync/runner";
+import { requestSync, subscribeSync } from "~/lib/sync/runner";
 
 /**
  * The Sales till — metadata-driven.
@@ -195,6 +195,25 @@ export function SalesModule({
 
   useEffect(() => {
     void refresh();
+  }, [refresh]);
+
+  // Redraw the list when a sync pass finishes.
+  //
+  // The "Unsynced" chip is read from the row's dirty flag at the moment the
+  // list was loaded. The upload lands a second or two later and clears that
+  // flag in the database, but nothing told the list, so the chip sat there
+  // until a navigation forced a re-read — the bill looked stuck when it had
+  // long since arrived.
+  //
+  // Watching the syncing flag fall from true to false is the cheap, honest
+  // signal: it fires once per pass rather than on every status tick, so this
+  // is one extra query when something actually changed.
+  useEffect(() => {
+    let wasSyncing = false;
+    return subscribeSync((s) => {
+      if (wasSyncing && !s.syncing) void refresh();
+      wasSyncing = s.syncing;
+    });
   }, [refresh]);
 
   const setLineValue = (key: string, fieldKey: string, raw: string) =>
