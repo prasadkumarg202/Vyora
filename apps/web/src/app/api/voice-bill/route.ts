@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { geminiModel } from "~/lib/ai/model";
 import { requireFeature } from "~/lib/billing/guard";
 
 /**
@@ -36,7 +37,9 @@ export async function POST(req: Request): Promise<Response> {
       { status: 400 },
     );
   }
-  const model = process.env.GEMINI_MODEL || "gemini-2.0-flash";
+  // Vision tier: spoken Hindi or Telugu over counter noise, matched against the
+  // shop's own catalogue. Cheapening this shows up as wrong items on real bills.
+  const model = geminiModel("vision");
 
   let body: unknown;
   try {

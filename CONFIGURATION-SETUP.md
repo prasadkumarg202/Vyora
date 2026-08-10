@@ -163,13 +163,29 @@ the app fails with a zod validation error on `/login`.
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Build variable, plaintext | Build | Public; RLS is what protects data |
 | `SUPABASE_SERVICE_ROLE_KEY` | Secret | Runtime | Bypasses RLS. Write-only in the UI once saved |
 | `GEMINI_API_KEY` | Secret | Runtime | Snap Bill OCR, voice billing, the assistant |
-| `GEMINI_MODEL` | Variable, plaintext | Runtime | Optional; overrides the default model |
+| `GEMINI_MODEL` | Variable, plaintext | Runtime | Optional; overrides the default for every route |
+| `GEMINI_MODEL_TEXT` | Variable, plaintext | Runtime | Optional; the assistant and the promo writer. Safe to point at a cheap Lite model |
+| `GEMINI_MODEL_VISION` | Variable, plaintext | Runtime | Optional; Snap Bill OCR and voice billing. Leave on a capable model — see below |
 | `NEXTJS_ENV` | Already in `wrangler.jsonc` | Build | Do not duplicate here |
 
 Razorpay keys (§6) join this list when you go live.
 
 Rule of thumb: changing a `NEXT_PUBLIC_*` value needs a **rebuild**; changing a
 secret takes effect on the next request.
+
+**On the two model variables.** Resolution is most-specific-first:
+`GEMINI_MODEL_TEXT` / `GEMINI_MODEL_VISION` → `GEMINI_MODEL` → the built-in
+default. An environment that sets only `GEMINI_MODEL` keeps working exactly as
+before, and one that sets nothing gets a full Flash rather than a Lite — an
+unconfigured shop should get the safe answer, not the cheap one.
+
+Point `GEMINI_MODEL_TEXT` at whatever is cheapest: the assistant answers from a
+short context in about 120 words, and it is the route that runs on every
+question anyone asks. Leave `GEMINI_MODEL_VISION` on a capable model. Reading a
+crumpled supplier bill under a tube light, and transcribing accented speech over
+counter noise, are the two hardest things this product does — and a wrong number
+out of either does not stay put. It flows into stock, into GST and into the
+margin report, with nothing downstream to reveal that a photograph caused it.
 
 ### 3.4 Custom domain
 
@@ -461,7 +477,9 @@ billing provider runs.
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Client | Yes | Build variable | Publishable key |
 | `SUPABASE_SERVICE_ROLE_KEY` | Server | Yes | Secret | Server routes; bypasses RLS |
 | `GEMINI_API_KEY` | Server | Optional | Secret | `/api/ai`, `/api/ocr`, `/api/voice-bill`, `/api/promo` |
-| `GEMINI_MODEL` | Server | Optional | Variable | Model override |
+| `GEMINI_MODEL` | Server | Optional | Variable | Model override for every route |
+| `GEMINI_MODEL_TEXT` | Server | Optional | Variable | `/api/ai`, `/api/promo` — safe to run cheap |
+| `GEMINI_MODEL_VISION` | Server | Optional | Variable | `/api/ocr`, `/api/voice-bill` — keep capable |
 | `RAZORPAY_KEY_ID` | Server | Optional | Secret | Live billing |
 | `RAZORPAY_KEY_SECRET` | Server | Optional | Secret | Live billing |
 | `RAZORPAY_WEBHOOK_SECRET` | Server | Optional | Secret | Verifies webhook signatures; deliberately separate from the API secret so a leaked webhook secret grants no API access |

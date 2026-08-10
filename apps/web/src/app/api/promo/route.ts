@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { geminiModel } from "~/lib/ai/model";
 import { requireFeature } from "~/lib/billing/guard";
 
 /**
@@ -27,7 +28,8 @@ export async function POST(req: Request): Promise<Response> {
       { status: 400 },
     );
   }
-  const model = process.env.GEMINI_MODEL || "gemini-2.0-flash";
+  // Text: writing a campaign line is the cheapest thing asked of the model.
+  const model = geminiModel("text");
 
   let body: unknown;
   try {

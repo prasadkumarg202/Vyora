@@ -253,6 +253,13 @@ export const NAV_ZONES: readonly NavZone[] = [
     tagline: "Set up and run the business",
     modules: [
       {
+        label: "Staff",
+        href: "/staff",
+        summary:
+          "Attendance, advances and the month's pay — worked out from the days actually marked.",
+        phase: "Phase 7",
+      },
+      {
         label: "Subscriptions",
         href: "/subscriptions",
         summary: "Usage, invoices.",

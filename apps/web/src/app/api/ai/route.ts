@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { geminiModel } from "~/lib/ai/model";
 import { requireFeature } from "~/lib/billing/guard";
 
 /**
@@ -36,7 +37,9 @@ export async function POST(req: Request): Promise<Response> {
       { status: 400 },
     );
   }
-  const model = process.env.GEMINI_MODEL || "gemini-2.0-flash";
+  // Text: the cheap knob. A short context and a 120-word answer do not need a
+  // frontier model, and this is the route that runs on every question asked.
+  const model = geminiModel("text");
 
   let body: unknown;
   try {

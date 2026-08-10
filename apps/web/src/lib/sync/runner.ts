@@ -40,6 +40,22 @@ interface EntityDesc {
   /** Server carries a version column we read back. Child tables do not. */
   hasVersion: boolean;
   map: (r: LocalRow) => Record<string, unknown>;
+  /**
+   * The server columns the upsert resolves a conflict on. Defaults to the
+   * primary key, which is right for every table whose identity *is* its id.
+   *
+   * `staff_attendance` is not one of those. Its real identity is
+   * (staff_id, date) — one mark per person per day, enforced by a unique index —
+   * while its id is minted fresh on whichever device did the marking. Two
+   * devices marking the same morning produce two ids for one fact, and an
+   * upsert on `id` would send the second as an insert, hit the unique index and
+   * fail with 23505 for as long as the row stayed dirty.
+   *
+   * That failure would not have stayed local to payroll: the pull runs one
+   * table after another in a single pass, so a constraint violation here would
+   * have stopped every table after it from syncing at all.
+   */
+  conflictOn?: string;
 }
 
 const paise = (v: unknown): number | null => (v == null ? null : Number(v) / 100);
@@ -70,6 +86,12 @@ const DESCS: EntityDesc[] = [
   { local: "purchase_items", server: "purchase_items", hasVersion: false, map: (r) => ({ id: r.id, org_id: r.org_id, purchase_id: r.purchase_id, product_id: r.product_id, qty: milli(r.qty_milli), rate: paise(r.rate_paise), tax_rate: bpsPct(r.tax_bps), amount: paise(r.amount_paise), meta: metaObj(r.meta) }) },
   { local: "expenses", server: "expenses", hasVersion: true, map: (r) => ({ id: r.id, org_id: r.org_id, category: r.category, amount: paise(r.amount_paise), date: r.date, note: r.note, recurring: r.recurring ? true : false, created_by: r.created_by ?? null, updated_at: r.updated_at }) },
   { local: "stock_movements", server: "stock_movements", hasVersion: false, map: (r) => ({ id: r.id, org_id: r.org_id, product_id: r.product_id, type: r.type, qty_delta: milli(r.qty_milli), ref_type: r.ref_type ?? null, ref_id: r.ref_id ?? null, created_at: r.created_at }) },
+  // Payroll. Unlike every table above, these three store money as integer paise
+  // on the server as well, so no paise() conversion happens on the way out —
+  // running one would divide a wage by a hundred.
+  { local: "staff", server: "staff", hasVersion: true, map: (r) => ({ id: r.id, org_id: r.org_id, name: r.name, phone: r.phone ?? null, role: r.role ?? null, salary_paise: r.salary_paise, is_daily_wage: r.is_daily_wage ? true : false, ot_rate_paise: r.ot_rate_paise ?? null, joined_on: r.joined_on ?? null, left_on: r.left_on ?? null, note: r.note ?? null, updated_at: r.updated_at }) },
+  { local: "staff_attendance", server: "staff_attendance", hasVersion: true, conflictOn: "staff_id,date", map: (r) => ({ org_id: r.org_id, staff_id: r.staff_id, date: r.date, status: r.status, ot_minutes: r.ot_minutes, note: r.note ?? null, updated_at: r.updated_at }) },
+  { local: "staff_advances", server: "staff_advances", hasVersion: true, map: (r) => ({ id: r.id, org_id: r.org_id, staff_id: r.staff_id, kind: r.kind, amount_paise: r.amount_paise, date: r.date, note: r.note ?? null, settle_month: r.settle_month ?? null, created_by: r.created_by ?? null, updated_at: r.updated_at }) },
 ];
 
 // --- Pull: bringing the server's rows down -----------------------------------
@@ -138,6 +160,10 @@ interface PullDesc {
   cursorCol: "updated_at" | "created_at";
   toLocal: (r: ServerRow) => Record<string, Param>;
   children?: ChildDesc[];
+  /** Local conflict target, when the row's identity is not its id. */
+  conflictOn?: string;
+  /** Predicate of the partial unique index that target refers to. */
+  conflictWhere?: string;
 }
 
 const PULLS: PullDesc[] = [
@@ -159,6 +185,73 @@ const PULLS: PullDesc[] = [
       updated_at: iso(r.updated_at),
       dirty: 0,
       deleted_at: null,
+    }),
+  },
+  // Payroll pulls. `deleted_at` is carried down rather than forced to null:
+  // these three server tables have the column the older ones lack, so a staff
+  // member removed on the phone can actually disappear from the PC. Every
+  // descriptor above hardcodes null because it has nowhere to read one from.
+  {
+    local: "staff",
+    server: "staff",
+    cursorCol: "updated_at",
+    toLocal: (r) => ({
+      id: String(r.id),
+      name: String(r.name ?? ""),
+      phone: text(r.phone),
+      role: text(r.role),
+      salary_paise: Number(r.salary_paise ?? 0),
+      is_daily_wage: r.is_daily_wage ? 1 : 0,
+      ot_rate_paise: r.ot_rate_paise == null ? null : Number(r.ot_rate_paise),
+      joined_on: text(r.joined_on),
+      left_on: text(r.left_on),
+      note: text(r.note),
+      org_id: String(r.org_id),
+      version: Number(r.version ?? 0),
+      updated_at: iso(r.updated_at),
+      dirty: 0,
+      deleted_at: text(r.deleted_at),
+    }),
+  },
+  {
+    local: "staff_attendance",
+    server: "staff_attendance",
+    cursorCol: "updated_at",
+    // One mark per person per day, whichever device made it. See upsertSql.
+    conflictOn: "staff_id,date",
+    conflictWhere: "deleted_at IS NULL",
+    toLocal: (r) => ({
+      id: String(r.id),
+      staff_id: String(r.staff_id),
+      date: String(r.date),
+      status: String(r.status ?? "present"),
+      ot_minutes: Number(r.ot_minutes ?? 0),
+      note: text(r.note),
+      org_id: String(r.org_id),
+      version: Number(r.version ?? 0),
+      updated_at: iso(r.updated_at),
+      dirty: 0,
+      deleted_at: text(r.deleted_at),
+    }),
+  },
+  {
+    local: "staff_advances",
+    server: "staff_advances",
+    cursorCol: "updated_at",
+    toLocal: (r) => ({
+      id: String(r.id),
+      staff_id: String(r.staff_id),
+      kind: String(r.kind ?? "advance"),
+      amount_paise: Number(r.amount_paise ?? 0),
+      date: String(r.date),
+      note: text(r.note),
+      settle_month: text(r.settle_month),
+      created_by: text(r.created_by),
+      org_id: String(r.org_id),
+      version: Number(r.version ?? 0),
+      updated_at: iso(r.updated_at),
+      dirty: 0,
+      deleted_at: text(r.deleted_at),
     }),
   },
   {
@@ -390,20 +483,46 @@ async function cursorSet(table: string, value: string): Promise<void> {
  * The WHERE is the whole safety story: an existing row that this device has
  * edited and not yet pushed is left exactly as it is.
  */
-function upsertSql(table: string, row: Record<string, Param>): {
+function upsertSql(
+  table: string,
+  row: Record<string, Param>,
+  /**
+   * The local columns the conflict resolves on. Defaults to the primary key.
+   *
+   * `staff_attendance` overrides it, because a mark made on another device
+   * arrives carrying that device's id while the local row for the same person
+   * and day has its own. Conflicting on `id` would miss, the insert would then
+   * violate the (staff_id, date) unique index, and — since a page is applied as
+   * one transaction — the throw would abort the rest of the pull, stopping every
+   * table queued behind it.
+   */
+  conflictOn = "id",
+  /**
+   * The predicate of a PARTIAL unique index, when the conflict target is one.
+   *
+   * SQLite will not match `ON CONFLICT(staff_id, date)` against an index
+   * declared `... WHERE deleted_at IS NULL` unless the statement repeats that
+   * predicate. Omit it and the upsert does not resolve — it raises the
+   * constraint error it was written to avoid.
+   */
+  conflictWhere?: string,
+): {
   sql: string;
   params: Param[];
 } {
   const cols = Object.keys(row);
+  const keyCols = conflictOn.split(",").map((c) => c.trim());
   const setters = cols
-    .filter((c) => c !== "id")
+    .filter((c) => !keyCols.includes(c))
     .map((c) => `${c} = excluded.${c}`)
     .join(", ");
+  const target =
+    `(${keyCols.join(", ")})` + (conflictWhere ? ` WHERE ${conflictWhere}` : "");
   return {
     sql:
       `INSERT INTO ${table} (${cols.join(", ")}) ` +
       `VALUES (${cols.map(() => "?").join(", ")}) ` +
-      `ON CONFLICT(id) DO UPDATE SET ${setters} WHERE ${table}.dirty = 0`,
+      `ON CONFLICT${target} DO UPDATE SET ${setters} WHERE ${table}.dirty = 0`,
     params: cols.map((c) => row[c] ?? null),
   };
 }
@@ -412,8 +531,33 @@ type Client = ReturnType<typeof createClient>;
 
 async function pullOnce(supabase: Client): Promise<number> {
   let received = 0;
+  /**
+   * The first table to fail, rethrown once every other table has had its turn.
+   *
+   * Previously one throw ended the whole pass, so a single constraint violation
+   * on one table stopped every table queued behind it from pulling — and the
+   * only outward sign was a line in lastError. A shop would have seen invoices
+   * stop arriving on the second device because of a problem in an unrelated
+   * table. Each descriptor now fails alone; the pass still reports the failure.
+   */
+  let firstError: Error | null = null;
 
   for (const d of PULLS) {
+    try {
+      received += await pullTable(supabase, d);
+    } catch (err) {
+      firstError ??= err as Error;
+    }
+  }
+
+  if (firstError) throw firstError;
+  return received;
+}
+
+async function pullTable(supabase: Client, d: PullDesc): Promise<number> {
+  let received = 0;
+
+  {
     const since = await cursorGet(d.local);
     const { data, error } = await supabase
       .from(d.server)
@@ -424,11 +568,15 @@ async function pullOnce(supabase: Client): Promise<number> {
     if (error) throw new Error(`pull ${d.server}: ${error.message}`);
 
     const rows = (data ?? []) as ServerRow[];
-    if (rows.length === 0) continue;
+    if (rows.length === 0) return received;
 
     // One transaction per page: either the whole page lands or none of it does,
     // and the cursor only moves after it has.
-    await batch(rows.map((r) => upsertSql(d.local, d.toLocal(r))));
+    await batch(
+      rows.map((r) =>
+        upsertSql(d.local, d.toLocal(r), d.conflictOn, d.conflictWhere),
+      ),
+    );
     received += rows.length;
 
     for (const child of d.children ?? []) {
@@ -562,10 +710,11 @@ async function flushOnce(): Promise<void> {
 
       try {
         const payload = d.map(row);
+        const onConflict = d.conflictOn ?? "id";
         if (d.hasVersion) {
           const { data, error } = await supabase
             .from(d.server)
-            .upsert(payload, { onConflict: "id" })
+            .upsert(payload, { onConflict })
             .select("version")
             .single();
           if (error) throw new Error(error.message);
@@ -574,7 +723,7 @@ async function flushOnce(): Promise<void> {
             id,
           ]);
         } else {
-          const { error } = await supabase.from(d.server).upsert(payload, { onConflict: "id" });
+          const { error } = await supabase.from(d.server).upsert(payload, { onConflict });
           if (error) throw new Error(error.message);
           await run(`UPDATE ${d.local} SET dirty = 0 WHERE id = ?`, [id]);
         }

@@ -434,6 +434,99 @@ CREATE INDEX IF NOT EXISTS account_entries_chq_idx ON account_entries(org_id, ch
 CREATE INDEX IF NOT EXISTS payments_account_idx    ON payments(org_id, account_id) WHERE account_id IS NOT NULL;
 `;
 
+/**
+ * Migration 8 — staff, attendance and advances.
+ *
+ * The register a shop already keeps, in the database instead of a notebook.
+ * Three tables, because they answer three different questions and change at
+ * three different rates: who works here, who came in today, and who has taken
+ * money against next month's wage.
+ *
+ * Design notes worth stating, because each was a choice:
+ *
+ * `staff` is deliberately NOT `org_members`. A member is someone who logs into
+ * Vyora; a staff member is someone the shop pays. The helper who never touches
+ * the till still needs a wage and an attendance row, and the accountant who logs
+ * in from home may be on contract and not on the payroll at all. Conflating them
+ * would mean inventing a login for a delivery boy.
+ *
+ * Attendance is one row per staff member per day, with a UNIQUE index doing the
+ * work. Marking someone present twice is the single most likely thing to happen
+ * at a counter — two people with the app open, or one person unsure whether they
+ * already did it — and the constraint makes the second mark an update rather
+ * than a duplicate day.
+ *
+ * Salary is stored as a monthly figure in paise and divided by the days actually
+ * worked. Nothing is stored per-month as a computed total: a payslip is derived
+ * from attendance every time it is opened, so correcting a wrongly-marked day
+ * corrects the slip instead of leaving a stale number behind it.
+ *
+ * There is no PF, ESI, professional tax or TDS column here, on purpose. Those
+ * apply above employee-count and wage thresholds a two-to-ten person shop is
+ * under, they vary by state, and they change with the finance act. Putting them
+ * in now would be four columns of nulls and an implied promise this does not
+ * keep.
+ */
+const MIGRATION_8 = `
+CREATE TABLE IF NOT EXISTS staff (
+  id             TEXT PRIMARY KEY,
+  name           TEXT NOT NULL,
+  phone          TEXT,
+  role           TEXT,
+  -- The agreed wage for a full month, in paise. A day's wage is derived from
+  -- this and the month's working days, never stored.
+  salary_paise   INTEGER NOT NULL DEFAULT 0,
+  -- Paid per day rather than per month: common for helpers and casual labour.
+  is_daily_wage  INTEGER NOT NULL DEFAULT 0,
+  -- Overtime rate per hour, in paise. Null means overtime is unpaid, which is
+  -- its own answer and not the same as zero.
+  ot_rate_paise  INTEGER,
+  joined_on      TEXT,
+  -- Set when someone leaves. They stay in the table because last month's
+  -- payslip and this year's totals must still be readable.
+  left_on        TEXT,
+  note           TEXT,
+  ${SYNC_COLUMNS}
+);
+
+CREATE TABLE IF NOT EXISTS staff_attendance (
+  id           TEXT PRIMARY KEY,
+  staff_id     TEXT NOT NULL REFERENCES staff(id),
+  date         TEXT NOT NULL,
+  -- present | absent | half_day | leave | holiday
+  status       TEXT NOT NULL DEFAULT 'present',
+  -- Overtime in minutes, so a half-hour is an integer here too.
+  ot_minutes   INTEGER NOT NULL DEFAULT 0,
+  note         TEXT,
+  ${SYNC_COLUMNS}
+);
+
+CREATE TABLE IF NOT EXISTS staff_advances (
+  id           TEXT PRIMARY KEY,
+  staff_id     TEXT NOT NULL REFERENCES staff(id),
+  -- advance | loan | deduction | bonus
+  kind         TEXT NOT NULL DEFAULT 'advance',
+  amount_paise INTEGER NOT NULL,
+  date         TEXT NOT NULL,
+  note         TEXT,
+  -- The salary month this settles against, as YYYY-MM. Null means "the month it
+  -- was taken", which is what a shopkeeper means by an advance.
+  settle_month TEXT,
+  created_by   TEXT,
+  ${SYNC_COLUMNS}
+);
+
+CREATE INDEX IF NOT EXISTS staff_org_idx           ON staff(org_id, deleted_at);
+CREATE INDEX IF NOT EXISTS staff_att_month_idx     ON staff_attendance(org_id, date, deleted_at);
+CREATE INDEX IF NOT EXISTS staff_att_person_idx    ON staff_attendance(org_id, staff_id, date);
+CREATE INDEX IF NOT EXISTS staff_adv_person_idx    ON staff_advances(org_id, staff_id, date, deleted_at);
+
+-- One mark per person per day. Partial, so a tombstoned row does not block
+-- re-marking a day that was deleted by mistake.
+CREATE UNIQUE INDEX IF NOT EXISTS staff_att_unique_idx
+  ON staff_attendance(staff_id, date) WHERE deleted_at IS NULL;
+`;
+
 /** Append-only. Index = version - 1. */
 export const MIGRATIONS: readonly string[] = [
   MIGRATION_1,
@@ -443,6 +536,7 @@ export const MIGRATIONS: readonly string[] = [
   MIGRATION_5,
   MIGRATION_6,
   MIGRATION_7,
+  MIGRATION_8,
 ];
 
 /** Tables that sync. sync_state is local-only and deliberately absent. */
@@ -466,6 +560,9 @@ export const SYNCED_TABLES = [
   "purchase_document_items",
   "accounts",
   "account_entries",
+  "staff",
+  "staff_attendance",
+  "staff_advances",
 ] as const;
 
 export type SyncedTable = (typeof SYNCED_TABLES)[number];

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { geminiModel } from "~/lib/ai/model";
 import { requireFeature } from "~/lib/billing/guard";
 
 /**
@@ -31,7 +32,10 @@ export async function POST(req: Request): Promise<Response> {
       { status: 400 },
     );
   }
-  const model = process.env.GEMINI_MODEL || "gemini-2.0-flash";
+  // Vision: deliberately NOT the cheap model. A misread amount here becomes a
+  // wrong purchase, wrong stock and wrong input credit, and nothing downstream
+  // reveals that a photograph was the cause.
+  const model = geminiModel("vision");
 
   let body: unknown;
   try {
