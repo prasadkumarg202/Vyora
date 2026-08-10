@@ -16,5 +16,11 @@ export default async function MarketingPage() {
   const { allowed } = await checkFeature(ctx.orgId, "marketing");
   if (!allowed) return <UpgradeGate feature="marketing" />;
 
-  return <MarketingModule orgId={ctx.orgId} userId={ctx.userId} />;
+  return (
+    <MarketingModule
+      orgId={ctx.orgId}
+      userId={ctx.userId}
+      config={ctx.config}
+    />
+  );
 }

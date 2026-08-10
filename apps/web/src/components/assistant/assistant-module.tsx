@@ -8,6 +8,7 @@ import {
 import { Badge, Button, Card, Input } from "@vyora/ui";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { suggestedQuestions } from "~/components/assistant/assistant-questions";
 import {
   expensesSummary,
   gstSummary,
@@ -45,14 +46,6 @@ interface Msg {
   text: string;
 }
 
-const SUGGESTIONS = [
-  "How are my sales today?",
-  "Who should I chase for payment?",
-  "How can I lower my GST?",
-  "What's stuck in dead stock?",
-  "Give me 3 ideas to sell more",
-] as const;
-
 function ymd(d: Date): string {
   const m = String(d.getMonth() + 1).padStart(2, "0");
   const day = String(d.getDate()).padStart(2, "0");
@@ -86,10 +79,17 @@ export function AssistantModule({
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [aiOn, setAiOn] = useState(false);
-  const [msgs, setMsgs] = useState<Msg[]>([
+  // Names the trade in the greeting. A Medical Store owner opening a panel that
+  // says "your shop" is being spoken to by software; one that says "your medical
+  // store" is being spoken to by something that knows what they sell.
+  const [msgs, setMsgs] = useState<Msg[]>(() => [
     {
       role: "assistant",
-      text: "Hi! I'm your Vyora copilot. Ask me anything about your shop — sales, GST, who owes you, what to stock, ideas to grow. Online I use AI on your live numbers; offline I still answer the essentials.",
+      text:
+        `Hi! I'm your Vyora copilot. Ask me anything about your ${
+          config ? config.label.toLowerCase() : "shop"
+        } — sales, GST, who owes you, what to stock, ideas to grow. ` +
+        "Online I use AI on your live numbers; offline I still answer the essentials.",
     },
   ]);
   const listRef = useRef<HTMLDivElement>(null);
@@ -122,6 +122,9 @@ export function AssistantModule({
   }, [msgs, busy]);
 
   const offline = useMemo(() => makeAnswerer(snap), [snap]);
+
+  /** The chips, chosen from the fields this trade actually declares. */
+  const suggestions = useMemo(() => suggestedQuestions(config), [config]);
 
   async function ask(qRaw: string) {
     const q = qRaw.trim();
@@ -201,7 +204,7 @@ export function AssistantModule({
         </div>
 
         <div className="flex flex-wrap gap-2">
-          {SUGGESTIONS.map((s) => (
+          {suggestions.map((s) => (
             <button
               key={s}
               onClick={() => ask(s)}
