@@ -4,6 +4,7 @@ import {
   coerceRecord,
   computeDocument,
   formatPaise,
+  gstinStateCode,
   paiseToRupees,
   resolveFields,
   rupeesToPaise,
@@ -27,10 +28,15 @@ import {
 } from "react";
 
 import {
+  InvoiceActions,
+  type DraftBill,
+} from "~/components/sales/invoice-actions";
+import {
   InvoiceExtras,
   emptyExtras,
   type Extras,
 } from "~/components/sales/invoice-extras";
+import { PartyPicker, type Party } from "~/components/sales/party-picker";
 import { QuickKeys } from "~/components/sales/quick-keys";
 import {
   listInvoices,
@@ -87,6 +93,93 @@ interface FieldPlan {
   hasQty: boolean;
   hasGst: boolean;
   hasRate: boolean;
+}
+
+/**
+ * The columns every trade bills on, and how wide each sits in a 12-column row.
+ *
+ * These five are the ones a bill is unreadable without — what, how many, for how
+ * much, at what tax. Every other field a vertical declares (a chemist's batch and
+ * expiry, a jeweller's purity and HUID) is real but not scannable at a glance, so
+ * it moves into the row's expander instead of forcing a horizontal scroll on the
+ * shopkeeper who only ever sells one thing per line.
+ *
+ * Nothing here is hardcoded per trade: this is a set of *keys*, and a vertical
+ * that declares none of them simply gets an item name and an amount.
+ */
+const PRIMARY_SPAN: Record<string, number> = {
+  item_name: 4,
+  hsn: 1,
+  qty: 1,
+  rate: 2,
+  gst: 1,
+};
+
+/** The row's fixed columns: a serial number and the computed line amount. */
+const SERIAL_SPAN = 1;
+const AMOUNT_SPAN = 2;
+const FLEX_SPAN = 12 - SERIAL_SPAN - AMOUNT_SPAN;
+
+/**
+ * Tailwind scans source for whole class names, so a computed `col-span-${n}`
+ * would never be generated. Spelled out.
+ */
+const COL_SPAN: Record<number, string> = {
+  1: "col-span-1",
+  2: "col-span-2",
+  3: "col-span-3",
+  4: "col-span-4",
+  5: "col-span-5",
+  6: "col-span-6",
+  7: "col-span-7",
+  8: "col-span-8",
+  9: "col-span-9",
+};
+
+/**
+ * The same spans at the `lg` breakpoint, where the row becomes a 12-column
+ * grid. Below it every cell is full width and stacks, which is the only way the
+ * chemist's row stays readable on a phone.
+ */
+const LG_COL_SPAN: Record<number, string> = {
+  1: "lg:col-span-1",
+  2: "lg:col-span-2",
+  3: "lg:col-span-3",
+  4: "lg:col-span-4",
+  5: "lg:col-span-5",
+  6: "lg:col-span-6",
+  7: "lg:col-span-7",
+  8: "lg:col-span-8",
+  9: "lg:col-span-9",
+};
+
+interface RowLayout {
+  primary: { field: FieldDef; span: number }[];
+  extra: FieldDef[];
+}
+
+/**
+ * Splits a vertical's fields into the columns shown on the row and the ones
+ * behind the expander, then hands any unused width to the item name — a grocery
+ * with no HSN box gets a wider name column rather than a gap.
+ */
+function rowLayout(plan: FieldPlan): RowLayout {
+  const primaryFields = plan.fields.filter(
+    (f) => PRIMARY_SPAN[f.key] !== undefined,
+  );
+  const extra = plan.fields.filter((f) => PRIMARY_SPAN[f.key] === undefined);
+
+  const used = primaryFields.reduce((n, f) => n + (PRIMARY_SPAN[f.key] ?? 0), 0);
+  const slack = Math.max(0, FLEX_SPAN - used);
+
+  const primary = primaryFields.map((field) => {
+    const base = PRIMARY_SPAN[field.key] ?? 1;
+    return {
+      field,
+      span: field.key === "item_name" ? Math.min(9, base + slack) : base,
+    };
+  });
+  return { primary, extra };
 }
 
 /**
@@ -184,6 +277,24 @@ export function SalesModule({
   const [invoices, setInvoices] = useState<InvoiceRow[] | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  /** Who the bill is for. Null is a walk-in, which is the common counter sale. */
+  const [party, setParty] = useState<Party | null>(null);
+
+  /**
+   * The invoice this draft became once saved, held so the send actions have a
+   * real number and id to work with. Cleared the moment the shopkeeper starts
+   * changing the bill again — the alternative is a WhatsApp button that sends
+   * yesterday's invoice because nothing reset it.
+   */
+  const [saved, setSaved] = useState<{ id: string; number: string } | null>(
+    null,
+  );
+
+  /** Rows whose vertical-specific fields are open. */
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+
+  const layout = useMemo(() => (plan ? rowLayout(plan) : null), [plan]);
 
   const refresh = useCallback(async () => {
     try {
@@ -322,7 +433,14 @@ export function SalesModule({
             charges: extras.charges,
             ctx: {
               supplierStateCode,
-              placeOfSupplyStateCode: supplierStateCode, // intra-state until customer capture
+              // Read from the buyer's GSTIN, whose first two digits are their
+              // state of registration. An unregistered walk-in has no GSTIN and
+              // no state to read, and a counter sale is supplied where the
+              // counter is — so the shop's own state is the right fallback, not
+              // a guess.
+              placeOfSupplyStateCode:
+                (party?.gstin ? gstinStateCode(party.gstin) : null) ??
+                supplierStateCode,
               roundOff: extras.roundOff,
             },
           })
@@ -338,7 +456,7 @@ export function SalesModule({
     const byKey = new Map<string, TaxBreakup["lines"][number]>();
     if (tax) active.forEach((l, i) => byKey.set(l.key, tax.lines[i]!));
     return { active, tax, doc, byKey };
-  }, [config, plan, lines, supplierStateCode, extras]);
+  }, [config, plan, lines, supplierStateCode, extras, party]);
 
   async function handleSave() {
     if (!config || !plan || !calc?.tax || calc.active.length === 0) return;
@@ -378,6 +496,9 @@ export function SalesModule({
         number,
         date: today,
         createdBy: userId,
+        // Null for a walk-in. Carrying it is what lets the bill be sent, and
+        // what the place-of-supply split above was computed from.
+        ...(party ? { customerId: party.id } : {}),
         // The document-level facts ride in custom_fields rather than in new
         // columns: they are per-invoice text and money that nothing queries
         // on, and a column apiece would mean a migration on both the local
@@ -413,11 +534,14 @@ export function SalesModule({
         })),
       });
 
-      setLines([blankLine(config, plan)]);
-      setProductByLine({});
-      // Notes, discount and charges are per-bill; the shop's standing terms
-      // are not, so they survive into the next invoice.
-      setExtras((e) => ({ ...e, notes: "", discount: null, charges: [] }));
+      // The bill deliberately stays on screen instead of clearing.
+      //
+      // It has only just become sendable — it now has a number and an id — and
+      // wiping it here would leave Preview showing an empty sheet and WhatsApp
+      // quoting a bill nobody can see. The editor locks instead (there is no
+      // update path, so a second Save would write a second invoice), and
+      // "New bill" is the explicit way on to the next customer.
+      setSaved({ id, number });
       await refresh();
 
       // Push it now rather than waiting out the 30-second heartbeat.
@@ -434,7 +558,54 @@ export function SalesModule({
     }
   }
 
-  const canSave = !!calc?.tax && (calc?.active.length ?? 0) > 0 && !saving;
+  const canSave =
+    !!calc?.tax && (calc?.active.length ?? 0) > 0 && !saving && saved === null;
+
+  /** Clear the counter for the next customer. */
+  function startNewBill() {
+    if (!config || !plan) return;
+    setLines([blankLine(config, plan)]);
+    setProductByLine({});
+    setParty(null);
+    setSaved(null);
+    setExpanded({});
+    setError(null);
+    // Notes, discount and charges are per-bill; the shop's standing terms are
+    // not, so they survive into the next invoice.
+    setExtras((e) => ({ ...e, notes: "", discount: null, charges: [] }));
+  }
+
+  /**
+   * The bill as Preview and the send actions need it — the same figures the
+   * totals block is showing, so what the customer receives cannot disagree with
+   * what the shopkeeper just read on screen.
+   */
+  const draftBill: DraftBill = useMemo(() => {
+    const tax = calc?.tax ?? null;
+    return {
+      number: saved?.number ?? null,
+      date: todayYmd(),
+      party,
+      lines: (calc?.active ?? []).map((l, i) => ({
+        name: (
+          l.values.item_name ||
+          l.values.description ||
+          `Item ${i + 1}`
+        ).trim(),
+        qty: plan ? lineQty(plan, l) : 0,
+        ratePaise: safePaise(l.values.rate),
+        amountPaise: tax?.lines[i]?.totalPaise ?? 0,
+      })),
+      taxablePaise: tax?.taxableValuePaise ?? 0,
+      cgstPaise: tax?.cgstPaise ?? 0,
+      sgstPaise: tax?.sgstPaise ?? 0,
+      igstPaise: tax?.igstPaise ?? 0,
+      discountPaise: calc?.doc?.discountPaise ?? 0,
+      chargesPaise: calc?.doc?.chargesPaise ?? 0,
+      roundOffPaise: tax?.roundOffPaise ?? 0,
+      totalPaise: tax?.grandTotalPaise ?? 0,
+    };
+  }, [calc, party, plan, saved]);
 
   if (!config || !plan) {
     return (
@@ -467,88 +638,205 @@ export function SalesModule({
         {config ? <Badge tone="primary">{config.label}</Badge> : null}
       </div>
 
-      <Card className="flex flex-col gap-4 p-5">
-        <QuickKeys orgId={orgId} onPick={addProductLine} />
-
-        <div className="flex flex-col gap-4">
-          {lines.map((line, i) => {
-            const lineTax = calc?.byKey.get(line.key);
-            return (
-              <div
-                key={line.key}
-                className="rounded-card border border-border p-4"
-                data-testid="sale-line"
-              >
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-                  {plan.fields.map((field) =>
-                    field.key === "item_name" ? (
-                      <ProductPicker
-                        key={field.key}
-                        field={field}
-                        orgId={orgId}
-                        value={line.values[field.key] ?? ""}
-                        linked={Boolean(productByLine[line.key])}
-                        onChange={(raw) => {
-                          setLineValue(line.key, field.key, raw);
-                          detachProduct(line.key);
-                        }}
-                        onPick={(product) => applyProduct(line.key, product)}
-                      />
-                    ) : (
-                      <FieldControl
-                        key={field.key}
-                        field={field}
-                        value={line.values[field.key] ?? ""}
-                        onChange={(raw) =>
-                          setLineValue(line.key, field.key, raw)
-                        }
-                      />
-                    ),
-                  )}
-                </div>
-                <div className="mt-3 flex items-center justify-between border-t border-border pt-3">
-                  <span className="text-caption normal-case text-content-muted">
-                    {lineTax ? (
-                      <>
-                        Line total{" "}
-                        <span className="font-mono text-body text-content">
-                          {formatPaise(lineTax.totalPaise)}
-                        </span>
-                        {lineTax.appliedSlab ? ` · ${lineTax.appliedSlab}` : ""}
-                      </>
-                    ) : (
-                      "Enter rate & qty to price this line"
-                    )}
-                  </span>
-                  {lines.length > 1 ? (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      aria-label={`Remove line ${i + 1}`}
-                      onClick={() => removeLine(line.key)}
-                    >
-                      Remove
-                    </Button>
-                  ) : null}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        <div>
-          <Button variant="outline" size="sm" onClick={addLine}>
-            + Add line
+      {saved ? (
+        <div
+          className="flex flex-wrap items-center justify-between gap-3 rounded-card border border-success-border bg-success-tonal px-4 py-3"
+          data-testid="saved-banner"
+        >
+          <span className="text-body text-content">
+            Invoice <b>{saved.number}</b> saved on this device.
+          </span>
+          <Button variant="outline" size="sm" onClick={startNewBill}>
+            New bill
           </Button>
         </div>
+      ) : null}
 
-        <InvoiceExtras
-          value={extras}
-          onChange={setExtras}
-          grossPaise={calc?.doc?.grossPaise ?? (0 as Paise)}
-          discountPaise={calc?.doc?.discountPaise ?? (0 as Paise)}
-          chargesPaise={calc?.doc?.chargesPaise ?? (0 as Paise)}
+      {/* Locked after saving for the same reason the lines are: the bill has
+          been issued to this party, and swapping them would leave Preview and
+          the send actions describing someone the saved invoice does not name. */}
+      <fieldset
+        disabled={saved !== null}
+        className="border-0 p-0 disabled:opacity-70"
+      >
+        <PartyPicker
+          orgId={orgId}
+          value={party}
+          onChange={setParty}
+          supplierStateCode={supplierStateCode}
         />
+      </fieldset>
+
+      <Card className="flex flex-col gap-4 p-5">
+        {/*
+          Locked once saved. There is no update path for an issued invoice, so
+          leaving the fields live would let a second Save write a second bill
+          with a second number for the same sale.
+        */}
+        <fieldset
+          disabled={saved !== null}
+          className="flex min-w-0 flex-col gap-4 border-0 p-0 disabled:opacity-70"
+        >
+          <QuickKeys orgId={orgId} onPick={addProductLine} />
+
+          <div className="overflow-hidden rounded-card border border-border">
+            {/* Column heads — desktop only; each row repeats its own labels
+                on a phone, where a 12-column grid is unreadable. */}
+            <div className="hidden grid-cols-12 gap-2 border-b border-border bg-canvas px-3 py-2 lg:grid">
+              <span className="col-span-1 text-caption uppercase text-content-muted">
+                No
+              </span>
+              {layout?.primary.map(({ field, span }) => (
+                <span
+                  key={field.key}
+                  className={`${COL_SPAN[span] ?? "col-span-1"} text-caption uppercase text-content-muted`}
+                >
+                  {field.label}
+                  {field.unit ? ` (${field.unit})` : ""}
+                </span>
+              ))}
+              <span className="col-span-2 text-right text-caption uppercase text-content-muted">
+                Amount
+              </span>
+            </div>
+
+            {lines.map((line, i) => {
+              const lineTax = calc?.byKey.get(line.key);
+              const isOpen = expanded[line.key] === true;
+              // focus-within tints the row being typed into. Done in CSS rather
+              // than with React state so it costs no re-render per keystroke on
+              // the cheap Windows machines this has to stay quick on.
+              return (
+                <div
+                  key={line.key}
+                  data-testid="sale-line"
+                  className="border-b border-border last:border-b-0 transition-colors focus-within:bg-primary-tonal"
+                >
+                  <div className="grid grid-cols-1 gap-2 px-3 py-2 lg:grid-cols-12 lg:items-end">
+                    <span className="hidden pb-2 font-mono text-body text-content-muted lg:col-span-1 lg:block">
+                      {i + 1}
+                    </span>
+
+                    {layout?.primary.map(({ field, span }) => (
+                      <div
+                        key={field.key}
+                        className={`min-w-0 ${LG_COL_SPAN[span] ?? "lg:col-span-1"}`}
+                      >
+                        {field.key === "item_name" ? (
+                          <ProductPicker
+                            field={field}
+                            orgId={orgId}
+                            rowKey={line.key}
+                            value={line.values[field.key] ?? ""}
+                            linked={Boolean(productByLine[line.key])}
+                            hideLabelOnDesktop
+                            onChange={(raw) => {
+                              setLineValue(line.key, field.key, raw);
+                              detachProduct(line.key);
+                            }}
+                            onPick={(product) => applyProduct(line.key, product)}
+                          />
+                        ) : (
+                          <FieldControl
+                            field={field}
+                            rowKey={line.key}
+                            hideLabelOnDesktop
+                            value={line.values[field.key] ?? ""}
+                            onChange={(raw) =>
+                              setLineValue(line.key, field.key, raw)
+                            }
+                          />
+                        )}
+                      </div>
+                    ))}
+
+                    <div className="flex items-center justify-between gap-2 lg:col-span-2 lg:justify-end lg:pb-2">
+                      <span className="text-caption uppercase text-content-muted lg:hidden">
+                        Amount
+                      </span>
+                      <span className="font-mono text-body-lg text-content">
+                        {lineTax ? formatPaise(lineTax.totalPaise) : "—"}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Row footer: the vertical's own fields, the applied slab,
+                      and the way off this line. */}
+                  <div className="flex flex-wrap items-center justify-between gap-2 px-3 pb-2">
+                    <div className="flex items-center gap-3">
+                      {layout && layout.extra.length > 0 ? (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setExpanded((m) => ({ ...m, [line.key]: !isOpen }))
+                          }
+                          aria-expanded={isOpen}
+                          className="text-caption font-medium text-primary hover:underline"
+                        >
+                          {isOpen
+                            ? "Hide details"
+                            : `${config.label} details (${layout.extra.length})`}
+                        </button>
+                      ) : null}
+                      {lineTax?.appliedSlab ? (
+                        <span className="text-caption normal-case text-content-muted">
+                          {lineTax.appliedSlab}
+                        </span>
+                      ) : !lineTax ? (
+                        <span className="text-caption normal-case text-content-muted">
+                          Enter rate &amp; qty to price this line
+                        </span>
+                      ) : null}
+                    </div>
+                    {lines.length > 1 ? (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        aria-label={`Remove line ${i + 1}`}
+                        onClick={() => removeLine(line.key)}
+                      >
+                        Remove
+                      </Button>
+                    ) : null}
+                  </div>
+
+                  {isOpen && layout ? (
+                    <div className="grid grid-cols-2 gap-3 border-t border-border-subtle bg-canvas px-3 py-3 sm:grid-cols-3 lg:grid-cols-4">
+                      {layout.extra.map((field) => (
+                        <FieldControl
+                          key={field.key}
+                          field={field}
+                          rowKey={line.key}
+                          value={line.values[field.key] ?? ""}
+                          onChange={(raw) =>
+                            setLineValue(line.key, field.key, raw)
+                          }
+                        />
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+              );
+            })}
+          </div>
+
+          <div>
+            <Button variant="outline" size="sm" onClick={addLine}>
+              + Add line
+            </Button>
+          </div>
+
+          {/* Inside the lock too: a discount edited after saving would change
+              the totals on screen and in Preview while the saved invoice kept
+              the old ones. */}
+          <InvoiceExtras
+            value={extras}
+            onChange={setExtras}
+            grossPaise={calc?.doc?.grossPaise ?? (0 as Paise)}
+            discountPaise={calc?.doc?.discountPaise ?? (0 as Paise)}
+            chargesPaise={calc?.doc?.chargesPaise ?? (0 as Paise)}
+          />
+        </fieldset>
 
         {calc?.tax ? (
           <div
@@ -603,13 +891,22 @@ export function SalesModule({
           </p>
         ) : null}
 
-        <Button
-          onClick={handleSave}
-          disabled={!canSave}
-          data-testid="save-invoice"
-        >
-          {saving ? "Saving…" : "Save invoice"}
-        </Button>
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
+          <InvoiceActions bill={draftBill} savedId={saved?.id ?? null} />
+          {saved ? (
+            <Button onClick={startNewBill} data-testid="new-invoice">
+              New bill
+            </Button>
+          ) : (
+            <Button
+              onClick={handleSave}
+              disabled={!canSave}
+              data-testid="save-invoice"
+            >
+              {saving ? "Saving…" : "Save invoice"}
+            </Button>
+          )}
+        </div>
       </Card>
 
       <section className="flex flex-col gap-3">
@@ -687,6 +984,8 @@ function ProductPicker({
   linked,
   onChange,
   onPick,
+  rowKey,
+  hideLabelOnDesktop = false,
 }: {
   field: FieldDef;
   orgId: string;
@@ -695,11 +994,15 @@ function ProductPicker({
   linked: boolean;
   onChange: (raw: string) => void;
   onPick: (product: ProductPick) => void;
+  /** Billing line this picker belongs to — keeps DOM ids unique per row. */
+  rowKey?: string | undefined;
+  /** The line table has column heads; the label would only repeat them. */
+  hideLabelOnDesktop?: boolean;
 }) {
   const [matches, setMatches] = useState<ProductPick[]>([]);
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
-  const id = `f-${field.key}`;
+  const id = rowKey ? `f-${rowKey}-${field.key}` : `f-${field.key}`;
   const listId = `${id}-list`;
 
   useEffect(() => {
@@ -761,9 +1064,13 @@ function ProductPicker({
   const labelText = field.label + (field.required ? " *" : "");
 
   return (
-    <div className="relative col-span-2 flex flex-col gap-1">
+    <div
+      className={`relative flex min-w-0 flex-col gap-1 ${hideLabelOnDesktop ? "" : "col-span-2"}`}
+    >
       <div className="flex items-baseline justify-between gap-2">
-        <Label htmlFor={id}>{labelText}</Label>
+        <Label htmlFor={id} className={hideLabelOnDesktop ? "lg:sr-only" : ""}>
+          {labelText}
+        </Label>
         {linked ? (
           <span
             data-testid="line-from-catalogue"
@@ -855,28 +1162,47 @@ function FieldControl({
   field,
   value,
   onChange,
+  rowKey,
+  hideLabelOnDesktop = false,
 }: {
   field: FieldDef;
   value: string;
   onChange: (raw: string) => void;
+  /**
+   * The billing line this control belongs to. Without it every row rendered
+   * the same `f-<key>` id, so a label click on line three focused line one and
+   * the document carried duplicate ids.
+   */
+  rowKey?: string | undefined;
+  /**
+   * In the line table the column heading already names the field, so repeating
+   * it above each input would trip the row height. The label stays in the DOM
+   * for screen readers and is still shown on a phone, where the grid stacks and
+   * there are no column heads.
+   */
+  hideLabelOnDesktop?: boolean;
 }) {
   const wide =
     field.key === "item_name" ||
     field.key === "description" ||
     field.key === "salt_composition";
-  const span = wide ? "col-span-2" : "col-span-1";
+  // Inside the row the parent grid owns the width; only the expander's own
+  // grid wants a field to claim two columns.
+  const span = hideLabelOnDesktop ? "" : wide ? "col-span-2" : "col-span-1";
 
   const labelText =
     field.label +
     (field.unit ? ` (${field.unit})` : "") +
     (field.required ? " *" : "");
-  const id = `f-${field.key}`;
+  const id = rowKey ? `f-${rowKey}-${field.key}` : `f-${field.key}`;
 
   const numeric = (raw: string) => raw.replace(/[^\d.]/g, "");
 
   return (
-    <div className={`flex flex-col gap-1 ${span}`}>
-      <Label htmlFor={id}>{labelText}</Label>
+    <div className={`flex min-w-0 flex-col gap-1 ${span}`}>
+      <Label htmlFor={id} className={hideLabelOnDesktop ? "lg:sr-only" : ""}>
+        {labelText}
+      </Label>
       {field.type === "select" ? (
         <select
           id={id}

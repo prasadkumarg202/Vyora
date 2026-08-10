@@ -605,6 +605,110 @@ export interface CustomerRow {
 }
 
 /**
+ * A customer as the billing screen needs them.
+ *
+ * Carries `email`, which is not a column on either the local or the Postgres
+ * customers table. It lives in `custom_fields` for the same reason the invoice's
+ * notes and terms do: only the send-by-mail path reads it, nothing queries or
+ * filters on it, and a column apiece would be a migration on two schemas for one
+ * string. Read back here so the picker does not have to know that.
+ */
+export interface CustomerPick {
+  id: string;
+  name: string;
+  phone: string | null;
+  gstin: string | null;
+  email: string | null;
+}
+
+interface CustomerPickRaw {
+  id: string;
+  name: string;
+  phone: string | null;
+  gstin: string | null;
+  custom_fields: string | null;
+}
+
+/** Pull `email` out of the custom_fields JSON blob, tolerating malformed data. */
+function customerEmail(customFields: string | null): string | null {
+  if (!customFields) return null;
+  try {
+    const parsed: unknown = JSON.parse(customFields);
+    if (typeof parsed !== "object" || parsed === null) return null;
+    const email = (parsed as Record<string, unknown>).email;
+    return typeof email === "string" && email ? email : null;
+  } catch {
+    return null;
+  }
+}
+
+const toPick = (r: CustomerPickRaw): CustomerPick => ({
+  id: r.id,
+  name: r.name,
+  phone: r.phone,
+  gstin: r.gstin,
+  email: customerEmail(r.custom_fields),
+});
+
+/**
+ * Customers matching what the shopkeeper has typed into the Bill To box.
+ *
+ * Local SQLite, like the product lookup beside it — a counter with no signal
+ * must still be able to bill a regular by name. Matches name, phone and GSTIN,
+ * because all three are how a shop identifies a returning customer: the name
+ * when they are standing there, the phone when they called ahead, the GSTIN when
+ * a B2B buyer wants the bill in their firm's name. Prefix matches sort first.
+ */
+export async function searchCustomers(
+  orgId: string,
+  query: string,
+  limit = 8,
+): Promise<CustomerPick[]> {
+  await ready();
+  const term = query.trim();
+  if (!term) return [];
+
+  // % and _ are wildcards; a name typed with either must search for the
+  // character, not for any character.
+  const escaped = term.replace(/[\\%_]/g, (c) => `\\${c}`);
+  const contains = `%${escaped}%`;
+  const prefix = `${escaped}%`;
+
+  const rows = await all<CustomerPickRaw>(
+    `SELECT id, name, phone, gstin, custom_fields
+       FROM customers
+      WHERE org_id = ?
+        AND deleted_at IS NULL
+        AND (name  LIKE ? ESCAPE '\\'
+          OR phone LIKE ? ESCAPE '\\'
+          OR gstin LIKE ? ESCAPE '\\')
+      ORDER BY
+        CASE WHEN name  LIKE ? ESCAPE '\\' THEN 0
+             WHEN phone LIKE ? ESCAPE '\\' THEN 1
+             ELSE 2 END,
+        name
+      LIMIT ?`,
+    [orgId, contains, contains, contains, prefix, prefix, limit],
+  );
+  return rows.map(toPick);
+}
+
+/** One customer by id, with email resolved — used to reopen a saved invoice. */
+export async function getCustomer(
+  orgId: string,
+  customerId: string,
+): Promise<CustomerPick | null> {
+  await ready();
+  const row = await get<CustomerPickRaw>(
+    `SELECT id, name, phone, gstin, custom_fields
+       FROM customers
+      WHERE org_id = ? AND id = ? AND deleted_at IS NULL`,
+    [orgId, customerId],
+  );
+  return row ? toPick(row) : null;
+}
+
+/**
  * Persist a customer, marked dirty.
  *
  * dirty = 1 and version = 0 say "created locally, not yet acknowledged by the
@@ -618,20 +722,27 @@ export async function saveCustomer(customer: {
   name: string;
   phone?: string | undefined;
   gstin?: string | undefined;
+  /** Stored in custom_fields — see CustomerPick for why it is not a column. */
+  email?: string | undefined;
 }): Promise<void> {
   await ready();
   const now = new Date().toISOString();
 
+  const email = customer.email?.trim();
+  const customFields = JSON.stringify(email ? { email } : {});
+
   await batch([
     {
       sql: `INSERT INTO customers
-              (id, name, phone, gstin, org_id, updated_at, version, dirty)
-            VALUES (?,?,?,?,?,?,0,1)`,
+              (id, name, phone, gstin, custom_fields, org_id, updated_at,
+               version, dirty)
+            VALUES (?,?,?,?,?,?,?,0,1)`,
       params: [
         customer.id,
         customer.name,
         customer.phone ?? null,
         customer.gstin ?? null,
+        customFields,
         customer.orgId,
         now,
       ] as (string | number | null)[],
