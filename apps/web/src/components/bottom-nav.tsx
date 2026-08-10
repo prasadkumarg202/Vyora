@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { useEntitlement } from "~/components/billing/entitlement-provider";
-import { MOBILE_NAV, NAV_ZONES } from "~/config/navigation";
+import { MOBILE_NAV, SIDEBAR_ZONES } from "~/config/navigation";
 
 /**
  * Mobile bottom nav: four destinations around a centre FAB, per the design
@@ -113,11 +113,15 @@ function ModuleSheet({
         </div>
 
         <div className="flex flex-col gap-6 overflow-y-auto p-4 pb-[calc(env(safe-area-inset-bottom)+5rem)]">
-          {NAV_ZONES.map((zone) => (
+          {/* Same order as the sidebar. This sheet is a deliberate full index,
+              so unlike the sidebar it stays expanded — but a shopkeeper who has
+              learnt where Vyora Edge sits on the desktop should not have to
+              learn a second position on the phone. */}
+          {SIDEBAR_ZONES.map((zone) => (
             <div key={zone.id} className="flex flex-col gap-1">
               <div className="px-2 pb-1">
-                <span className="font-mono text-caption uppercase tracking-wide text-content-muted">
-                  {zone.ordinal} · {zone.label}
+                <span className="text-caption uppercase tracking-wide text-content-muted">
+                  {zone.label}
                 </span>
               </div>
               {zone.modules.map((entry) => {

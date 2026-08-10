@@ -338,13 +338,69 @@ export const NAV_MODULES: readonly NavModule[] = NAV_ZONES.flatMap(
   (zone) => zone.modules,
 );
 
+/** A module by its route, or undefined. Lookup by href, never by position. */
+export function moduleByHref(href: string): NavModule | undefined {
+  return NAV_MODULES.find((m) => m.href === href);
+}
+
+/**
+ * Sidebar order — by how often a shopkeeper opens the zone, not by the IA's
+ * numbering.
+ *
+ * `NAV_ZONES` stays in the order the information architecture describes,
+ * because that document is the reference for what exists. This is a different
+ * question: what does someone reach for at eight in the morning with a customer
+ * waiting. Two changes matter.
+ *
+ * Vyora Edge moves from last to third. Scan & Sell and Voice Billing are
+ * everyday billing tools and they are the reason to choose Vyora over Vyapar —
+ * sitting them below Settings, at the bottom of a list long enough to scroll,
+ * hid the product's whole argument.
+ *
+ * Workspace moves to last. Settings, Administration and Subscriptions are opened
+ * during setup and then a few times a year.
+ */
+const SIDEBAR_ORDER: readonly string[] = [
+  "overview",
+  "sell",
+  "edge",
+  "contacts",
+  "catalog",
+  "buy",
+  "finance",
+  "workspace",
+];
+
+/**
+ * Zones open on arrival. Everything else starts shut.
+ *
+ * Rendering all 32 modules at once made the sidebar a wall of text with its own
+ * scrollbar, and a list that long is read by nobody — the eye gives up and goes
+ * back to whatever it already knew. Two zones open is enough to start the day:
+ * where you are, and where you sell.
+ */
+const OPEN_BY_DEFAULT: ReadonlySet<string> = new Set(["overview", "sell"]);
+
+/** The zones as the sidebar shows them. */
+export const SIDEBAR_ZONES: readonly NavZone[] = [...NAV_ZONES].sort(
+  (a, b) => SIDEBAR_ORDER.indexOf(a.id) - SIDEBAR_ORDER.indexOf(b.id),
+);
+
+export function zoneOpensByDefault(zoneId: string): boolean {
+  return OPEN_BY_DEFAULT.has(zoneId);
+}
+
 /**
  * Mobile bottom nav: at most 5 items, per the design spec. The centre slot is
  * a FAB for the primary create action, added with Sales in Phase 7.
+ *
+ * Resolved by route rather than by index into NAV_ZONES. The index form silently
+ * pointed at whatever happened to sit in that slot, so reordering a zone would
+ * have changed the phone's bottom bar without anyone touching this line.
  */
 export const MOBILE_NAV: readonly NavModule[] = [
-  NAV_ZONES[0]!.modules[0]!, // Dashboard
-  NAV_ZONES[1]!.modules[0]!, // Sales
-  NAV_ZONES[3]!.modules[0]!, // Products
-  NAV_ZONES[0]!.modules[1]!, // AI Assistant
-];
+  moduleByHref("/dashboard"),
+  moduleByHref("/sales"),
+  moduleByHref("/products"),
+  moduleByHref("/assistant"),
+].filter((m): m is NavModule => m !== undefined);
