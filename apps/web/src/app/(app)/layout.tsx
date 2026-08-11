@@ -6,6 +6,7 @@ import { TrialBanner } from "~/components/billing/trial-banner";
 import { WorkspaceLocked } from "~/components/billing/workspace-locked";
 import { Sidebar } from "~/components/sidebar";
 import { SyncPill } from "~/components/sync-pill";
+import { UpdatePrompt } from "~/components/update-prompt";
 import { ThemeToggle } from "~/components/theme-toggle";
 import { UserMenu } from "~/components/auth/user-menu";
 import { getTenantSession } from "~/lib/auth/session";
@@ -89,6 +90,10 @@ export default async function AppLayout({
             <BottomNav />
           </>
         )}
+
+        {/* Outside the locked branch: a workspace whose trial has expired still
+            needs to be able to take the fix that unlocks it. */}
+        <UpdatePrompt />
       </div>
     </EntitlementProvider>
   );
