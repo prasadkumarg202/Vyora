@@ -16,7 +16,7 @@ Current values as of this writing:
 | Cloudflare Worker name | `vyora` |
 | GitHub owner / repo | `prasadkumarg202` / `Vyora` |
 | Desktop app id | `in.vyora.desktop` |
-| Supabase project | `hvvsmtiytihlbzlkkbjl.supabase.co` |
+| Supabase project | `vxxfmgigfsgxzbxldqyk.supabase.co` |
 
 ---
 

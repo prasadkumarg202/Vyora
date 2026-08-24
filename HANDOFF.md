@@ -8,7 +8,7 @@ granted at the start.
 I'm continuing work on **Vyora**, an offline-first GST billing / Business OS for
 Indian MSMEs. Code is at `D:\websites\Vyora` (Windows), repo
 `prasadkumarg202/Vyora`, live at `https://vyora.prasadkumar-g202.workers.dev`
-(Cloudflare Workers, deploys on push). Supabase project `hvvsmtiytihlbzlkkbjl`.
+(Cloudflare Workers, deploys on push). Supabase project `vxxfmgigfsgxzbxldqyk`.
 Read `CONFIGURATION-SETUP.md` at the repo root first — it is current as of
 9 Aug 2026 and covers auth, migrations, sync, signing and the build.
 

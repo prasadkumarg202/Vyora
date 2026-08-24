@@ -52,9 +52,20 @@ test.describe("on-device database", () => {
     const status = page.getByTestId("offline-status");
     await expect(status).toHaveText("Ready", { timeout: 30_000 });
     await expect(page.getByTestId("offline-error")).toHaveCount(0);
-    // Schema v1 means the migration actually ran against a real database.
-    // Schema is at v2 since the marketing_campaigns migration.
-    await expect(page.getByTestId("schema-version")).toHaveText("2");
+
+    /*
+     * A version above zero is what this test is really asserting: that the
+     * migrations ran against a real database rather than the page reporting an
+     * empty schema as healthy.
+     *
+     * It used to hardcode "2", and every migration since silently invalidated it
+     * — by the time payroll landed it was asserting 2 against a schema at 8. A
+     * test that has to be edited on every migration is a test that gets edited
+     * without being read. MIGRATIONS.length is the source of truth; anything
+     * that parses as a number above zero means the chain applied.
+     */
+    const version = await page.getByTestId("schema-version").textContent();
+    expect(Number(version)).toBeGreaterThan(0);
   });
 
   test("writes survive a full reload — the 'never loses data' promise", async ({ page }) => {

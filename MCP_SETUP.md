@@ -19,7 +19,7 @@ environment at launch.
 "Verified" means an `initialize` + `tools/list` handshake succeeded against the
 server as configured here.
 
-The remote Supabase project ref is defaulted to **`hvvsmtiytihlbzlkkbjl`**
+The remote Supabase project ref is defaulted to **`vxxfmgigfsgxzbxldqyk`**
 (project "Vyora", `ap-southeast-1`). A ref is public — it appears in the project
 URL — so only the access token is a secret.
 
